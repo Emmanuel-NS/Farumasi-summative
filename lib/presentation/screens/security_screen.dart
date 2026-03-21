@@ -1,0 +1,174 @@
+import 'package:flutter/material.dart';
+
+class SecurityScreen extends StatefulWidget {
+  const SecurityScreen({super.key});
+
+  @override
+  State<SecurityScreen> createState() => _SecurityScreenState();
+}
+
+class _SecurityScreenState extends State<SecurityScreen> {
+  bool _twoFactorEnabled = true;
+  bool _biometricEnabled = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Security Center'),
+        backgroundColor: Colors.green,
+        foregroundColor: Colors.white,
+      ),
+      body: ListView(
+        children: [
+          _buildAlertBanner(),
+          const SizedBox(height: 16),
+          _buildSectionHeader('Account Protection'),
+          SwitchListTile(
+            title: const Text('Two-Factor Authentication (2FA)'),
+            subtitle: const Text('Extra layer of security for logins'),
+            value: _twoFactorEnabled,
+            activeColor: Colors.green,
+            onChanged: (val) {
+              setState(() => _twoFactorEnabled = val);
+              // enhance: Show confirm dialog/enter code
+            },
+          ),
+          SwitchListTile(
+            title: const Text('Biometric Login'),
+            subtitle: const Text('Use FaceID/Fingerprint'),
+            value: _biometricEnabled,
+            activeColor: Colors.green,
+            onChanged: (val) {
+              setState(() => _biometricEnabled = val);
+              // enhance: Authenticate biometric
+            },
+          ),
+          ListTile(
+            title: const Text('Change Password'),
+            subtitle: const Text('Last changed 3 months ago'),
+            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+            onTap: () {
+              // Navigate to change password
+            },
+          ),
+          
+          const Divider(),
+          _buildSectionHeader('Data Privacy (Health Data)'),
+          ListTile(
+            title: const Text('Data Encryption Status'),
+            subtitle: const Text('Active (AES-256)'),
+            leading: const Icon(Icons.lock, color: Colors.green),
+            trailing: const Icon(Icons.check_circle, color: Colors.green),
+          ),
+          ListTile(
+            title: const Text('Manage Permissions'),
+            subtitle: const Text('Review app access to camera, location'),
+            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+            onTap: () {
+              // Open app settings
+            },
+          ),
+           ListTile(
+            title: const Text('Download My Data'),
+            subtitle: const Text('Request copy of your medical history'),
+            trailing: const Icon(Icons.download),
+            onTap: () {
+              // Request data export
+            },
+          ),
+
+          const Divider(),
+          _buildSectionHeader('Device Management'),
+          ListTile(
+            title: const Text('Active Sessions'),
+            subtitle: const Text('Samsung S21 (Current) • Kigali, RW'),
+            trailing: const Text('Log out all', style: TextStyle(color: Colors.red)),
+            onTap: () {
+              // Log out other sessions
+            },
+          ),
+          
+          const SizedBox(height: 24),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: OutlinedButton.icon(
+              onPressed: () {
+                // Show delete confirmation
+                showDialog(
+                  context: context, 
+                  builder: (ctx) => AlertDialog(
+                    title: const Text("Delete Account"),
+                    content: const Text("Are you sure you want to delete your account? This action is permanent and cannot be undone. All your health data will be erased."),
+                    actions: [
+                      TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("Cancel")),
+                      TextButton(
+                        onPressed: () {
+                          // Perform delete API call
+                          Navigator.pop(ctx);
+                          Navigator.pop(context); // Go back to settings/login
+                        }, 
+                        child: const Text("Delete", style: TextStyle(color: Colors.red))
+                      ),
+                    ],
+                  )
+                );
+              },
+              icon: const Icon(Icons.delete_forever, color: Colors.red),
+              label: const Text('Delete Account', style: TextStyle(color: Colors.red)),
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: Colors.red),
+                padding: const EdgeInsets.all(16),
+              ),
+            ),
+          ),
+          const SizedBox(height: 32),
+        ],
+      ),
+    );
+  }
+
+  /*
+  void _showPolicyDialog(BuildContext context, String title, String content) {
+     // REMOVED: Unused
+  }
+  */
+
+  Widget _buildSectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      child: Text(
+        title.toUpperCase(),
+        style: TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.bold,
+          color: Colors.grey.shade600,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAlertBanner() {
+    return Container(
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.green.withOpacity(0.1),
+        border: Border.all(color: Colors.green),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: const [
+          Icon(Icons.shield, color: Colors.green),
+          SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              "Your health data is encrypted and secured according to HIPAA/GDPR standards.",
+              style: TextStyle(fontSize: 13, color: Colors.black87),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

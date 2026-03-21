@@ -1,0 +1,430 @@
+import 'package:flutter/material.dart';
+import 'package:farumasi_patient_app/presentation/widgets/farumasi_logo_widget.dart';
+import 'package:farumasi_patient_app/data/datasources/state_service.dart';
+import 'package:farumasi_patient_app/presentation/screens/admin/admin_dashboard_screen.dart'; // Import Admin Dashboard
+import 'home_screen.dart';
+
+class AuthScreen extends StatefulWidget {
+  const AuthScreen({super.key});
+
+  @override
+  State<AuthScreen> createState() => _AuthScreenState();
+}
+
+class _AuthScreenState extends State<AuthScreen> {
+  bool _isLogin = true;
+  // String _selectedRole = 'User'; // 'User', 'Pharmacist', or 'Rider' // REMOVED
+  final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    // Default fill for User
+    _emailController.text = 'user@farumasi.rw';
+    _passwordController.text = 'password123';
+  }
+
+  /*
+  void _switchRole(String role) {
+    setState(() {
+      _selectedRole = role;
+      if (role == 'Pharmacist') {
+        _emailController.text = 'pharmacist@farumasi.rw';
+        _passwordController.text = 'admin123';
+      } else if (role == 'Rider') {
+        _emailController.text = 'rider@farumasi.rw';
+        _passwordController.text = 'rider123';
+      } else {
+        _emailController.text = 'user@farumasi.rw';
+        _passwordController.text = 'password123';
+      }
+    });
+  }
+  */
+
+  void _submit() {
+    if (_formKey.currentState!.validate()) {
+      // 1. Admin Login
+      if (_emailController.text == 'admin@farumasi.rw' && _passwordController.text == 'admin123') {
+         Navigator.of(context).pushReplacement(
+           MaterialPageRoute(builder: (context) => const AdminDashboardScreen()),
+         );
+         return;
+      }
+
+      /*
+      // 1. Check for Pharmacist Credentials based on Role
+      if (_selectedRole == 'Pharmacist') {
+         // Simple validation for demo
+         if (_emailController.text == 'pharmacist@farumasi.rw' && _passwordController.text == 'admin123') {
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (context) => const PharmacistDashboardScreen()),
+              (route) => false,
+            );
+            return;
+         } else {
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Invalid Pharmacist Credentials')));
+            return;
+         }
+      }
+
+      // Check for Rider Credentials based on Role
+      if (_selectedRole == 'Rider') {
+         if (_emailController.text == 'rider@farumasi.rw' && _passwordController.text == 'rider123') {
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (context) => const RiderDashboardScreen()),
+              (route) => false,
+            );
+            return;
+         } else {
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Invalid Rider Credentials')));
+            return;
+         }
+      }
+      */
+
+      // 2. Regular User Login
+      StateService().login(
+        _emailController.text,
+        name: _isLogin ? null : _nameController.text,
+      );
+      
+      if (Navigator.canPop(context)) {
+        Navigator.pop(context);
+      } else {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+        );
+      }
+      // If AuthScreen was pushed on top of Home, pop is fine. 
+      // If Home checks auth state, it will update.
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        height: double.infinity,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Colors.green.shade800, Colors.green.shade400],
+          ),
+        ),
+        child: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              physics: const ClampingScrollPhysics(),
+              padding: const EdgeInsets.all(24),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 450),
+                child: Card(
+                  elevation: 8,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              FarumasiLogo(size: 60, color: Colors.green),
+                              SizedBox(width: 12),
+                              // Flexible allows text to wrap if screen is very narrow
+                              Flexible(
+                                child: Text(
+                                  "FARUMASI",
+                                  style: TextStyle(
+                                    fontSize: 32,
+                                    fontWeight: FontWeight.w900,
+                                    color: Colors.green.shade800,
+                                    letterSpacing: 1.2,
+                                  ),
+                                  overflow: TextOverflow.fade,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          /*
+                          Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade100,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: GestureDetector(
+                                    onTap: () => _switchRole('User'),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(vertical: 12),
+                                      decoration: BoxDecoration(
+                                        color: _selectedRole == 'User' ? Colors.green : Colors.transparent,
+                                        borderRadius: BorderRadius.circular(8),
+                                        boxShadow: _selectedRole == 'User' 
+                                          ? [BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2))]
+                                          : [],
+                                      ),
+                                      child: Text(
+                                        "User",
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 13,
+                                          color: _selectedRole == 'User' ? Colors.white : Colors.grey.shade600,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                Expanded(
+                                  child: GestureDetector(
+                                    onTap: () => _switchRole('Pharmacist'),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(vertical: 12),
+                                      decoration: BoxDecoration(
+                                        color: _selectedRole == 'Pharmacist' ? Colors.green : Colors.transparent,
+                                        borderRadius: BorderRadius.circular(8),
+                                        boxShadow: _selectedRole == 'Pharmacist' 
+                                          ? [BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2))]
+                                          : [],
+                                      ),
+                                      child: Text(
+                                        "Pharmacist",
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 13,
+                                          color: _selectedRole == 'Pharmacist' ? Colors.white : Colors.grey.shade600,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                Expanded(
+                                  child: GestureDetector(
+                                    onTap: () => _switchRole('Rider'),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(vertical: 12),
+                                      decoration: BoxDecoration(
+                                        color: _selectedRole == 'Rider' ? Colors.green : Colors.transparent,
+                                        borderRadius: BorderRadius.circular(8),
+                                        boxShadow: _selectedRole == 'Rider' 
+                                          ? [BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2))]
+                                          : [],
+                                      ),
+                                      child: Text(
+                                        "Rider",
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 13,
+                                          color: _selectedRole == 'Rider' ? Colors.white : Colors.grey.shade600,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          */
+                          const SizedBox(height: 16),
+                          Text(
+                            _isLogin ? 'Welcome Back!' : 'Join Farumasi',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.green.shade800,
+                            ),
+                          ),
+                          SizedBox(height: 24),
+                          if (!_isLogin) ...[
+                            TextFormField(
+                              controller: _nameController,
+                              decoration: InputDecoration(
+                                labelText: 'Full Name',
+                                prefixIcon: Icon(
+                                  Icons.person,
+                                  color: Colors.green,
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide(
+                                    color: Colors.green,
+                                    width: 2,
+                                  ),
+                                ),
+                              ),
+                              validator: (value) => value!.isEmpty
+                                  ? 'Please enter your name'
+                                  : null,
+                            ),
+                            SizedBox(height: 16),
+                          ],
+                          TextFormField(
+                            controller: _emailController,
+                            decoration: InputDecoration(
+                              labelText: 'Email Address',
+                              prefixIcon: Icon(
+                                Icons.email,
+                                color: Colors.green,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(
+                                  color: Colors.green,
+                                  width: 2,
+                                ),
+                              ),
+                            ),
+                            validator: (value) =>
+                                value!.isEmpty ? 'Enter valid email' : null,
+                          ),
+                          SizedBox(height: 16),
+                          TextFormField(
+                            controller: _passwordController,
+                            decoration: InputDecoration(
+                              labelText: 'Password',
+                              prefixIcon: Icon(Icons.lock, color: Colors.green),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(
+                                  color: Colors.green,
+                                  width: 2,
+                                ),
+                              ),
+                            ),
+                            obscureText: true,
+                            validator: (value) =>
+                                value!.length < 6 ? 'Min 6 characters' : null,
+                          ),
+                          if (!_isLogin) ...[
+                            SizedBox(height: 16),
+                            TextFormField(
+                              controller: _confirmPasswordController,
+                              decoration: InputDecoration(
+                                labelText: 'Confirm Password',
+                                prefixIcon: Icon(
+                                  Icons.lock_outline,
+                                  color: Colors.green,
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide(
+                                    color: Colors.green,
+                                    width: 2,
+                                  ),
+                                ),
+                              ),
+                              obscureText: true,
+                              validator: (value) {
+                                if (value != _passwordController.text) {
+                                  return 'Passwords do not match';
+                                }
+                                return null;
+                              },
+                            ),
+                          ],
+                          SizedBox(height: 24),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: _submit,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green.shade600,
+                                foregroundColor: Colors.white,
+                                padding: EdgeInsets.symmetric(vertical: 16),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                elevation: 2,
+                              ),
+                              child: Text(
+                                _isLogin ? 'LOGIN' : 'SIGN UP',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 16),
+                          TextButton(
+                            onPressed: () {
+                              setState(() => _isLogin = !_isLogin);
+                              _formKey.currentState?.reset();
+                            },
+                            child: Text.rich(
+                              // Changed from RichText to Text.rich for better constraint handling
+                              TextSpan(
+                                text: _isLogin
+                                    ? "Don't have an account? "
+                                    : "Already have an account? ",
+                                style: TextStyle(
+                                  color: Colors.grey.shade600,
+                                  fontSize: 13,
+                                ), // Reduced size slightly
+                                children: [
+                                  TextSpan(
+                                    text: _isLogin ? 'Sign Up' : 'Login',
+                                    style: TextStyle(
+                                      color: Colors.green,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                          if (_isLogin) ...[
+                            TextButton(
+                              onPressed: () {},
+                              child: Text(
+                                "Forgot Password?",
+                                style: TextStyle(color: Colors.green),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+ // Closes _AuthScreenState check where Card was closed
