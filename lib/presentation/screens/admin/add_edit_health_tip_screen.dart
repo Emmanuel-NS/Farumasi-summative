@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
-import 'package:farumasi_patient_app/data/models/models.dart';
-import 'package:farumasi_patient_app/data/datasources/state_service.dart';
+import '../../../domain/entities/health_article.dart';
+import '../../../data/repositories/health_repository_impl.dart';
 
 class AddEditHealthTipScreen extends StatefulWidget {
   final HealthArticle? article;
@@ -92,13 +92,13 @@ class _AddEditHealthTipScreenState extends State<AddEditHealthTipScreen> {
     super.dispose();
   }
 
-  void _save() {
+  Future<void> _save() async {
     if (_formKey.currentState!.validate()) {
       // Get JSON form of document
       final deltaJson = jsonEncode(_quillController.document.toDelta().toJson());
 
       final newArticle = HealthArticle(
-        id: widget.article?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
+        id: widget.article?.id ?? '',
         title: _titleController.text,
         subtitle: _subtitleController.text,
         summary: _summaryController.text,
@@ -110,12 +110,19 @@ class _AddEditHealthTipScreenState extends State<AddEditHealthTipScreen> {
         readTimeMin: _readTime,
       );
 
-      if (widget.article != null) {
-        StateService().updateHealthArticle(newArticle);
-      } else {
-        StateService().addHealthArticle(newArticle);
+      final repo = HealthRepositoryImpl();
+      try {
+        if (widget.article != null) {
+          await repo.updateArticle(newArticle);
+        } else {
+          await repo.addArticle(newArticle);
+        }
+        if (mounted) Navigator.pop(context, true);
+      } catch (e) {
+        if (mounted) {
+           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+        }
       }
-      Navigator.pop(context);
     }
   }
   

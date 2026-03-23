@@ -1,17 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:farumasi_patient_app/presentation/screens/prescription_upload_screen.dart';
 import 'package:farumasi_patient_app/presentation/screens/order_tracking_screen.dart';
-
-import 'package:farumasi_patient_app/data/datasources/state_service.dart';
+import 'package:farumasi_patient_app/presentation/blocs/auth/auth_bloc.dart';
 
 class OrdersScreen extends StatelessWidget {
   const OrdersScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: StateService(),
-      builder: (context, _) {
     // For now, we simulate an empty list of orders.
     // In a real app, this would come from a backend or local database.
     final List<Map<String, dynamic>> pastOrders = [];
@@ -85,8 +82,6 @@ class OrdersScreen extends StatelessWidget {
         ),
       ),
     );
-    },
-   );
   }
 
   Widget _buildActiveOrderCard(
@@ -305,34 +300,40 @@ class OrdersScreen extends StatelessWidget {
             const SizedBox(height: 32),
             SizedBox(
               width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  if (!StateService().isLoggedIn) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Please login to upload a prescription.")),
+              child: BlocBuilder<AuthBloc, AuthState>(
+                builder: (context, state) {
+                  final isLoggedIn = state.status == AuthStatus.authenticated;
+                  return ElevatedButton.icon(
+                    onPressed: () {
+                      if (!isLoggedIn) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text("Please login to upload a prescription.")),
+                          );
+                          // Optional: invoke login dialog or navigate to auth screen
+                          return;
+                      }
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const PrescriptionUploadScreen(),
+                        ),
                       );
-                      return;
-                  }
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const PrescriptionUploadScreen(),
+                    },
+                    icon: const Icon(Icons.upload_file),
+                    label: const Text("Upload Prescription"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: isLoggedIn ? Colors.green : Colors.grey,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      textStyle: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   );
                 },
-                icon: const Icon(Icons.upload_file),
-                label: const Text("Upload Prescription"),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: StateService().isLoggedIn ? Colors.green : Colors.grey,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  textStyle: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
               ),
             ),
           ],

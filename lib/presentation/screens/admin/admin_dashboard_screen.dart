@@ -6,7 +6,6 @@ import 'package:farumasi_patient_app/presentation/screens/admin/manage_pharmacie
 import 'package:farumasi_patient_app/presentation/screens/admin/admin_consultations_screen.dart';
 import 'package:farumasi_patient_app/presentation/screens/admin/manage_health_tips_screen.dart';
 import 'package:farumasi_patient_app/presentation/screens/auth_screen.dart';
-import 'package:farumasi_patient_app/presentation/widgets/farumasi_logo_widget.dart'; // Ensure imported, if not create basic one inline or verify existence
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});

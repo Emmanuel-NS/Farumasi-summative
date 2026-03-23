@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:farumasi_patient_app/data/models/models.dart';
 // import 'package:farumasi_patient_app/data/dummy_data.dart'; // REMOVED
 import 'package:farumasi_patient_app/presentation/widgets/medicine_item.dart';
+import 'package:farumasi_patient_app/presentation/blocs/cart/cart_bloc.dart';
+import 'package:farumasi_patient_app/presentation/blocs/cart/cart_state.dart';
+import 'package:farumasi_patient_app/presentation/blocs/auth/auth_bloc.dart';
+// import 'package:farumasi_patient_app/presentation/blocs/auth/auth_state.dart'; // REMOVED
 import 'medicine_detail_screen.dart';
 import 'package:farumasi_patient_app/data/datasources/state_service.dart';
 import 'user_consultation_screen.dart';
@@ -31,23 +36,28 @@ class _PharmacyDetailScreenState extends State<PharmacyDetailScreen> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        FloatingActionButton(
-          heroTag: 'upload_btn_pharmacy',
-          backgroundColor: StateService().isLoggedIn ? Colors.blue : Colors.grey,
-          onPressed: () {
-            if (!StateService().isLoggedIn) {
-               ScaffoldMessenger.of(context).showSnackBar(
-                 const SnackBar(content: Text("Please login to upload a prescription.")),
+        BlocBuilder<AuthBloc, AuthState>(
+          builder: (context, state) {
+            final isLoggedIn = state.status == AuthStatus.authenticated;
+            return FloatingActionButton(
+              heroTag: 'upload_btn_pharmacy',
+              backgroundColor: isLoggedIn ? Colors.blue : Colors.grey,
+              onPressed: () {
+                if (!isLoggedIn) {
+                   ScaffoldMessenger.of(context).showSnackBar(
+                     const SnackBar(content: Text("Please login to upload a prescription.")),
+                   );
+                   return;
+                }
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const PrescriptionUploadScreen()),
                );
-               return;
-            }
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const PrescriptionUploadScreen()),
-           );
+              },
+              tooltip: 'Upload Prescription',
+              child: const Icon(Icons.upload_file, color: Colors.white),
+            );
           },
-          tooltip: 'Upload Prescription',
-          child: const Icon(Icons.upload_file, color: Colors.white),
         ),
         const SizedBox(height: 12),
         Stack(
@@ -66,31 +76,38 @@ class _PharmacyDetailScreenState extends State<PharmacyDetailScreen> {
               tooltip: 'View Cart',
               child: const Icon(Icons.shopping_cart, color: Colors.white),
             ),
-            if (StateService().cartItems.isNotEmpty)
-              Positioned(
-                right: 0,
-                top: 0,
-                child: Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: const BoxDecoration(
-                    color: Colors.red,
-                    shape: BoxShape.circle,
-                  ),
-                  constraints: const BoxConstraints(
-                    minWidth: 16,
-                    minHeight: 16,
-                  ),
-                  child: Text(
-                    '${StateService().cartItems.length}',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
+            BlocBuilder<CartBloc, CartState>(
+              builder: (context, state) {
+                final count = state is CartLoaded ? state.cartItems.length : 0;
+                if (count > 0) {
+                  return Positioned(
+                    right: 0,
+                    top: 0,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(
+                        color: Colors.red,
+                        shape: BoxShape.circle,
+                      ),
+                      constraints: const BoxConstraints(
+                        minWidth: 16,
+                        minHeight: 16,
+                      ),
+                      child: Text(
+                        '$count',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
                     ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ),
+                  );
+                }
+                return const SizedBox.shrink();
+              },
+            ),
           ],
         ),
       ],
@@ -341,22 +358,6 @@ class _PharmacyDetailScreenState extends State<PharmacyDetailScreen> {
                   // Pass pharmacy context if needed, currently reusing standard item
                   return MedicineItem(
                     medicine: med,
-                    onTap: () { 
-                       // Check if already in cart
-                       final isInCart = StateService().cartItems.any((item) => item.medicine.id == med.id);
-                       
-                       if (isInCart) {
-                         StateService().removeFromCart(med.id);
-                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${med.name} removed from cart")));
-                       } else {
-                         if (med.requiresPrescription) {
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Prescription Required")));
-                            return;
-                         }
-                         StateService().addToCart(med, 1);
-                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${med.name} added from ${widget.pharmacy.name}")));
-                       }
-                    },
                     onAboutTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(

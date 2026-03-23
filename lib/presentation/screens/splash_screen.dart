@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:farumasi_patient_app/data/datasources/notification_service.dart'; // Import NotificationService
+import 'package:farumasi_patient_app/presentation/blocs/auth/auth_bloc.dart';
 import 'home_screen.dart';
+import 'auth_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -31,19 +34,34 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     );
 
     // Initialize Notification Service (NON-BLOCKING)
-    // This allows the splash animation to proceed even if initialization is slow
-    NotificationService().init();
-
-    _controller.forward();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      NotificationService().init();
+      _controller.forward();
+    });
 
     // Navigate to Home Screen after animation and a small delay
+    // We add a safety timeout to ensure checks run even if animation is weird
     Future.delayed(const Duration(seconds: 3), () {
-      if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const HomeScreen()),
-        );
-      }
+      _checkAuthAndNavigate();
     });
+  }
+
+  void _checkAuthAndNavigate() {
+    if (!mounted) return;
+    
+    // Check current state directly
+    final state = context.read<AuthBloc>().state;
+    debugPrint("Splash Screen: Auth Status is ${state.status}");
+
+    if (state.status == AuthStatus.authenticated) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const HomeScreen()),
+      );
+    } else {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const AuthScreen()),
+      );
+    }
   }
 
   @override

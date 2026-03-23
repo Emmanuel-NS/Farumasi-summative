@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart'; // Import for UserScrollNotification
+import 'package:flutter/rendering.dart'; 
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:farumasi_patient_app/presentation/blocs/auth/auth_bloc.dart';
 import 'package:farumasi_patient_app/presentation/screens/health_tips_screen.dart';
 import 'package:farumasi_patient_app/presentation/screens/medicine_store_screen.dart';
-import 'package:farumasi_patient_app/presentation/screens/user_consultation_screen.dart'; // Import User Consultation
+import 'package:farumasi_patient_app/presentation/screens/user_consultation_screen.dart'; 
 import 'package:farumasi_patient_app/presentation/screens/orders_screen.dart';
 import 'package:farumasi_patient_app/presentation/screens/auth_screen.dart';
 import 'package:farumasi_patient_app/presentation/screens/prescription_upload_screen.dart';
@@ -22,10 +24,10 @@ class _HomeScreenState extends State<HomeScreen>
   bool _isBottomBarVisible = true;
 
   final List<Widget> _pages = [
-    MedicineStoreScreen(),
-    HealthTipsScreen(),
-    UserConsultationScreen(), // Changed from PharmacistList
-    OrdersScreen(),
+    const MedicineStoreScreen(),
+    const HealthTipsScreen(),
+    const UserConsultationScreen(), 
+    const OrdersScreen(),
   ];
 
   @override
@@ -34,10 +36,8 @@ class _HomeScreenState extends State<HomeScreen>
     _hideBottomBarController = AnimationController(
       duration: const Duration(milliseconds: 200),
       vsync: this,
-      value: 1.0, // Fully visible initially
+      value: 1.0, 
     );
-
-    // Delay location check slightly to ensure UI is ready
     Future.delayed(Duration.zero, () {
       _autoPickLocation();
     });
@@ -50,88 +50,46 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   Future<void> _autoPickLocation() async {
-    // Attempt to fetch real GPS location
     try {
-      if (mounted) {
-         // Show a subtle snackbar or indicator if needed, 
-         // but for auto-pick we usually do it silently unless it fails.
-      }
       await StateService().fetchRealLocation();
       debugPrint("Location fetched successfully: ${StateService().userCoordinates}");
     } catch (e) {
       debugPrint("Location error: $e");
-      // Fallback/Demo default if permission denied or error
-      if (mounted) {
-         // Handle specific error cases with better UI feedback
-         String errorMessage = "GPS access failed. Using default location.";
-         
-         if (e.toString().contains('Location services are disabled')) {
-            errorMessage = "Please enable GPS/Location services on your device.";
-         } else if (e.toString().contains('denied')) {
-            errorMessage = "Location permission is required to detect your address.";
-         }
-
-         ScaffoldMessenger.of(context).showSnackBar(
-           SnackBar(
-             content: Text(errorMessage),
-             duration: const Duration(seconds: 5),
-             action: SnackBarAction(
-               label: 'Settings', 
-               onPressed: () async {
-                 // Open relevant settings
-                 if (e.toString().contains('Location services are disabled')) {
-                   await StateService().openLocationSettings();
-                 } else {
-                   await StateService().openAppSettings();
-                 }
-               }
-             ),
-           ),
-         );
-         StateService().setLocation("Kigali, Rwanda (Default)", "-1.9706, 30.1044");
-      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final authState = context.watch<AuthBloc>().state;
+    final isLoggedIn = authState.status == AuthStatus.authenticated;
+
     return PopScope(
       canPop: _currentIndex == 0,
-      onPopInvoked: (didPop) async {
+      onPopInvokedWithResult: (didPop, result) async {
         if (didPop) return;
-        
         setState(() {
           _currentIndex = 0;
         });
       },
       child: Scaffold(
-      // App bar removed to allow screens to control their own headers
-      // Wrap body in NotificationListener to detect scrolling
       body: NotificationListener<UserScrollNotification>(
         onNotification: (notification) {
           if (notification.direction == ScrollDirection.reverse) {
-            // User is scrolling down (content moving up) -> Hide BAR
             if (_isBottomBarVisible) {
               _hideBottomBarController.reverse();
-              _isBottomBarVisible = false;
+              setState(() => _isBottomBarVisible = false);
             }
           } else if (notification.direction == ScrollDirection.forward) {
-            // User is scrolling up (content moving down) -> Show BAR
             if (!_isBottomBarVisible) {
               _hideBottomBarController.forward();
-              _isBottomBarVisible = true;
+              setState(() => _isBottomBarVisible = true);
             }
           }
-          return true; // Allow bubble up? Actually we can return true to maybe stop bubbling or false. Usually false.
-          // But here, returning true might stop refresher. Let's return false to be safe.
+          return false; 
         },
         child: _pages[_currentIndex],
       ),
-      floatingActionButton: ListenableBuilder(
-        listenable: StateService(),
-        builder: (context, _) {
-          final isLoggedIn = StateService().isLoggedIn;
-          return ScaleTransition(
+      floatingActionButton: ScaleTransition(
             scale: _hideBottomBarController,
             child: SizedBox(
               height: 70,
@@ -139,21 +97,15 @@ class _HomeScreenState extends State<HomeScreen>
               child: FloatingActionButton(
                 backgroundColor: isLoggedIn ? Colors.white : Colors.grey[300],
                 elevation: 4,
-                shape: CircleBorder(), // Ensure it's circular
+                shape: const CircleBorder(), 
                 onPressed: () {
                   if (!isLoggedIn) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text("Please log in to upload a prescription."),
+                        content: const Text("Please log in to upload a prescription."),
                         action: SnackBarAction(
                           label: "Login",
                           onPressed: () {
-                            // Navigate to login/auth screen
-                            // Usually we might have a dedicated route or method
-                            // For now basic prompt reference
-                             Navigator.pushNamed(context, '/auth'); // Or direct builder if named routes not set up, but let's stick to what we know works elsewhere or just prompt.
-                             // Actually, let's look at how we handled login navigation before.
-                             // Often just a message is enough for "muted". Or navigate to AuthScreen.
                              Navigator.push(context, MaterialPageRoute(builder: (_) => const AuthScreen()));
                           },
                         ),
@@ -164,7 +116,7 @@ class _HomeScreenState extends State<HomeScreen>
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => PrescriptionUploadScreen(),
+                      builder: (context) => const PrescriptionUploadScreen(),
                     ),
                   );
                 },
@@ -188,116 +140,31 @@ class _HomeScreenState extends State<HomeScreen>
                 ),
               ),
             ),
-          );
-        },
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: SizeTransition(
         sizeFactor: _hideBottomBarController,
         axisAlignment: -1.0,
-        child: ListenableBuilder(
-          listenable: StateService(),
-          builder: (context, _) {
-            return BottomAppBar(
-              color: Colors.green,
-              shape: const CircularNotchedRectangle(),
-              notchMargin: 8.0,
-              child: SizedBox(
-                height: 60,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _buildNavItem(Icons.store, 'Home', 0),
-                    _buildNavItem(Icons.health_and_safety, 'Health', 1),
-                    const SizedBox(width: 48), // Gap for FAB
-                    _buildNavItem(Icons.chat, 'Chat', 2),
-                    _buildNavItem(Icons.history, 'Orders', 3),
-                  ],
-                ),
-              ),
-            );
+        child: BottomNavigationBar(
+          currentIndex: _currentIndex,
+          onTap: (index) {
+            setState(() {
+              _currentIndex = index;
+            });
           },
-        ),
-      ),
-    ),
-    );
-  }
-
-  Widget _buildNavItem(
-    IconData icon,
-    String label,
-    int index, {
-    bool isCart = false,
-  }) {
-    final isLoggedIn = StateService().isLoggedIn;
-    // Index 2 is Consult/Chat, Index 3 is Orders
-    final isRestricted = (index == 2 || index == 3) && !isLoggedIn;
-
-    final isSelected = _currentIndex == index;
-    // If restricted, show as semi-transparent/greyed out
-    final color = isRestricted
-        ? Colors.green.shade800 // Darker/muted on green background specific for disabled
-        : (isSelected ? Colors.white : Colors.green.shade100);
-
-    Widget iconWidget = Icon(icon, color: color, size: 28);
-
-    if (isCart) {
-      final itemCount = StateService().cartItems.length;
-      if (itemCount > 0) {
-        iconWidget = Badge(
-          label: Text(itemCount.toString()),
-          backgroundColor: Colors.redAccent,
-          textColor: Colors.white,
-          padding: EdgeInsets.symmetric(horizontal: 6),
-          child: iconWidget,
-        );
-      }
-    }
-
-    return InkWell(
-      onTap: () {
-        if (index == _currentIndex) return;
-        
-        if (isRestricted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                index == 2 
-                ? "Please log in to consult a pharmacist." 
-                : "Please log in to view your orders."
-              ),
-              action: SnackBarAction(
-                label: "Login",
-                onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => const AuthScreen()));
-                },
-              ),
-            ),
-          );
-          return;
-        }
-
-        setState(() {
-          _currentIndex = index;
-        });
-      },
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            iconWidget,
-            Text(
-              label,
-              style: TextStyle(
-                color: color,
-                fontSize: 11,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-              ),
-            ),
+          type: BottomNavigationBarType.fixed,
+          selectedItemColor: Colors.green,
+          unselectedItemColor: Colors.grey,
+          showUnselectedLabels: true,
+          items: const [
+            BottomNavigationBarItem(icon: Icon(Icons.store), label: 'Store'),
+            BottomNavigationBarItem(icon: Icon(Icons.health_and_safety), label: 'Tips'),
+            BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Consult'),
+            BottomNavigationBarItem(icon: Icon(Icons.shopping_bag), label: 'Orders'),
           ],
         ),
       ),
+    ),
     );
   }
 }

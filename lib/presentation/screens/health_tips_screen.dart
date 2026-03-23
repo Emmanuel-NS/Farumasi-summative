@@ -1,207 +1,41 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
-
-// --- Data Models ---
-
-class HealthArticle {
-  final String id;
-  final String title;
-  final String subtitle;
-  final String summary;
-  final String fullContent;
-  final String imageUrl;
-  final String source;
-  final String category;
-  final int readTimeMin;
-
-  const HealthArticle({
-    required this.id,
-    required this.title,
-    required this.subtitle,
-    required this.summary,
-    required this.fullContent,
-    required this.imageUrl,
-    required this.source,
-    required this.category,
-    this.readTimeMin = 5,
-  });
-}
-
-// --- Content Data (Mock) ---
-final List<HealthArticle> _articles = [
-  HealthArticle(
-    id: 'a1',
-    title: "The Science of Hydration",
-    subtitle: "More than just drinking water.",
-    summary:
-        "Why water is the most critical nutrient for your body's daily functions and how it affects your brain.",
-    category: "General Health",
-    readTimeMin: 4,
-    imageUrl:
-        "https://images.unsplash.com/photo-1548839140-29a749e1cf4d?auto=format&fit=crop&q=80&w=800",
-    source: "Journal of Biological Chemistry",
-    fullContent: """
-Water is essential for life, making up about 60% of the adult human body. Every cell, tissue, and organ in your body needs water to work properly.
-
-**1. Regulates Body Temperature**
-Water that is stored in middle layers of the skin comes to the skin's surface as sweat when the body heats up. As it evaporates, it cools the body. In sport.
-
-**2. Lubricates Joints**
-Cartilage, found in joints and the disks of the spine, contains around 80 percent water. Long-term dehydration can reduce the joints’ shock-absorbing ability, leading to joint pain.
-
-**3. Boosts Performance**
-A study published in 'Sports Medicine' found that dehydration reduces performance in activities lasting longer than 30 minutes. If you don’t stay hydrated, your physical performance can suffer.
-
-**4. Prevents Headaches**
-Dehydration can trigger headaches and migraine in some individuals. Research has shown that water can relieve headaches in those who are dehydrated.
-    """,
-  ),
-  HealthArticle(
-    id: 'a2',
-    title: "Mastering Sleep Hygiene",
-    subtitle: "The secret to 8 hours of deep rest.",
-    summary:
-        "Optimizing your environment and habits for restorative deep sleep.",
-    category: "Wellness",
-    readTimeMin: 6,
-    imageUrl:
-        "https://images.unsplash.com/photo-1541781777631-fa95375ed299?auto=format&fit=crop&q=80&w=800", // Bedroom/Sleep environment
-    source: "National Sleep Foundation",
-    fullContent: """
-Sleep services to restore the body and mind. The National Sleep Foundation recommends 7-9 hours for adults.
-
-**The Circadian Rhythm**
-Your body has a natural time-keeping clock known as your circadian rhythm. It affects your brain, body, and hormones, helping you stay awake and telling your body when it's time to sleep.
-
-**Blue Light Exposure**
-Exposure to light during the day is beneficial, but nighttime light exposure has the opposite effect. This is due to its effect on your circadian rhythm, tricking your brain into thinking it is still daytime. Blue light—which electronic devices like smartphones and computers emit in large amounts—is the worst in this regard.
-
-**Caffeine Cuts**
-Caffeine has numerous benefits and is consumed by 90% of the US population. However, when consumed late in the day, caffeine stimulates your nervous system and may stop your body from naturally relaxing at night.
-    """,
-  ),
-];
-
-final List<HealthArticle> _remedies = [
-  HealthArticle(
-    id: 'r1',
-    title: "Flu & Cold Recovery",
-    subtitle: "Virus Defense Protocol",
-    summary: "Science-backed natural methods to shorten recovery time.",
-    category: "Viral Infection",
-    readTimeMin: 4,
-    imageUrl:
-        "https://images.unsplash.com/photo-1512568400610-62da28bc8a13?auto=format&fit=crop&q=80&w=800", // Tea/Hot drink
-    source: "Mayo Clinic",
-    fullContent: """
-Influenza (Flu) is a viral infection that attacks your respiratory system. While rest is paramount, these natural methods can support recovery.
-
-**1. Honey and Tea**
-Honey is a natural cough suppressant. A study in 'Archives of Pediatrics & Adolescent Medicine' found that honey was more effective than common cough suppressants for treating nighttime coughs.
-*Usage*: Mix 2 teaspoons of honey with herbal tea or warm water and lemon.
-
-**2. Steam Inhalation**
-Inhaling steam helps thin mucus and drain the sinuses.
-*Usage*: Pour hot water into a bowl, drape a towel over your head, and breathe deeply for 5-10 minutes.
-
-**3. Zinc Supplementation**
-Research suggests that zinc lozenges may shorten the length of a cold if taken within 24 hours of symptoms appearing.
-    """,
-  ),
-  HealthArticle(
-    id: 'r2',
-    title: "Natural Diabetes Management",
-    subtitle: "Lifestyle Control",
-    summary: "How diet and stress management significantly impact blood sugar.",
-    category: "Chronic Care",
-    readTimeMin: 7,
-    imageUrl:
-        "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&q=80&w=800", // Healthy Salad
-    source: "American Diabetes Association",
-    fullContent: """
-Type 2 diabetes management relies heavily on lifestyle.
-
-**1. Fiber-Rich Diet**
-Fiber slows carb digestion and sugar absorption. For these reasons, it promotes a more gradual rise in blood sugar levels. 
-*Action*: Focus on non-starchy vegetables, legumes, and whole grains.
-
-**2. Apple Cider Vinegar**
-Apple cider vinegar has many health benefits. Although it is made from apples, the fruit's sugar is fermented into acetic acid. Research shows it promotes lower fasting blood sugar levels.
-*Usage*: Mix 1 tsp in a glass of water before a meal.
-
-**3. Stress Management**
-When stressed, your body releases glucagon and cortisol, hormones that cause blood sugar levels to rise. Exercises like yoga and mindfulness-based stress reduction (MBSR) can correct insulin secretion problems in chronic diabetes.
-    """,
-  ),
-];
-
-final List<HealthArticle> _facts = [
-  HealthArticle(
-    id: 'f1',
-    title: "Raw Onions & Lungs",
-    subtitle: "Nature's Antihistamine",
-    summary:
-        "Eating raw onions can help clear airways due to rich Quercetin content.",
-    category: "Did You Know?",
-    readTimeMin: 2,
-    imageUrl:
-        "https://images.unsplash.com/photo-1620574387735-3624d75b2dbc?auto=format&fit=crop&q=80&w=800", // Red Onions
-    source: "Am. J. Physiol.",
-    fullContent: """
-**Did you know that eating raw onions can help with respiratory issues?**
-
-### The Science
-Onions, specifically red onions, are one of the highest food sources of **Quercetin**. Quercetin is a powerful antioxidant flavonoid that acts as a natural antihistamine and anti-inflammatory agent.
-
-### The Research
-A study published in the 'American Journal of Physiology' found that Quercetin helps relax the airway muscles (bronchodilation). This can be particularly beneficial for people suffering from asthma or bronchitis.
-
-### How to Consume
-To get the maximum benefit, onions should be eaten raw. Cooking can degrade some of the compounds.
-    """,
-  ),
-  HealthArticle(
-    id: 'f2',
-    title: "Garlic as Antibiotic",
-    subtitle: "Ancient Defense",
-    summary:
-        "Garlic releases Allicin when crushed, a mighty antimicrobial compound.",
-    category: "Did You Know?",
-    readTimeMin: 2,
-    imageUrl:
-        "https://images.unsplash.com/photo-1615485925763-867862880b1a?auto=format&fit=crop&q=80&w=800",
-    source: "J. Antimicrobial Chemotherapy",
-    fullContent: """
-**Did you know garlic was used in World War I to treat gangrene?**
-
-### The Science
-When a garlic clove is crushed or chewed, it releases a compound called **Allicin**. This unstable compound serves as a defense mechanism for the plant against pests, but for humans, it has potent antibacterial properties.
-
-### The Research
-Studies have shown garlic to be effective against a wide spectrum of bacteria, including Salmonella and E. coli. One study found that garlic extract could inhibit the growth of these bacteria to a similar degree as standard antibiotics.
-
-### Tip
-Let crushed garlic sit for 10 minutes before cooking. This allows the enzymatic reaction that creates Allicin to fully occur.
-    """,
-  ),
-];
+import '../../domain/entities/health_article.dart';
+import '../../data/repositories/health_repository_impl.dart';
+import '../blocs/health_tips/health_tips_bloc.dart';
+import '../blocs/health_tips/health_tips_event.dart';
+import '../blocs/health_tips/health_tips_state.dart';
 
 // --- Main Screen ---
 
-class HealthTipsScreen extends StatefulWidget {
+class HealthTipsScreen extends StatelessWidget {
   const HealthTipsScreen({super.key});
 
   @override
-  State<HealthTipsScreen> createState() => _HealthTipsScreenState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => HealthTipsBloc(
+        healthRepository: HealthRepositoryImpl(),
+      )..add(LoadHealthTips()),
+      child: const _HealthTipsView(),
+    );
+  }
 }
 
-class _HealthTipsScreenState extends State<HealthTipsScreen>
+class _HealthTipsView extends StatefulWidget {
+  const _HealthTipsView();
+
+  @override
+  State<_HealthTipsView> createState() => _HealthTipsViewState();
+}
+
+class _HealthTipsViewState extends State<_HealthTipsView>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final TextEditingController _searchController = TextEditingController();
-  String _searchQuery = '';
-
+  
   @override
   void initState() {
     super.initState();
@@ -215,17 +49,6 @@ class _HealthTipsScreenState extends State<HealthTipsScreen>
     super.dispose();
   }
 
-  // Filter a specific list based on search query
-  List<HealthArticle> _filterArticles(List<HealthArticle> list) {
-    if (_searchQuery.isEmpty) return list;
-    final query = _searchQuery.toLowerCase();
-    return list.where((item) {
-      return item.title.toLowerCase().contains(query) ||
-          item.summary.toLowerCase().contains(query) ||
-          item.category.toLowerCase().contains(query);
-    }).toList();
-  }
-
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -236,14 +59,14 @@ class _HealthTipsScreenState extends State<HealthTipsScreen>
         headerSliverBuilder: (context, innerBoxIsScrolled) {
           return [
             SliverAppBar(
-              expandedHeight: 180, // Increased height for search bar
+              expandedHeight: 180,
               floating: true,
               pinned: true,
               elevation: 0,
               backgroundColor: Colors.white,
               foregroundColor: Colors.green.shade900,
               flexibleSpace: FlexibleSpaceBar(
-                titlePadding: EdgeInsets.only(left: 16, bottom: 120),
+                titlePadding: const EdgeInsets.only(left: 16, bottom: 120),
                 title: Text(
                   "Discover Wellness",
                   style: TextStyle(
@@ -259,40 +82,37 @@ class _HealthTipsScreenState extends State<HealthTipsScreen>
                       top: -30,
                       child: Opacity(
                         opacity: 0.1,
-                        child: Icon(Icons.spa, size: 180, color: Colors.green),
+                        child: const Icon(Icons.spa, size: 180, color: Colors.green),
                       ),
                     ),
                     // Search Bar
                     Positioned(
                       left: 16,
                       right: 16,
-                      bottom: 70, // Positioned above the tab bar
+                      bottom: 70,
                       child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
                         height: 45,
                         decoration: BoxDecoration(
-                          color: Colors.grey.shade100,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.grey.shade300),
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(30),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            )
+                          ]
                         ),
                         child: TextField(
                           controller: _searchController,
-                          decoration: InputDecoration(
-                            hintText: 'Search tips, remedies, facts...',
-                            prefixIcon: Icon(Icons.search, color: Colors.grey),
-                            suffixIcon: _searchQuery.isNotEmpty
-                                ? IconButton(
-                                    icon: Icon(Icons.clear, color: Colors.grey),
-                                    onPressed: () {
-                                      _searchController.clear();
-                                      setState(() => _searchQuery = '');
-                                    },
-                                  )
-                                : null,
+                          decoration: const InputDecoration(
+                            icon: Icon(Icons.search, color: Colors.grey),
+                            hintText: "Search tips, remedies...",
                             border: InputBorder.none,
-                            contentPadding: EdgeInsets.symmetric(vertical: 10),
                           ),
-                          onChanged: (value) {
-                            setState(() => _searchQuery = value);
+                          onChanged: (val) {
+                             context.read<HealthTipsBloc>().add(FilterHealthTips(val));
                           },
                         ),
                       ),
@@ -301,11 +121,11 @@ class _HealthTipsScreenState extends State<HealthTipsScreen>
                 ),
               ),
               bottom: PreferredSize(
-                preferredSize: Size.fromHeight(60),
+                preferredSize: const Size.fromHeight(60),
                 child: Container(
                   height: 60,
                   alignment: Alignment.centerLeft,
-                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: TabBar(
                     controller: _tabController,
                     isScrollable: true,
@@ -318,13 +138,13 @@ class _HealthTipsScreenState extends State<HealthTipsScreen>
                         BoxShadow(
                           color: Colors.green.withOpacity(0.3),
                           blurRadius: 8,
-                          offset: Offset(0, 4),
+                          offset: const Offset(0, 4),
                         ),
                       ],
                     ),
                     indicatorSize: TabBarIndicatorSize.label,
                     padding: EdgeInsets.zero,
-                    labelPadding: EdgeInsets.symmetric(horizontal: 8),
+                    labelPadding: const EdgeInsets.symmetric(horizontal: 8),
                     tabs: [
                       _buildTab("General Tips"),
                       _buildTab("Remedies"),
@@ -336,13 +156,34 @@ class _HealthTipsScreenState extends State<HealthTipsScreen>
             ),
           ];
         },
-        body: TabBarView(
-          controller: _tabController,
-          children: [
-            _buildArticleList(_filterArticles(_articles)),
-            _buildArticleList(_filterArticles(_remedies)),
-            _buildArticleList(_filterArticles(_facts), isFact: true),
-          ],
+        body: BlocBuilder<HealthTipsBloc, HealthTipsState>(
+          builder: (context, state) {
+            if (state is HealthTipsLoading) {
+               return const Center(child: CircularProgressIndicator());
+            }
+            if (state is HealthTipsError) {
+              return Center(child: Text("Error: ${state.message}"));
+            }
+            
+            // Default to empty list if initial
+            List<HealthArticle> articles = [];
+            if (state is HealthTipsLoaded) {
+               articles = state.filteredArticles;
+            }
+
+            final tips = articles.where((a) => a.type == HealthArticleType.tip).toList();
+            final remedies = articles.where((a) => a.type == HealthArticleType.remedy).toList();
+            final facts = articles.where((a) => a.type == HealthArticleType.didYouKnow).toList();
+
+            return TabBarView(
+              controller: _tabController,
+              children: [
+                _buildArticleList(tips),
+                _buildArticleList(remedies),
+                _buildArticleList(facts, isFact: true),
+              ],
+            );
+          },
         ),
       ),
     ),
@@ -352,12 +193,12 @@ class _HealthTipsScreenState extends State<HealthTipsScreen>
   Widget _buildTab(String text) {
     return Tab(
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(30),
           border: Border.all(color: Colors.green.shade100),
         ),
-        child: Text(text, style: TextStyle(fontWeight: FontWeight.bold)),
+        child: Text(text, style: const TextStyle(fontWeight: FontWeight.bold)),
       ),
     );
   }
@@ -369,7 +210,7 @@ class _HealthTipsScreenState extends State<HealthTipsScreen>
            mainAxisAlignment: MainAxisAlignment.center,
            children: [
              Icon(Icons.search_off, size: 64, color: Colors.grey.shade300),
-             SizedBox(height: 16),
+             const SizedBox(height: 16),
              Text(
                "No results found",
                style: TextStyle(color: Colors.grey.shade500, fontSize: 16),
@@ -380,9 +221,9 @@ class _HealthTipsScreenState extends State<HealthTipsScreen>
     }
     return ListView.separated(
       keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-      padding: EdgeInsets.all(20),
+      padding: const EdgeInsets.all(20),
       itemCount: items.length,
-      separatorBuilder: (c, i) => SizedBox(height: 20),
+      separatorBuilder: (c, i) => const SizedBox(height: 20),
       itemBuilder: (context, index) {
         final item = items[index];
         if (isFact) return _DidYouKnowCard(article: item);
@@ -424,14 +265,11 @@ class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
       }
     } catch (_) {
       // Content is plain markdown or text string (Dummy Data)
-      // Insert as plain text into Quill or fallback to Text widget?
-      // Since dummy data is markdown, Quill won't render it nicely by default unless we parse MD.
-      // But we can fallback to the old Text widget if parsing fails.
       _quillController = quill.QuillController(
-        document: quill.Document(),
+        document: quill.Document()..insert(0, widget.article.fullContent),
         selection: const TextSelection.collapsed(offset: 0),
         readOnly: true,
-      ); // Invalid state indicator
+      );
     }
   }
 
@@ -446,8 +284,6 @@ class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
   @override
   Widget build(BuildContext context) {
     // Check if we use Quill (valid controller with document length > 1 or specific check)
-    // Actually basic() creates empty doc (length 1 for newline).
-    // Let's use a flag or just check if widget.article.fullContent starts with '['.
     final bool isJson = widget.article.fullContent.trim().startsWith('[') && widget.article.fullContent.trim().endsWith(']');
 
     return Scaffold(
@@ -635,7 +471,7 @@ class _ModernArticleCard extends StatelessWidget {
             BoxShadow(
               color: Colors.black.withOpacity(0.06),
               blurRadius: 15,
-              offset: Offset(0, 8),
+              offset: const Offset(0, 8),
             ),
           ],
         ),
@@ -651,7 +487,7 @@ class _ModernArticleCard extends StatelessWidget {
                     fit: BoxFit.cover,
                     errorBuilder: (c, e, s) => Container(
                       color: Colors.grey.shade200,
-                      child: Icon(
+                      child: const Icon(
                         Icons.image_not_supported,
                         color: Colors.grey,
                       ),
@@ -669,7 +505,7 @@ class _ModernArticleCard extends StatelessWidget {
                       ],
                       begin: Alignment.bottomCenter,
                       end: Alignment.topCenter,
-                      stops: [0.0, 0.6],
+                      stops: const [0.0, 0.6],
                     ),
                   ),
                 ),
@@ -682,7 +518,7 @@ class _ModernArticleCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
-                      padding: EdgeInsets.symmetric(
+                      padding: const EdgeInsets.symmetric(
                         horizontal: 10,
                         vertical: 4,
                       ),
@@ -692,17 +528,17 @@ class _ModernArticleCard extends StatelessWidget {
                       ),
                       child: Text(
                         article.category,
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
-                    SizedBox(height: 8),
+                    const SizedBox(height: 8),
                     Text(
                       article.title,
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: Colors.white,
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
@@ -710,10 +546,10 @@ class _ModernArticleCard extends StatelessWidget {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Text(
                       article.subtitle,
-                      style: TextStyle(color: Colors.white70, fontSize: 14),
+                      style: const TextStyle(color: Colors.white70, fontSize: 14),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -750,7 +586,7 @@ class _DidYouKnowCard extends StatelessWidget {
             BoxShadow(
               color: Colors.orange.shade50,
               blurRadius: 10,
-              offset: Offset(0, 6),
+              offset: const Offset(0, 6),
             ),
           ],
         ),
@@ -758,15 +594,15 @@ class _DidYouKnowCard extends StatelessWidget {
         child: Column(
           children: [
             Container(
-              padding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
               color: Colors.orange.shade50,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.lightbulb, color: Colors.orange, size: 20),
-                      SizedBox(width: 8),
+                      const Icon(Icons.lightbulb, color: Colors.orange, size: 20),
+                      const SizedBox(width: 8),
                       Text(
                         "DID YOU KNOW?",
                         style: TextStyle(
@@ -787,7 +623,7 @@ class _DidYouKnowCard extends StatelessWidget {
               ),
             ),
             Padding(
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -797,16 +633,16 @@ class _DidYouKnowCard extends StatelessWidget {
                       children: [
                         Text(
                           article.title,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                             color: Colors.black87,
                           ),
                         ),
-                        SizedBox(height: 8),
+                        const SizedBox(height: 8),
                         Text(
                           article.summary,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 14,
                             color: Colors.black54,
                             height: 1.5,
@@ -817,7 +653,7 @@ class _DidYouKnowCard extends StatelessWidget {
                       ],
                     ),
                   ),
-                  SizedBox(width: 16),
+                  const SizedBox(width: 16),
                   Hero(
                     tag: 'img-${article.id}',
                     child: ClipRRect(
@@ -831,7 +667,7 @@ class _DidYouKnowCard extends StatelessWidget {
                           width: 90,
                           height: 90,
                           color: Colors.orange.shade100,
-                          child: Icon(Icons.broken_image, color: Colors.orange),
+                          child: const Icon(Icons.broken_image, color: Colors.orange),
                         ),
                       ),
                     ),

@@ -1,9 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:farumasi_patient_app/presentation/blocs/medicine/medicine_bloc.dart';
 import 'package:farumasi_patient_app/presentation/widgets/farumasi_logo_widget.dart';
 import 'dart:async'; // For Typewriter animation timer
 import 'package:farumasi_patient_app/data/models/models.dart';
 // import 'package:farumasi_patient_app/data/dummy_data.dart'; // REMOVED
 import 'package:farumasi_patient_app/presentation/widgets/medicine_item.dart';
+import 'package:farumasi_patient_app/presentation/blocs/cart/cart_bloc.dart';
+// import 'package:farumasi_patient_app/presentation/blocs/cart/cart_event.dart'; // REMOVED
+import 'package:farumasi_patient_app/presentation/blocs/cart/cart_state.dart';
+// import 'package:farumasi_patient_app/presentation/blocs/auth/auth_bloc.dart'; // REMOVED
+// import 'package:farumasi_patient_app/presentation/blocs/auth/auth_state.dart'; // REMOVED
 import 'medicine_detail_screen.dart';
 import 'package:farumasi_patient_app/data/datasources/state_service.dart';
 import 'auth_screen.dart';
@@ -37,6 +44,9 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
   @override
   void initState() {
     super.initState();
+    // Dispatch Bloc Event
+    context.read<MedicineBloc>().add(const LoadMedicines());
+
     _searchController = TextEditingController(); // Initialize
     _scrollController = ScrollController();
     _scrollController.addListener(() {
@@ -84,12 +94,12 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
   bool _sortAscending = true;
   bool _showCategories = false; // Collapsed by default
 
-  List<Medicine> get _filteredMedicines {
+  List<Medicine> _getFilteredMedicines(List<Medicine> allMedicines) {
     String query = _searchQuery.toLowerCase().trim();
     
     // Always apply filters via _getMedicinesForQuery, even if query is empty.
     // This ensures category, price, rating filters work without text search.
-    var results = _getMedicinesForQuery(query);
+    var results = _getMedicinesForQuery(allMedicines, query);
     
     // If we have results (filtered or not), return them.
     if (results.isNotEmpty) {
@@ -98,12 +108,12 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
 
     // Only attempt "Did you mean?" suggestions if there was an actual text query.
     if (query.isNotEmpty && query.length > 3) {
-      final bestMatch = _findBestMatch(query);
+      final bestMatch = _findBestMatch(allMedicines, query);
       if (bestMatch != null) {
          // Return results for the corrected term, still respecting filters if possible?
          // For now, let's just return matches for the term.
          // Ideally, we should apply filters to the corrected term too.
-         return _getMedicinesForQuery(bestMatch);
+         return _getMedicinesForQuery(allMedicines, bestMatch);
       }
     }
 
@@ -115,8 +125,8 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
   // String? get _correctionTerm { ... }
 
   // 1b. Helper to get results for a specific string query
-  List<Medicine> _getMedicinesForQuery(String queryText) {
-     return StateService().medicines.where((m) {
+  List<Medicine> _getMedicinesForQuery(List<Medicine> allMedicines, String queryText) {
+     return allMedicines.where((m) {
       
       // Clean the query
       final cleanQuery = queryText.toLowerCase().trim();
@@ -175,13 +185,13 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
   }
 
   // New Helper: Find best match for "Did you mean"
-  String? _findBestMatch(String typo) {
+  String? _findBestMatch(List<Medicine> allMedicines, String typo) {
     String? bestTerm;
     int minDistance = 100;
     
     // 1. Collect candidate terms from known medicines
     final Set<String> candidates = {};
-    for (var m in StateService().medicines) {
+    for (var m in allMedicines) {
       candidates.add(m.name.toLowerCase());
       // Add category as candidate
       candidates.add(m.category.toLowerCase());
@@ -272,8 +282,8 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
     return v1[t.length];
   }
 
-  List<Medicine> get _sortedMedicines {
-    var list = _filteredMedicines;
+  List<Medicine> _getSortedMedicines(List<Medicine> allMedicines) {
+    var list = _getFilteredMedicines(allMedicines);
     switch (_sortBy) {
       case 'MinPrice':
         list.sort((a, b) => _sortAscending 
@@ -299,12 +309,12 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
     return list;
   }
 
-  List<String> get _categories =>
-      StateService().medicines.map((e) => e.category).toSet().toList();
+  List<String> _getCategories(List<Medicine> allMedicines) =>
+      allMedicines.map((e) => e.category).toSet().toList();
   
-  List<String> get _currentSubCategories {
+  List<String> _getCurrentSubCategories(List<Medicine> allMedicines) {
     if (_selectedCategories.isEmpty) return [];
-    return StateService().medicines
+    return allMedicines
         .where((m) => _selectedCategories.contains(m.category) && m.subCategory != null)
         .map((m) => m.subCategory!)
         .toSet()
@@ -344,7 +354,7 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
     }
   }
 
-  void _showFilterModal() {
+  void _showFilterModal(List<Medicine> allMedicines) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -508,7 +518,7 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
                             context: context,
                             builder: (ctx) => _SearchableMultiSelectDialog(
                               title: "Select Categories",
-                              items: _categories,
+                              items: _getCategories(allMedicines),
                               selectedItems: _selectedCategories.toList(),
                             ),
                           );
@@ -519,7 +529,7 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
                               // Clear subcat if not valid anymore (optional but safer)
                               if (_selectedSubCategory != null) {
                                   // Check if the selected sub belongs to ANY of the new categories
-                                  bool isValid = StateService().medicines.any((m) => 
+                                  bool isValid = allMedicines.any((m) => 
                                      _selectedCategories.contains(m.category) && 
                                      m.subCategory == _selectedSubCategory
                                   );
@@ -581,29 +591,29 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
                         ),
                       ],
 
-                      // Sub-Category Section (Conditional)
-                      if (_selectedCategories.isNotEmpty && _currentSubCategories.isNotEmpty) ...[
-                        const SizedBox(height: 16),
-                        const Text(
-                          'Sub-Category (Refine)',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 8),
-                        Wrap(
-                          spacing: 8,
-                          children: [
-                             ChoiceChip(
-                                label: const Text('Any'),
-                                selected: _selectedSubCategory == null,
-                                onSelected: (selected) {
-                                  if (selected) {
-                                    setModalState(() => _selectedSubCategory = null);
-                                    setState(() {});
-                                  }
-                                },
-                              ),
-                             ..._currentSubCategories.map((sub) => ChoiceChip(
-                               label: Text(sub),
+                        // Sub-Category Section (Conditional)
+                        if (_selectedCategories.isNotEmpty && _getCurrentSubCategories(allMedicines).isNotEmpty) ...[
+                          const SizedBox(height: 16),
+                          const Text(
+                            'Sub-Category (Refine)',
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 8),
+                          Wrap(
+                            spacing: 8,
+                            children: [
+                               ChoiceChip(
+                                  label: const Text('Any'),
+                                  selected: _selectedSubCategory == null,
+                                  onSelected: (selected) {
+                                    if (selected) {
+                                      setModalState(() => _selectedSubCategory = null);
+                                      setState(() {});
+                                    }
+                                  },
+                                ),
+                               ..._getCurrentSubCategories(allMedicines).map((sub) => ChoiceChip(
+                                 label: Text(sub),
                                selected: _selectedSubCategory == sub,
                                onSelected: (selected) {
                                  setModalState(() {
@@ -744,9 +754,24 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
-      child: AnimatedBuilder(
-        animation: StateService(),
-        builder: (context, child) {
+      child: BlocBuilder<MedicineBloc, MedicineState>(
+        builder: (context, medicineState) {
+          List<Medicine> allMedicines = [];
+          if (medicineState is MedicineLoaded) {
+            allMedicines = medicineState.medicines;
+          }
+          
+          if (medicineState is MedicineError) {
+             return Scaffold(body: Center(child: Text("Error: ${medicineState.message}")));
+          }
+
+          if (medicineState is MedicineLoading) {
+             return const Scaffold(body: Center(child: CircularProgressIndicator()));
+          }
+
+          return AnimatedBuilder(
+            animation: StateService(),
+            builder: (context, child) {
           return Scaffold(
             floatingActionButton: _showFloatingActions 
               ? Column(
@@ -782,48 +807,53 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
                       child: const Icon(Icons.upload_file, color: Colors.white),
                     ),
                     const SizedBox(height: 12),
-                    Stack(
-                      alignment: Alignment.topRight,
-                      clipBehavior: Clip.none,
-                      children: [
-                        FloatingActionButton(
-                          heroTag: 'cart_main_btn',
-                          backgroundColor: Colors.green,
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (_) => const CartScreen()),
-                            );
-                          },
-                          tooltip: 'View Cart',
-                          child: const Icon(Icons.shopping_cart, color: Colors.white),
-                        ),
-                        if (StateService().cartItems.isNotEmpty)
-                          Positioned(
-                            right: 0,
-                            top: 0,
-                            child: Container(
-                              padding: const EdgeInsets.all(4),
-                              decoration: const BoxDecoration(
-                                color: Colors.red,
-                                shape: BoxShape.circle,
-                              ),
-                              constraints: const BoxConstraints(
-                                minWidth: 16,
-                                minHeight: 16,
-                              ),
-                              child: Text(
-                                '${StateService().cartItems.length}',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
+                    BlocBuilder<CartBloc, CartState>(
+                      builder: (context, state) {
+                        final count = state is CartLoaded ? state.cartItems.length : 0;
+                        return Stack(
+                          alignment: Alignment.topRight,
+                          clipBehavior: Clip.none,
+                          children: [
+                            FloatingActionButton(
+                              heroTag: 'cart_main_btn',
+                              backgroundColor: Colors.green,
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (_) => const CartScreen()),
+                                );
+                              },
+                              tooltip: 'View Cart',
+                              child: const Icon(Icons.shopping_cart, color: Colors.white),
                             ),
-                          ),
-                      ],
+                            if (count > 0)
+                              Positioned(
+                                right: 0,
+                                top: 0,
+                                child: Container(
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: const BoxDecoration(
+                                    color: Colors.red,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  constraints: const BoxConstraints(
+                                    minWidth: 16,
+                                    minHeight: 16,
+                                  ),
+                                  child: Text(
+                                    '$count',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        );
+                      }
                     ),
                   ],
                 ) 
@@ -873,48 +903,53 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         // Cart Icon in App Bar
-                        Stack(
-                          clipBehavior: Clip.none,
-                          alignment: Alignment.center,
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.shopping_cart, color: Colors.white),
-                              onPressed: _isScrolled
-                                  ? () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (_) => const CartScreen()),
-                                      );
-                                    }
-                                  : null,
-                            ),
-                            if (StateService().cartItems.isNotEmpty)
-                              Positioned(
-                                right: 8,
-                                top: 8,
-                                child: Container(
-                                  padding: const EdgeInsets.all(2),
-                                  decoration: const BoxDecoration(
-                                    color: Colors.red,
-                                    shape: BoxShape.circle,
-                                  ),
-                                  constraints: const BoxConstraints(
-                                    minWidth: 14,
-                                    minHeight: 14,
-                                  ),
-                                  child: Text(
-                                    '${StateService().cartItems.length}',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 9,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
+                        BlocBuilder<CartBloc, CartState>(
+                          builder: (context, state) {
+                            final count = state is CartLoaded ? state.cartItems.length : 0;
+                            return Stack(
+                              clipBehavior: Clip.none,
+                              alignment: Alignment.center,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.shopping_cart, color: Colors.white),
+                                  onPressed: _isScrolled
+                                      ? () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (_) => const CartScreen()),
+                                          );
+                                        }
+                                      : null,
                                 ),
-                              ),
-                          ],
+                                if (count > 0)
+                                  Positioned(
+                                    right: 8,
+                                    top: 8,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(2),
+                                      decoration: const BoxDecoration(
+                                        color: Colors.red,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      constraints: const BoxConstraints(
+                                        minWidth: 14,
+                                        minHeight: 14,
+                                      ),
+                                      child: Text(
+                                        '$count',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            );
+                          }
                         ),
                         Padding(
                           padding: const EdgeInsets.only(right: 8.0),
@@ -1304,7 +1339,7 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
                                         color: Colors.green,
                                         size: 24,
                                       ),
-                                      onPressed: _showFilterModal,
+                                      onPressed: () => _showFilterModal(allMedicines),
                                       tooltip: "Sort & Filter",
                                     ),
                                     border: InputBorder.none,
@@ -1344,7 +1379,7 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
                           child: ListView(
                             scrollDirection: Axis.horizontal,
                             padding: EdgeInsets.symmetric(horizontal: 16),
-                            children: _categories
+                            children: _getCategories(allMedicines)
                                 .map(
                                   (cat) => Padding(
                                     padding: const EdgeInsets.only(right: 16.0),
@@ -1511,7 +1546,7 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
               ],
 
               // "Did you mean?" Suggestion Header
-              if (_searchQuery.isNotEmpty && _filteredMedicines.isNotEmpty && _getMedicinesForQuery(_searchQuery).isEmpty)
+              if (_searchQuery.isNotEmpty && _getFilteredMedicines(allMedicines).isNotEmpty && _getMedicinesForQuery(allMedicines, _searchQuery).isEmpty)
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -1537,7 +1572,7 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
                                 onTap: () {
                                   // Update the search query to the corrected term
                                   setState(() {
-                                    final correction = _findBestMatch(_searchQuery) ?? "";
+                                    final correction = _findBestMatch(allMedicines, _searchQuery) ?? "";
                                     _searchQuery = correction;
                                     _searchController.text = correction; // Update text field
                                     // Move cursor to end
@@ -1547,7 +1582,7 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
                                   });
                                 },
                                 child: Text(
-                                  "${_findBestMatch(_searchQuery)}",
+                                  "${_findBestMatch(allMedicines, _searchQuery)}",
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontStyle: FontStyle.italic,
@@ -1617,49 +1652,9 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
                     mainAxisSpacing: 10,
                   ),
                   delegate: SliverChildBuilderDelegate((context, index) {
-                    final med = _sortedMedicines[index];
+                    final med = _getSortedMedicines(allMedicines)[index];
                     return MedicineItem(
                       medicine: med,
-                      onTap: () {
-                        if (med.requiresPrescription) {
-                          ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                'Prescription Required. Please consult a pharmacist.',
-                              ),
-                              backgroundColor: Colors.orange,
-                            ),
-                          );
-                          return;
-                        }
-                        final isAdded = StateService().cartItems.any(
-                          (item) => item.medicine.id == med.id,
-                        );
-                        if (isAdded) {
-                          StateService().removeFromCart(med.id);
-                          ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('${med.name} removed from cart'),
-                              duration: Duration(seconds: 1),
-                              behavior: SnackBarBehavior.floating,
-                              backgroundColor: Colors.black87,
-                            ),
-                          );
-                        } else {
-                          StateService().addToCart(med, 1);
-                          ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('${med.name} added to cart!'),
-                              duration: Duration(seconds: 1),
-                              behavior: SnackBarBehavior.floating,
-                              backgroundColor: Colors.green,
-                            ),
-                          );
-                        }
-                      },
                       onAboutTap: () => Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -1667,7 +1662,7 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
                         ),
                       ),
                     );
-                  }, childCount: _sortedMedicines.length),
+                  }, childCount: _getSortedMedicines(allMedicines).length),
                 ),
               ),
 
@@ -1676,7 +1671,9 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
           ),
         );
       }, // end builder
-    ), // end AnimatedBuilder
+    ); // end AnimatedBuilder
+        }, 
+      ), 
     ); // end GestureDetector
   }
 }
@@ -1799,111 +1796,7 @@ class _TypewriterSloganState extends State<TypewriterSlogan> {
   }
 }
 
-class _SearchableListDialog extends StatefulWidget {
-  final String title;
-  final List<String> items;
-
-  const _SearchableListDialog({
-    Key? key,
-    required this.title,
-    required this.items,
-  }) : super(key: key);
-
-  @override
-  State<_SearchableListDialog> createState() => _SearchableListDialogState();
-}
-
-class _SearchableListDialogState extends State<_SearchableListDialog> {
-  String _searchQuery = '';
-  final TextEditingController _controller = TextEditingController();
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // Filter items
-    final filtered = widget.items
-        .where((item) => item.toLowerCase().contains(_searchQuery.toLowerCase()))
-        .toList();
-
-    return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        height: 500, // Fixed height or create constrained Box
-        child: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  widget.title,
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.close),
-                  onPressed: () => Navigator.pop(context),
-                )
-              ],
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _controller,
-              decoration: InputDecoration(
-                hintText: 'Search...',
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.grey.shade300),
-                ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              ),
-              onChanged: (val) {
-                setState(() {
-                  _searchQuery = val;
-                });
-              },
-            ),
-            const SizedBox(height: 12),
-            Expanded(
-              child: ListView.separated(
-                itemCount: filtered.length + 1,
-                separatorBuilder: (_, __) => const Divider(height: 1),
-                itemBuilder: (context, index) {
-                  if (index == 0) {
-                     // "All" Option
-                     if (_searchQuery.isNotEmpty && !'all categories'.contains(_searchQuery.toLowerCase())) {
-                       return const SizedBox.shrink(); 
-                     }
-                     return ListTile(
-                       title: const Text('All Categories', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green)),
-                       onTap: () => Navigator.pop(context, 'All Categories'),
-                     );
-                  }
-                  
-                  // Adjust index because 0 is taken
-                  final actualIndex = index - 1;
-                  // If "All" was hidden (SizedBox.shrink), index 0 still exists in builder but takes no space? 
-                  // No, ListView builder logic is strict.
-                  // BETTER APPROACH: Build a unified list.
-                  
-                  return ListTile(
-                    title: Text(filtered[actualIndex]),
-                    onTap: () => Navigator.pop(context, filtered[actualIndex]),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
+// Unused _SearchableListDialog removed
 class _SearchableMultiSelectDialog extends StatefulWidget {
   final String title;
   final List<String> items;
@@ -2003,7 +1896,7 @@ class _SearchableMultiSelectDialogState extends State<_SearchableMultiSelectDial
                 onPressed: () {
                    Navigator.pop(context, _tempSelected.toList());
                 },
-                child: Text('Done (\)', style: const TextStyle(color: Colors.white, fontSize: 16)),
+                child: Text('Done (${_tempSelected.length})', style: const TextStyle(color: Colors.white, fontSize: 16)),
               ),
             ),
           ],

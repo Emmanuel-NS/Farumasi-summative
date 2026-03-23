@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:farumasi_patient_app/presentation/blocs/cart/cart_bloc.dart';
+import 'package:farumasi_patient_app/presentation/blocs/cart/cart_event.dart';
+import 'package:farumasi_patient_app/presentation/blocs/cart/cart_state.dart';
+import 'package:farumasi_patient_app/presentation/blocs/auth/auth_bloc.dart';
 import 'package:farumasi_patient_app/data/datasources/state_service.dart';
 import 'auth_screen.dart';
 
@@ -194,7 +199,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   }
 
   void _placeOrder() {
-    if (!StateService().isLoggedIn) {
+    if (context.read<AuthBloc>().state.status != AuthStatus.authenticated) {
       showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
@@ -247,7 +252,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
     final fullAddress = "$_selectedCity, ${_neighborhoodController.text}, ${_descriptionController.text}\nPhone: ${_phoneController.text}";
 
-    StateService().clearCart();
+    final totalAmount = context.read<CartBloc>().state is CartLoaded 
+        ? (context.read<CartBloc>().state as CartLoaded).totalAmount 
+        : 0.0;
+
+    context.read<CartBloc>().add(ClearCart());
+    
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -259,7 +269,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           ],
         ),
         content: Text(
-          "You are now being redirected to the secure payment gateway to complete your purchase of ${StateService().totalAmount} RWF.",
+          "You are now being redirected to the secure payment gateway to complete your purchase of ${totalAmount.toStringAsFixed(0)} RWF.",
         ),
         actions: [
           TextButton(
@@ -424,16 +434,15 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
             const SizedBox(height: 32),
             Container(
-              padding: EdgeInsets.all(20),
+              padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 color: Colors.green.shade50,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: Colors.green.shade200),
               ),
-              child: ListenableBuilder(
-                listenable: StateService(),
-                builder: (context, _) {
-                  final total = StateService().totalAmount;
+              child: BlocBuilder<CartBloc, CartState>(
+                builder: (context, state) {
+                  final total = state is CartLoaded ? state.totalAmount : 0.0;
                   final discount = total * 0.12; // 12% Reduction logic
                   final discountedTotal = total - discount;
                   final deliveryFee = 1500.0;

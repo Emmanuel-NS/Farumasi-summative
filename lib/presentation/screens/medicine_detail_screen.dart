@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:farumasi_patient_app/data/models/models.dart';
-import 'package:farumasi_patient_app/data/datasources/state_service.dart';
+import 'package:farumasi_patient_app/presentation/blocs/cart/cart_bloc.dart';
+import 'package:farumasi_patient_app/presentation/blocs/cart/cart_event.dart';
+// import 'package:farumasi_patient_app/data/datasources/state_service.dart'; // REMOVED
 
 class MedicineDetailScreen extends StatefulWidget {
   final Medicine medicine;
@@ -283,7 +286,7 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> with Single
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   onPressed: () {
-                    StateService().addToCart(widget.medicine, _quantity);
+                    context.read<CartBloc>().add(AddToCart(widget.medicine, quantity: _quantity));
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Row(children: const [Icon(Icons.check_circle, color: Colors.white), SizedBox(width: 8), Text('Added to Cart!')]),
