@@ -1,16 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:farumasi_patient_app/presentation/blocs/medicine/medicine_bloc.dart';
 import 'package:farumasi_patient_app/presentation/widgets/farumasi_logo_widget.dart';
 import 'dart:async'; // For Typewriter animation timer
 import 'package:farumasi_patient_app/data/models/models.dart';
 // import 'package:farumasi_patient_app/data/dummy_data.dart'; // REMOVED
 import 'package:farumasi_patient_app/presentation/widgets/medicine_item.dart';
-import 'package:farumasi_patient_app/presentation/blocs/cart/cart_bloc.dart';
-// import 'package:farumasi_patient_app/presentation/blocs/cart/cart_event.dart'; // REMOVED
-import 'package:farumasi_patient_app/presentation/blocs/cart/cart_state.dart';
-// import 'package:farumasi_patient_app/presentation/blocs/auth/auth_bloc.dart'; // REMOVED
-// import 'package:farumasi_patient_app/presentation/blocs/auth/auth_state.dart'; // REMOVED
 import 'medicine_detail_screen.dart';
 import 'package:farumasi_patient_app/data/datasources/state_service.dart';
 import 'auth_screen.dart';
@@ -21,6 +14,11 @@ import 'package:farumasi_patient_app/presentation/screens/help_screen.dart';
 import 'package:farumasi_patient_app/presentation/screens/profile_screen.dart';
 import 'package:farumasi_patient_app/presentation/screens/settings_screen.dart';
 import 'package:farumasi_patient_app/presentation/screens/orders_screen.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:farumasi_patient_app/presentation/blocs/auth/auth_bloc.dart';
+import 'package:farumasi_patient_app/presentation/screens/admin/admin_dashboard_screen.dart';
+import 'package:farumasi_patient_app/presentation/blocs/cart/cart_bloc.dart';
+import 'package:farumasi_patient_app/presentation/blocs/cart/cart_state.dart';
 import 'pharmacy_detail_screen.dart'; // Import Pharmacy Detail Screen
 import 'cart_screen.dart';
 import 'prescription_upload_screen.dart'; // Add this import
@@ -44,9 +42,6 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
   @override
   void initState() {
     super.initState();
-    // Dispatch Bloc Event
-    context.read<MedicineBloc>().add(const LoadMedicines());
-
     _searchController = TextEditingController(); // Initialize
     _scrollController = ScrollController();
     _scrollController.addListener(() {
@@ -94,12 +89,12 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
   bool _sortAscending = true;
   bool _showCategories = false; // Collapsed by default
 
-  List<Medicine> _getFilteredMedicines(List<Medicine> allMedicines) {
+  List<Medicine> get _filteredMedicines {
     String query = _searchQuery.toLowerCase().trim();
     
     // Always apply filters via _getMedicinesForQuery, even if query is empty.
     // This ensures category, price, rating filters work without text search.
-    var results = _getMedicinesForQuery(allMedicines, query);
+    var results = _getMedicinesForQuery(query);
     
     // If we have results (filtered or not), return them.
     if (results.isNotEmpty) {
@@ -108,12 +103,12 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
 
     // Only attempt "Did you mean?" suggestions if there was an actual text query.
     if (query.isNotEmpty && query.length > 3) {
-      final bestMatch = _findBestMatch(allMedicines, query);
+      final bestMatch = _findBestMatch(query);
       if (bestMatch != null) {
          // Return results for the corrected term, still respecting filters if possible?
          // For now, let's just return matches for the term.
          // Ideally, we should apply filters to the corrected term too.
-         return _getMedicinesForQuery(allMedicines, bestMatch);
+         return _getMedicinesForQuery(bestMatch);
       }
     }
 
@@ -125,8 +120,8 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
   // String? get _correctionTerm { ... }
 
   // 1b. Helper to get results for a specific string query
-  List<Medicine> _getMedicinesForQuery(List<Medicine> allMedicines, String queryText) {
-     return allMedicines.where((m) {
+  List<Medicine> _getMedicinesForQuery(String queryText) {
+     return StateService().medicines.where((m) {
       
       // Clean the query
       final cleanQuery = queryText.toLowerCase().trim();
@@ -185,13 +180,13 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
   }
 
   // New Helper: Find best match for "Did you mean"
-  String? _findBestMatch(List<Medicine> allMedicines, String typo) {
+  String? _findBestMatch(String typo) {
     String? bestTerm;
     int minDistance = 100;
     
     // 1. Collect candidate terms from known medicines
     final Set<String> candidates = {};
-    for (var m in allMedicines) {
+    for (var m in StateService().medicines) {
       candidates.add(m.name.toLowerCase());
       // Add category as candidate
       candidates.add(m.category.toLowerCase());
@@ -282,8 +277,8 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
     return v1[t.length];
   }
 
-  List<Medicine> _getSortedMedicines(List<Medicine> allMedicines) {
-    var list = _getFilteredMedicines(allMedicines);
+  List<Medicine> get _sortedMedicines {
+    var list = _filteredMedicines;
     switch (_sortBy) {
       case 'MinPrice':
         list.sort((a, b) => _sortAscending 
@@ -309,12 +304,12 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
     return list;
   }
 
-  List<String> _getCategories(List<Medicine> allMedicines) =>
-      allMedicines.map((e) => e.category).toSet().toList();
+  List<String> get _categories =>
+      StateService().medicines.map((e) => e.category).toSet().toList();
   
-  List<String> _getCurrentSubCategories(List<Medicine> allMedicines) {
+  List<String> get _currentSubCategories {
     if (_selectedCategories.isEmpty) return [];
-    return allMedicines
+    return StateService().medicines
         .where((m) => _selectedCategories.contains(m.category) && m.subCategory != null)
         .map((m) => m.subCategory!)
         .toSet()
@@ -354,7 +349,7 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
     }
   }
 
-  void _showFilterModal(List<Medicine> allMedicines) {
+  void _showFilterModal() {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -518,7 +513,7 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
                             context: context,
                             builder: (ctx) => _SearchableMultiSelectDialog(
                               title: "Select Categories",
-                              items: _getCategories(allMedicines),
+                              items: _categories,
                               selectedItems: _selectedCategories.toList(),
                             ),
                           );
@@ -529,7 +524,7 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
                               // Clear subcat if not valid anymore (optional but safer)
                               if (_selectedSubCategory != null) {
                                   // Check if the selected sub belongs to ANY of the new categories
-                                  bool isValid = allMedicines.any((m) => 
+                                  bool isValid = StateService().medicines.any((m) => 
                                      _selectedCategories.contains(m.category) && 
                                      m.subCategory == _selectedSubCategory
                                   );
@@ -591,29 +586,29 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
                         ),
                       ],
 
-                        // Sub-Category Section (Conditional)
-                        if (_selectedCategories.isNotEmpty && _getCurrentSubCategories(allMedicines).isNotEmpty) ...[
-                          const SizedBox(height: 16),
-                          const Text(
-                            'Sub-Category (Refine)',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                          ),
-                          const SizedBox(height: 8),
-                          Wrap(
-                            spacing: 8,
-                            children: [
-                               ChoiceChip(
-                                  label: const Text('Any'),
-                                  selected: _selectedSubCategory == null,
-                                  onSelected: (selected) {
-                                    if (selected) {
-                                      setModalState(() => _selectedSubCategory = null);
-                                      setState(() {});
-                                    }
-                                  },
-                                ),
-                               ..._getCurrentSubCategories(allMedicines).map((sub) => ChoiceChip(
-                                 label: Text(sub),
+                      // Sub-Category Section (Conditional)
+                      if (_selectedCategories.isNotEmpty && _currentSubCategories.isNotEmpty) ...[
+                        const SizedBox(height: 16),
+                        const Text(
+                          'Sub-Category (Refine)',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 8),
+                        Wrap(
+                          spacing: 8,
+                          children: [
+                             ChoiceChip(
+                                label: const Text('Any'),
+                                selected: _selectedSubCategory == null,
+                                onSelected: (selected) {
+                                  if (selected) {
+                                    setModalState(() => _selectedSubCategory = null);
+                                    setState(() {});
+                                  }
+                                },
+                              ),
+                             ..._currentSubCategories.map((sub) => ChoiceChip(
+                               label: Text(sub),
                                selected: _selectedSubCategory == sub,
                                onSelected: (selected) {
                                  setModalState(() {
@@ -754,24 +749,9 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
-      child: BlocBuilder<MedicineBloc, MedicineState>(
-        builder: (context, medicineState) {
-          List<Medicine> allMedicines = [];
-          if (medicineState is MedicineLoaded) {
-            allMedicines = medicineState.medicines;
-          }
-          
-          if (medicineState is MedicineError) {
-             return Scaffold(body: Center(child: Text("Error: ${medicineState.message}")));
-          }
-
-          if (medicineState is MedicineLoading) {
-             return const Scaffold(body: Center(child: CircularProgressIndicator()));
-          }
-
-          return AnimatedBuilder(
-            animation: StateService(),
-            builder: (context, child) {
+      child: AnimatedBuilder(
+        animation: StateService(),
+        builder: (context, child) {
           return Scaffold(
             floatingActionButton: _showFloatingActions 
               ? Column(
@@ -807,27 +787,26 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
                       child: const Icon(Icons.upload_file, color: Colors.white),
                     ),
                     const SizedBox(height: 12),
-                    BlocBuilder<CartBloc, CartState>(
-                      builder: (context, state) {
-                        final count = state is CartLoaded ? state.cartItems.length : 0;
-                        return Stack(
-                          alignment: Alignment.topRight,
-                          clipBehavior: Clip.none,
-                          children: [
-                            FloatingActionButton(
-                              heroTag: 'cart_main_btn',
-                              backgroundColor: Colors.green,
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (_) => const CartScreen()),
-                                );
-                              },
-                              tooltip: 'View Cart',
-                              child: const Icon(Icons.shopping_cart, color: Colors.white),
-                            ),
-                            if (count > 0)
-                              Positioned(
+                    Stack(
+                      alignment: Alignment.topRight,
+                      clipBehavior: Clip.none,
+                      children: [
+                        FloatingActionButton(
+                          heroTag: 'cart_main_btn',
+                          backgroundColor: Colors.green,
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (_) => const CartScreen()),
+                            );
+                          },
+                          tooltip: 'View Cart',
+                          child: const Icon(Icons.shopping_cart, color: Colors.white),
+                        ),
+                        BlocBuilder<CartBloc, CartState>(
+                          builder: (context, state) {
+                            if (state is CartLoaded && state.cartItems.isNotEmpty) {
+                              return Positioned(
                                 right: 0,
                                 top: 0,
                                 child: Container(
@@ -841,7 +820,7 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
                                     minHeight: 16,
                                   ),
                                   child: Text(
-                                    '$count',
+                                    '${state.cartItems.length}',
                                     style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 10,
@@ -850,10 +829,12 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
                                     textAlign: TextAlign.center,
                                   ),
                                 ),
-                              ),
-                          ],
-                        );
-                      }
+                              );
+                            }
+                            return const SizedBox.shrink();
+                          },
+                        ),
+                      ],
                     ),
                   ],
                 ) 
@@ -903,27 +884,26 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         // Cart Icon in App Bar
-                        BlocBuilder<CartBloc, CartState>(
-                          builder: (context, state) {
-                            final count = state is CartLoaded ? state.cartItems.length : 0;
-                            return Stack(
-                              clipBehavior: Clip.none,
-                              alignment: Alignment.center,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.shopping_cart, color: Colors.white),
-                                  onPressed: _isScrolled
-                                      ? () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                                builder: (_) => const CartScreen()),
-                                          );
-                                        }
-                                      : null,
-                                ),
-                                if (count > 0)
-                                  Positioned(
+                        Stack(
+                          clipBehavior: Clip.none,
+                          alignment: Alignment.center,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.shopping_cart, color: Colors.white),
+                              onPressed: _isScrolled
+                                  ? () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (_) => const CartScreen()),
+                                      );
+                                    }
+                                  : null,
+                            ),
+                            BlocBuilder<CartBloc, CartState>(
+                              builder: (context, state) {
+                                if (state is CartLoaded && state.cartItems.isNotEmpty) {
+                                  return Positioned(
                                     right: 8,
                                     top: 8,
                                     child: Container(
@@ -937,7 +917,7 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
                                         minHeight: 14,
                                       ),
                                       child: Text(
-                                        '$count',
+                                        '${state.cartItems.length}',
                                         style: const TextStyle(
                                           color: Colors.white,
                                           fontSize: 9,
@@ -946,10 +926,12 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
                                         textAlign: TextAlign.center,
                                       ),
                                     ),
-                                  ),
-                              ],
-                            );
-                          }
+                                  );
+                                }
+                                return const SizedBox.shrink();
+                              },
+                            ),
+                          ],
                         ),
                         Padding(
                           padding: const EdgeInsets.only(right: 8.0),
@@ -1130,8 +1112,13 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
                                                 builder: (context) =>
                                                     const SettingsScreen()),
                                           );
+                                        } else if (value == 'admin_panel') {
+                                          Navigator.pushReplacement(
+                                            context,
+                                            MaterialPageRoute(builder: (context) => const AdminDashboardScreen()),
+                                          );
                                         } else if (value == 'logout') {
-                                          StateService().logout();
+                                          context.read<AuthBloc>().add(const AuthLogoutRequested());
                                           ScaffoldMessenger.of(
                                             context,
                                           ).showSnackBar(
@@ -1191,6 +1178,18 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
                                             ],
                                           ),
                                         ),
+                                        // Show Admin Panel option if user is admin
+                                        if (StateService().userEmail?.toLowerCase() == 'superadmin@farumasi.rw')
+                                        const PopupMenuItem(
+                                          value: 'admin_panel',
+                                          child: Row(
+                                            children: [
+                                              Icon(Icons.admin_panel_settings, color: Colors.indigo, size: 20),
+                                              SizedBox(width: 12),
+                                              Text('Admin Panel', style: TextStyle(color: Colors.indigo, fontWeight: FontWeight.bold)),
+                                            ],
+                                          ),
+                                        ),
                                         const PopupMenuDivider(),
                                         const PopupMenuItem(
                                           value: 'logout',
@@ -1230,8 +1229,13 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
                                       onPressed: () => Navigator.push(
                                         context,
                                         MaterialPageRoute(
-                                          builder: (_) => const AuthScreen(),
+                                          builder: (_) => const AuthScreen(isLogin: true),
                                         ),
+                                      ),
+                                      style: TextButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                        minimumSize: const Size(80, 36),
+                                        foregroundColor: Colors.white,
                                       ),
                                       child: const Text(
                                         'Login',
@@ -1247,7 +1251,7 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
                                       onPressed: () => Navigator.push(
                                         context,
                                         MaterialPageRoute(
-                                          builder: (_) => const AuthScreen(),
+                                          builder: (_) => const AuthScreen(isLogin: false),
                                         ),
                                       ),
                                       style: ElevatedButton.styleFrom(
@@ -1339,7 +1343,7 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
                                         color: Colors.green,
                                         size: 24,
                                       ),
-                                      onPressed: () => _showFilterModal(allMedicines),
+                                      onPressed: _showFilterModal,
                                       tooltip: "Sort & Filter",
                                     ),
                                     border: InputBorder.none,
@@ -1379,7 +1383,7 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
                           child: ListView(
                             scrollDirection: Axis.horizontal,
                             padding: EdgeInsets.symmetric(horizontal: 16),
-                            children: _getCategories(allMedicines)
+                            children: _categories
                                 .map(
                                   (cat) => Padding(
                                     padding: const EdgeInsets.only(right: 16.0),
@@ -1546,7 +1550,7 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
               ],
 
               // "Did you mean?" Suggestion Header
-              if (_searchQuery.isNotEmpty && _getFilteredMedicines(allMedicines).isNotEmpty && _getMedicinesForQuery(allMedicines, _searchQuery).isEmpty)
+              if (_searchQuery.isNotEmpty && _filteredMedicines.isNotEmpty && _getMedicinesForQuery(_searchQuery).isEmpty)
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -1572,7 +1576,7 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
                                 onTap: () {
                                   // Update the search query to the corrected term
                                   setState(() {
-                                    final correction = _findBestMatch(allMedicines, _searchQuery) ?? "";
+                                    final correction = _findBestMatch(_searchQuery) ?? "";
                                     _searchQuery = correction;
                                     _searchController.text = correction; // Update text field
                                     // Move cursor to end
@@ -1582,7 +1586,7 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
                                   });
                                 },
                                 child: Text(
-                                  "${_findBestMatch(allMedicines, _searchQuery)}",
+                                  "${_findBestMatch(_searchQuery)}",
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontStyle: FontStyle.italic,
@@ -1652,7 +1656,7 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
                     mainAxisSpacing: 10,
                   ),
                   delegate: SliverChildBuilderDelegate((context, index) {
-                    final med = _getSortedMedicines(allMedicines)[index];
+                    final med = _sortedMedicines[index];
                     return MedicineItem(
                       medicine: med,
                       onAboutTap: () => Navigator.push(
@@ -1662,7 +1666,7 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
                         ),
                       ),
                     );
-                  }, childCount: _getSortedMedicines(allMedicines).length),
+                  }, childCount: _sortedMedicines.length),
                 ),
               ),
 
@@ -1671,9 +1675,7 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
           ),
         );
       }, // end builder
-    ); // end AnimatedBuilder
-        }, 
-      ), 
+    ), // end AnimatedBuilder
     ); // end GestureDetector
   }
 }
@@ -1796,7 +1798,111 @@ class _TypewriterSloganState extends State<TypewriterSlogan> {
   }
 }
 
-// Unused _SearchableListDialog removed
+class _SearchableListDialog extends StatefulWidget {
+  final String title;
+  final List<String> items;
+
+  const _SearchableListDialog({
+    Key? key,
+    required this.title,
+    required this.items,
+  }) : super(key: key);
+
+  @override
+  State<_SearchableListDialog> createState() => _SearchableListDialogState();
+}
+
+class _SearchableListDialogState extends State<_SearchableListDialog> {
+  String _searchQuery = '';
+  final TextEditingController _controller = TextEditingController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Filter items
+    final filtered = widget.items
+        .where((item) => item.toLowerCase().contains(_searchQuery.toLowerCase()))
+        .toList();
+
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        height: 500, // Fixed height or create constrained Box
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  widget.title,
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () => Navigator.pop(context),
+                )
+              ],
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _controller,
+              decoration: InputDecoration(
+                hintText: 'Search...',
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              ),
+              onChanged: (val) {
+                setState(() {
+                  _searchQuery = val;
+                });
+              },
+            ),
+            const SizedBox(height: 12),
+            Expanded(
+              child: ListView.separated(
+                itemCount: filtered.length + 1,
+                separatorBuilder: (_, __) => const Divider(height: 1),
+                itemBuilder: (context, index) {
+                  if (index == 0) {
+                     // "All" Option
+                     if (_searchQuery.isNotEmpty && !'all categories'.contains(_searchQuery.toLowerCase())) {
+                       return const SizedBox.shrink(); 
+                     }
+                     return ListTile(
+                       title: const Text('All Categories', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green)),
+                       onTap: () => Navigator.pop(context, 'All Categories'),
+                     );
+                  }
+                  
+                  // Adjust index because 0 is taken
+                  final actualIndex = index - 1;
+                  // If "All" was hidden (SizedBox.shrink), index 0 still exists in builder but takes no space? 
+                  // No, ListView builder logic is strict.
+                  // BETTER APPROACH: Build a unified list.
+                  
+                  return ListTile(
+                    title: Text(filtered[actualIndex]),
+                    onTap: () => Navigator.pop(context, filtered[actualIndex]),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 class _SearchableMultiSelectDialog extends StatefulWidget {
   final String title;
   final List<String> items;
@@ -1896,7 +2002,7 @@ class _SearchableMultiSelectDialogState extends State<_SearchableMultiSelectDial
                 onPressed: () {
                    Navigator.pop(context, _tempSelected.toList());
                 },
-                child: Text('Done (${_tempSelected.length})', style: const TextStyle(color: Colors.white, fontSize: 16)),
+                child: Text('Done (\)', style: const TextStyle(color: Colors.white, fontSize: 16)),
               ),
             ),
           ],
