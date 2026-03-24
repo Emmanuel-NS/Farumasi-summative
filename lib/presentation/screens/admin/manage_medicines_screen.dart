@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:farumasi_patient_app/data/datasources/state_service.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:farumasi_patient_app/presentation/blocs/medicine/medicine_bloc.dart';
 import 'package:farumasi_patient_app/data/models/models.dart';
 import 'package:farumasi_patient_app/presentation/screens/admin/add_edit_medicine_screen.dart';
 
@@ -12,18 +13,29 @@ class ManageMedicinesScreen extends StatefulWidget {
 
 class _ManageMedicinesScreenState extends State<ManageMedicinesScreen> {
   @override
+  void initState() {
+    super.initState();
+    context.read<MedicineBloc>().add(const LoadMedicines());
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: StateService(),
-      builder: (context, child) {
-        final medicines = StateService().medicines;
+    return BlocBuilder<MedicineBloc, MedicineState>(
+      builder: (context, state) {
+        List<Medicine> medicines = [];
+        if (state is MedicineLoaded) {
+          medicines = state.medicines;
+        }
+
         return Scaffold(
           appBar: AppBar(
             title: const Text('Manage Medicines'),
             backgroundColor: Colors.green,
             foregroundColor: Colors.white,
           ),
-          body: medicines.isEmpty
+          body: state is MedicineLoading
+            ? const Center(child: CircularProgressIndicator())
+            : (medicines.isEmpty
               ? const Center(child: Text('No medicines found'))
               : ListView.builder(
                   itemCount: medicines.length,
@@ -59,8 +71,10 @@ class _ManageMedicinesScreenState extends State<ManageMedicinesScreen> {
                       ),
                     );
                   },
-                ),
+                )),
           floatingActionButton: FloatingActionButton(
+            backgroundColor: Colors.green,
+            foregroundColor: Colors.white,
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(builder: (context) => const AddEditMedicineScreen()),
@@ -76,18 +90,18 @@ class _ManageMedicinesScreenState extends State<ManageMedicinesScreen> {
   void _confirmDelete(BuildContext context, Medicine medicine) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Delete Medicine'),
         content: Text('Are you sure you want to delete ${medicine.name}?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('Cancel'),
           ),
           TextButton(
             onPressed: () {
-              StateService().deleteMedicine(medicine.id);
-              Navigator.pop(context);
+              context.read<MedicineBloc>().add(DeleteMedicine(medicine.id));
+              Navigator.pop(dialogContext);
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('Delete'),

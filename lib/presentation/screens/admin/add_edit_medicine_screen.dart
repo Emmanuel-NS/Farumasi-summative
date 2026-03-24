@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:farumasi_patient_app/data/datasources/state_service.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:farumasi_patient_app/presentation/blocs/medicine/medicine_bloc.dart';
+import 'package:farumasi_patient_app/presentation/blocs/pharmacy/pharmacy_bloc.dart';
+import 'package:farumasi_patient_app/presentation/blocs/pharmacy/pharmacy_state.dart';
 import 'package:farumasi_patient_app/data/models/models.dart';
 import 'package:farumasi_patient_app/presentation/widgets/farumasi_logo_widget.dart';
 import 'package:uuid/uuid.dart';
@@ -126,9 +129,9 @@ class _AddEditMedicineScreenState extends State<AddEditMedicineScreen> {
       );
 
       if (widget.medicine == null) {
-        StateService().addMedicine(newMedicine);
+        context.read<MedicineBloc>().add(AddMedicine(newMedicine));
       } else {
-        StateService().updateMedicine(newMedicine);
+        context.read<MedicineBloc>().add(UpdateMedicine(newMedicine));
       }
 
       Navigator.pop(context);
@@ -337,60 +340,71 @@ class _AddEditMedicineScreenState extends State<AddEditMedicineScreen> {
   }
 
   Widget _buildPharmacySelector() {
-    final pharmacies = StateService().pharmacies;
-    if (pharmacies.isEmpty) {
-      return Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(color: Colors.orange.shade50, borderRadius: BorderRadius.circular(12)),
-        child: const Row(
-          children: [
-            Icon(Icons.warning_amber, color: Colors.orange),
-            SizedBox(width: 12),
-            Expanded(child: Text("No pharmacies available. Add one via 'Manage Pharmacies' first.")),
-          ],
-        ),
-      );
-    }
-    
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: Colors.grey.shade300),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        children: pharmacies.asMap().entries.map((entry) {
-          final p = entry.value;
-          final isSelected = _selectedPharmacyIds.contains(p.id);
-          return Column(
-            children: [
-              CheckboxListTile(
-                title: Text(p.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: Text(p.locationName),
-                value: isSelected,
-                activeColor: Colors.green,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                secondary: CircleAvatar(
-                  backgroundColor: Colors.green.shade50,
-                  backgroundImage: p.imageUrl.isNotEmpty ? NetworkImage(p.imageUrl) : null,
-                  onBackgroundImageError: (_,__) {},
-                  child: p.imageUrl.isEmpty ? const Icon(Icons.store, color: Colors.green) : null,
-                ),
-                onChanged: (val) {
-                   setState(() {
-                     if (val == true) {
-                       _selectedPharmacyIds.add(p.id);
-                     } else {
-                       _selectedPharmacyIds.remove(p.id);
-                     }
-                   });
-                }
+    return BlocBuilder<PharmacyBloc, PharmacyState>(
+      builder: (context, state) {
+        if (state is PharmacyLoading) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (state is PharmacyLoaded) {
+          final pharmacies = state.pharmacies;
+          if (pharmacies.isEmpty) {
+            return Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(color: Colors.orange.shade50, borderRadius: BorderRadius.circular(12)),
+              child: const Row(
+                children: [
+                  Icon(Icons.warning_amber, color: Colors.orange),
+                  SizedBox(width: 12),
+                  Expanded(child: Text("No pharmacies available. Add one via 'Manage Pharmacies' first.")),
+                ],
               ),
-              if (entry.key != pharmacies.length - 1) const Divider(height: 1, indent: 16, endIndent: 16),
-            ],
+            );
+          }
+
+          return Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border.all(color: Colors.grey.shade300),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
+              children: pharmacies.asMap().entries.map((entry) {
+                final p = entry.value;
+                final isSelected = _selectedPharmacyIds.contains(p.id);
+                return Column(
+                  children: [
+                    CheckboxListTile(
+                      title: Text(p.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                      subtitle: Text(p.locationName),
+                      value: isSelected,
+                      activeColor: Colors.green,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                      secondary: CircleAvatar(
+                        backgroundColor: Colors.green.shade50,
+                        backgroundImage: p.imageUrl.isNotEmpty ? NetworkImage(p.imageUrl) : null,
+                        onBackgroundImageError: (_,__) {},
+                        child: p.imageUrl.isEmpty ? const Icon(Icons.store, color: Colors.green) : null,
+                      ),
+                      onChanged: (val) {
+                         setState(() {
+                           if (val == true) {
+                             _selectedPharmacyIds.add(p.id);
+                           } else {
+                             _selectedPharmacyIds.remove(p.id);
+                           }
+                         });
+                      }
+                    ),
+                    if (entry.key != pharmacies.length - 1) const Divider(height: 1, indent: 16, endIndent: 16),
+                  ],
+                );
+              }).toList(),
+            ),
           );
-        }).toList(),
-      ),
+        } else if (state is PharmacyError) {
+          return Text('Error loading pharmacies: ${state.message}', style: const TextStyle(color: Colors.red));
+        }
+        return const SizedBox.shrink();
+      }
     );
   }
 }

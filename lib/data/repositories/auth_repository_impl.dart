@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:google_sign_in/google_sign_in.dart';
 import '../../domain/entities/user_entity.dart';
@@ -6,12 +7,15 @@ import '../../domain/repositories/auth_repository.dart';
 class AuthRepositoryImpl implements AuthRepository {
   final firebase_auth.FirebaseAuth _firebaseAuth;
   final GoogleSignIn _googleSignIn;
+  final FirebaseFirestore _firestore;
 
   AuthRepositoryImpl({
     firebase_auth.FirebaseAuth? firebaseAuth,
     GoogleSignIn? googleSignIn,
+    FirebaseFirestore? firestore,
   })  : _firebaseAuth = firebaseAuth ?? firebase_auth.FirebaseAuth.instance,
-        _googleSignIn = googleSignIn ?? GoogleSignIn(scopes: ['email']);
+        _googleSignIn = googleSignIn ?? GoogleSignIn(scopes: ['email']),
+        _firestore = firestore ?? FirebaseFirestore.instance;
 
   @override
   Stream<UserEntity> get user {
@@ -36,6 +40,20 @@ class AuthRepositoryImpl implements AuthRepository {
       if (displayName != null) {
         await credential.user?.updateDisplayName(displayName);
       }
+      
+      // Save user to Firestore
+      if (credential.user != null) {
+        await _firestore.collection('users').doc(credential.user!.uid).set({
+          'uid': credential.user!.uid,
+          'email': email,
+          'displayName': displayName ?? '',
+          'role': 'patient',
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+
+        // Send email verification
+        await credential.user?.sendEmailVerification();
+      }
     } on firebase_auth.FirebaseAuthException catch (e) {
       throw SignUpFailure(e.message ?? 'An unknown error occurred');
     } catch (e) {
@@ -49,13 +67,21 @@ class AuthRepositoryImpl implements AuthRepository {
     required String password,
   }) async {
     try {
-      await _firebaseAuth.signInWithEmailAndPassword(
+      final credential = await _firebaseAuth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
+      
+      if (credential.user != null && !credential.user!.emailVerified) {
+        // Automatically send a new verification email if they try to log in and aren't verified
+        // You can comment this out if you prefer them to request it manually
+        await credential.user?.sendEmailVerification();
+        throw LogInWithEmailAndPasswordFailure('Please verify your email to log in. A new verification link has been sent.');
+      }
     } on firebase_auth.FirebaseAuthException catch (e) {
       throw LogInWithEmailAndPasswordFailure(e.message ?? 'An unknown error occurred');
     } catch (e) {
+      if (e is LogInWithEmailAndPasswordFailure) rethrow;
       throw LogInWithEmailAndPasswordFailure(e.toString());
     }
   }
@@ -75,7 +101,22 @@ class AuthRepositoryImpl implements AuthRepository {
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
-      await _firebaseAuth.signInWithCredential(credential);
+      final userCredential = await _firebaseAuth.signInWithCredential(credential);
+      
+      // Save user to Firestore if new
+      if (userCredential.user != null) {
+        final userDoc = await _firestore.collection('users').doc(userCredential.user!.uid).get();
+        if (!userDoc.exists) {
+          await _firestore.collection('users').doc(userCredential.user!.uid).set({
+            'uid': userCredential.user!.uid,
+            'email': userCredential.user!.email ?? googleUser.email,
+            'displayName': userCredential.user!.displayName ?? googleUser.displayName ?? '',
+            'photoUrl': userCredential.user!.photoURL,
+            'role': 'patient',
+            'createdAt': FieldValue.serverTimestamp(),
+          });
+        }
+      }
     } on firebase_auth.FirebaseAuthException catch (e) {
       throw LogInWithGoogleFailure(e.message ?? 'An unknown error occurred');
     } catch (e) {

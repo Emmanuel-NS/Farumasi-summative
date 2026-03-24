@@ -7,4 +7,9 @@ abstract class MedicineRepository {
   Future<List<Medicine>> getMedicinesByCategory(String category);
   Future<List<Medicine>> getPopularMedicines();
   Future<List<String>> getCategories();
+
+  // Admin CRUD
+  Future<void> addMedicine(Medicine medicine);
+  Future<void> updateMedicine(Medicine medicine);
+  Future<void> deleteMedicine(String id);
 }

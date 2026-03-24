@@ -57,4 +57,22 @@ class MockMedicineRepository implements MedicineRepository {
     }
     return categories;
   }
+
+  @override
+  Future<void> addMedicine(Medicine medicine) async {
+    dummyMedicines.add(medicine);
+  }
+
+  @override
+  Future<void> updateMedicine(Medicine medicine) async {
+    final index = dummyMedicines.indexWhere((m) => m.id == medicine.id);
+    if (index != -1) {
+      dummyMedicines[index] = medicine;
+    }
+  }
+
+  @override
+  Future<void> deleteMedicine(String id) async {
+    dummyMedicines.removeWhere((m) => m.id == id);
+  }
 }

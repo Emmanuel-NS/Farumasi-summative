@@ -29,6 +29,9 @@ import 'package:farumasi_patient_app/domain/repositories/order_repository.dart';
 import 'package:farumasi_patient_app/data/repositories/order_repository_impl.dart';
 import 'package:farumasi_patient_app/data/repositories/mock_medicine_repository.dart';
 import 'package:farumasi_patient_app/data/repositories/mock_order_repository.dart';
+import 'package:farumasi_patient_app/data/repositories/pharmacy_repository_impl.dart';
+import 'package:farumasi_patient_app/data/repositories/mock_pharmacy_repository.dart';
+import 'package:farumasi_patient_app/presentation/blocs/pharmacy/pharmacy_bloc.dart';
 import 'package:farumasi_patient_app/presentation/blocs/order/order_bloc.dart';
 import 'firebase_options.dart'; // Import the generated file
 import 'package:farumasi_patient_app/data/datasources/data_seeder.dart'; // Added for seeding
@@ -51,6 +54,7 @@ Future<void> main() async {
   MedicineRepository medicineRepository;
   OrderRepository orderRepository;
   HealthRepository healthRepository;
+  PharmacyRepository pharmacyRepository;
 
   try {
     // Attempt real initialization
@@ -61,6 +65,7 @@ Future<void> main() async {
     medicineRepository = MedicineRepositoryImpl();
     orderRepository = OrderRepositoryImpl();
     healthRepository = HealthRepositoryImpl();
+    pharmacyRepository = PharmacyRepositoryImpl();
     debugPrint("Firebase initialized successfully. Using Real Repositories.");
 
     // ---- SEED DATA IF NEEDED ----
@@ -73,6 +78,7 @@ Future<void> main() async {
     medicineRepository = MockMedicineRepository();
     orderRepository = MockOrderRepository();
     healthRepository = MockHealthRepository();
+    pharmacyRepository = MockPharmacyRepository();
   }
   
   final cartRepository = MockCartRepository();
@@ -83,6 +89,7 @@ Future<void> main() async {
     cartRepository: cartRepository,
     orderRepository: orderRepository,
     healthRepository: healthRepository,
+    pharmacyRepository: pharmacyRepository,
   ));
 }
 
@@ -92,14 +99,16 @@ class FarumasiApp extends StatelessWidget {
   final CartRepository cartRepository;
   final OrderRepository orderRepository;
   final HealthRepository healthRepository;
+  final PharmacyRepository pharmacyRepository;
 
   const FarumasiApp({
-    super.key, 
+    super.key,
     required this.authRepository,
     required this.medicineRepository,
     required this.cartRepository,
     required this.orderRepository,
     required this.healthRepository,
+    required this.pharmacyRepository,
   });
 
   @override
@@ -111,6 +120,7 @@ class FarumasiApp extends StatelessWidget {
         RepositoryProvider.value(value: cartRepository),
         RepositoryProvider.value(value: orderRepository),
         RepositoryProvider.value(value: healthRepository),
+        RepositoryProvider.value(value: pharmacyRepository),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -128,6 +138,9 @@ class FarumasiApp extends StatelessWidget {
           ),
           BlocProvider(
             create: (context) => HealthTipsBloc(healthRepository: healthRepository)..add(LoadHealthTips()),
+          ),
+          BlocProvider(
+            create: (context) => PharmacyBloc(repository: pharmacyRepository)..add(LoadPharmacies()),
           ),
           BlocProvider(
             create: (context) => ThemeCubit(),

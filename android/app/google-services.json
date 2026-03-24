@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "824975096050",
+    "project_id": "farumasi-app",
+    "storage_bucket": "farumasi-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:824975096050:android:1517948e336b9e1363786b",
+        "android_client_info": {
+          "package_name": "com.example.farumasi_patient_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA40eQjB9kOTLkSfLi7OtC7cKCBcl4olQo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -110,4 +110,19 @@ class MedicineRepositoryImpl implements MedicineRepository {
     map['id'] = id; 
     return Medicine.fromJson(map);
   }
+
+  @override
+  Future<void> addMedicine(Medicine medicine) async {
+    await _firestore.collection('medicines').doc(medicine.id.isEmpty ? null : medicine.id).set(medicine.toJson());
+  }
+
+  @override
+  Future<void> updateMedicine(Medicine medicine) async {
+    await _firestore.collection('medicines').doc(medicine.id).update(medicine.toJson());
+  }
+
+  @override
+  Future<void> deleteMedicine(String id) async {
+    await _firestore.collection('medicines').doc(id).delete();
+  }
 }

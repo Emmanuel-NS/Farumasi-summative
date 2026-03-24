@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:farumasi_patient_app/data/datasources/state_service.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:farumasi_patient_app/presentation/blocs/pharmacy/pharmacy_bloc.dart';
 import 'package:farumasi_patient_app/data/models/models.dart';
 import 'package:farumasi_patient_app/presentation/widgets/farumasi_logo_widget.dart';
 import 'package:uuid/uuid.dart';
@@ -69,9 +70,9 @@ class _AddEditPharmacyScreenState extends State<AddEditPharmacyScreen> {
       );
 
       if (widget.pharmacy == null) {
-        StateService().addPharmacy(newPharmacy);
+        context.read<PharmacyBloc>().add(AddPharmacy(newPharmacy));
       } else {
-        StateService().updatePharmacy(newPharmacy);
+        context.read<PharmacyBloc>().add(UpdatePharmacy(newPharmacy));
       }
 
       Navigator.pop(context);

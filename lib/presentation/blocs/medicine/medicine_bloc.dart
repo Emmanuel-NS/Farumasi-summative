@@ -13,6 +13,9 @@ class MedicineBloc extends Bloc<MedicineEvent, MedicineState> {
     on<LoadMedicines>(_onLoadMedicines);
     on<SearchMedicines>(_onSearchMedicines);
     on<FilterMedicinesByCategory>(_onFilterByCategory);
+    on<AddMedicine>(_onAddMedicine);
+    on<UpdateMedicine>(_onUpdateMedicine);
+    on<DeleteMedicine>(_onDeleteMedicine);
   }
 
   Future<void> _onLoadMedicines(
@@ -64,6 +67,33 @@ class MedicineBloc extends Bloc<MedicineEvent, MedicineState> {
       ));
     } catch (e) {
       emit(MedicineError('Failed to filter medicines: $e'));
+    }
+  }
+
+  Future<void> _onAddMedicine(AddMedicine event, Emitter<MedicineState> emit) async {
+    try {
+      await repository.addMedicine(event.medicine);
+      add(const LoadMedicines());
+    } catch (e) {
+      emit(MedicineError('Failed to add medicine: $e'));
+    }
+  }
+
+  Future<void> _onUpdateMedicine(UpdateMedicine event, Emitter<MedicineState> emit) async {
+    try {
+      await repository.updateMedicine(event.medicine);
+      add(const LoadMedicines());
+    } catch (e) {
+      emit(MedicineError('Failed to update medicine: $e'));
+    }
+  }
+
+  Future<void> _onDeleteMedicine(DeleteMedicine event, Emitter<MedicineState> emit) async {
+    try {
+      await repository.deleteMedicine(event.id);
+      add(const LoadMedicines());
+    } catch (e) {
+      emit(MedicineError('Failed to delete medicine: $e'));
     }
   }
 }

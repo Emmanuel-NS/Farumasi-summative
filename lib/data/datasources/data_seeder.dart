@@ -42,8 +42,26 @@ class DataSeeder {
       } else {
         debugPrint('Scaling DB: Health Articles already exist. Skipping seed.');
       }
-    } catch (e) {
+    } catch(e) {
       debugPrint("Error seeding health articles: $e");
+    }
+
+    // --- 3. Seed Pharmacies ---
+    try {
+      final pharmaciesRef = firestore.collection('pharmacies');
+      final pharmaciesSnapshot = await pharmaciesRef.limit(1).get();
+
+      if (pharmaciesSnapshot.docs.isEmpty) {
+        debugPrint('Scaling DB: Seeding Pharmacies...');
+        for (var pharmacy in dummyPharmacies) {
+          await pharmaciesRef.doc(pharmacy.id).set(pharmacy.toJson());
+        }
+        debugPrint('Scaling DB: Pharmacies Seeded Successfully.');
+      } else {
+        debugPrint('Scaling DB: Pharmacies already exist. Skipping seed.');
+      }
+    } catch (e) {
+      debugPrint("Error seeding pharmacies: $e");
     }
   }
 
