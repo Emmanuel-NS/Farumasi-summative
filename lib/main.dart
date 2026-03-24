@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_quill/flutter_quill.dart';
+import 'package:farumasi_patient_app/data/repositories/health_repository_impl.dart';
+import 'package:farumasi_patient_app/data/repositories/mock_health_repository.dart';
+import 'package:farumasi_patient_app/domain/repositories/health_repository.dart';
+import 'package:farumasi_patient_app/presentation/blocs/health_tips/health_tips_bloc.dart';
+import 'package:farumasi_patient_app/presentation/blocs/health_tips/health_tips_event.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'dart:io';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -11,12 +16,22 @@ import 'package:farumasi_patient_app/data/repositories/mock_auth_repository.dart
 import 'package:farumasi_patient_app/domain/repositories/auth_repository.dart';
 import 'package:farumasi_patient_app/presentation/blocs/auth/auth_bloc.dart';
 import 'package:farumasi_patient_app/domain/repositories/medicine_repository.dart';
-import 'package:farumasi_patient_app/data/repositories/mock_medicine_repository.dart';
+import 'package:farumasi_patient_app/data/repositories/medicine_repository_impl.dart';
+// import 'package:farumasi_patient_app/data/repositories/mock_medicine_repository.dart'; // REMOVED mock usage or keep as fallback
 import 'package:farumasi_patient_app/presentation/blocs/medicine/medicine_bloc.dart';
 import 'package:farumasi_patient_app/domain/repositories/cart_repository.dart';
 import 'package:farumasi_patient_app/data/repositories/mock_cart_repository.dart';
 import 'package:farumasi_patient_app/presentation/blocs/cart/cart_bloc.dart';
 import 'package:farumasi_patient_app/presentation/blocs/cart/cart_event.dart'; // Import to fire initial LoadCart
+
+import 'package:farumasi_patient_app/presentation/blocs/theme/theme_cubit.dart';
+import 'package:farumasi_patient_app/domain/repositories/order_repository.dart';
+import 'package:farumasi_patient_app/data/repositories/order_repository_impl.dart';
+import 'package:farumasi_patient_app/data/repositories/mock_medicine_repository.dart';
+import 'package:farumasi_patient_app/data/repositories/mock_order_repository.dart';
+import 'package:farumasi_patient_app/presentation/blocs/order/order_bloc.dart';
+import 'firebase_options.dart'; // Import the generated file
+import 'package:farumasi_patient_app/data/datasources/data_seeder.dart'; // Added for seeding
 
 // --- VISUAL FIX: SSL Bypass for Emulators ---
 class MyHttpOverrides extends HttpOverrides {
@@ -33,27 +48,41 @@ Future<void> main() async {
   HttpOverrides.global = MyHttpOverrides();
 
   AuthRepository authRepository;
+  MedicineRepository medicineRepository;
+  OrderRepository orderRepository;
+  HealthRepository healthRepository;
 
   try {
-    // Attempt real initialization with a short timeout
-    // If it takes longer than 3 seconds (e.g. invalid config), fallback
-    await Firebase.initializeApp().timeout(const Duration(seconds: 3));
+    // Attempt real initialization
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
     authRepository = AuthRepositoryImpl();
-    debugPrint("Firebase initialized successfully. Using AuthRepositoryImpl.");
+    medicineRepository = MedicineRepositoryImpl();
+    orderRepository = OrderRepositoryImpl();
+    healthRepository = HealthRepositoryImpl();
+    debugPrint("Firebase initialized successfully. Using Real Repositories.");
+
+    // ---- SEED DATA IF NEEDED ----
+    await DataSeeder.seedData();
+    // -----------------------------
   } catch (e) {
     debugPrint("Firebase initialization failed or timed out: $e");
-    debugPrint("Falling back to MockAuthRepository (Offline Mode).");
+    debugPrint("Falling back to Mock Repositories (Offline Mode).");
     authRepository = MockAuthRepository();
+    medicineRepository = MockMedicineRepository();
+    orderRepository = MockOrderRepository();
+    healthRepository = MockHealthRepository();
   }
   
-  // Use MockMedicineRepository for now until Firestore integration is ready
-  final medicineRepository = MockMedicineRepository();
   final cartRepository = MockCartRepository();
 
   runApp(FarumasiApp(
     authRepository: authRepository,
     medicineRepository: medicineRepository,
     cartRepository: cartRepository,
+    orderRepository: orderRepository,
+    healthRepository: healthRepository,
   ));
 }
 
@@ -61,12 +90,16 @@ class FarumasiApp extends StatelessWidget {
   final AuthRepository authRepository;
   final MedicineRepository medicineRepository;
   final CartRepository cartRepository;
+  final OrderRepository orderRepository;
+  final HealthRepository healthRepository;
 
   const FarumasiApp({
     super.key, 
     required this.authRepository,
     required this.medicineRepository,
     required this.cartRepository,
+    required this.orderRepository,
+    required this.healthRepository,
   });
 
   @override
@@ -76,6 +109,8 @@ class FarumasiApp extends StatelessWidget {
         RepositoryProvider.value(value: authRepository),
         RepositoryProvider.value(value: medicineRepository),
         RepositoryProvider.value(value: cartRepository),
+        RepositoryProvider.value(value: orderRepository),
+        RepositoryProvider.value(value: healthRepository),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -87,6 +122,15 @@ class FarumasiApp extends StatelessWidget {
           ),
           BlocProvider(
             create: (context) => CartBloc(cartRepository: cartRepository)..add(LoadCart()),
+          ),
+          BlocProvider(
+            create: (context) => OrderBloc(orderRepository: orderRepository),
+          ),
+          BlocProvider(
+            create: (context) => HealthTipsBloc(healthRepository: healthRepository)..add(LoadHealthTips()),
+          ),
+          BlocProvider(
+            create: (context) => ThemeCubit(),
           ),
         ],
         child: const AppView(),
@@ -100,12 +144,15 @@ class AppView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Farumasi',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.theme,
-      localizationsDelegates: const [
-        GlobalMaterialLocalizations.delegate,
+    return BlocBuilder<ThemeCubit, ThemeMode>(
+      builder: (context, themeMode) {
+        return MaterialApp(
+          title: 'Farumasi',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.theme,
+          themeMode: ThemeMode.light,
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         FlutterQuillLocalizations.delegate,
@@ -114,6 +161,8 @@ class AppView extends StatelessWidget {
         Locale('en', 'US'),
       ],
       home: const SplashScreen(),
+        );
+      },
     );
   }
 }
