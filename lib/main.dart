@@ -69,7 +69,8 @@ Future<void> main() async {
     debugPrint("Firebase initialized successfully. Using Real Repositories.");
 
     // ---- SEED DATA IF NEEDED ----
-    await DataSeeder.seedData();
+    // Do not await this so we don't block the app from launching
+    DataSeeder.seedData().catchError((e) => debugPrint("Seeder error: $e"));
     // -----------------------------
   } catch (e) {
     debugPrint("Firebase initialization failed or timed out: $e");
