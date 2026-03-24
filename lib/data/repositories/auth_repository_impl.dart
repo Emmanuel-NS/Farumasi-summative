@@ -36,8 +36,10 @@ class AuthRepositoryImpl implements AuthRepository {
       if (displayName != null) {
         await credential.user?.updateDisplayName(displayName);
       }
+    } on firebase_auth.FirebaseAuthException catch (e) {
+      throw SignUpFailure(e.message ?? 'An unknown error occurred');
     } catch (e) {
-      throw SignUpFailure();
+      throw SignUpFailure(e.toString());
     }
   }
 
@@ -51,8 +53,10 @@ class AuthRepositoryImpl implements AuthRepository {
         email: email,
         password: password,
       );
+    } on firebase_auth.FirebaseAuthException catch (e) {
+      throw LogInWithEmailAndPasswordFailure(e.message ?? 'An unknown error occurred');
     } catch (e) {
-      throw LogInWithEmailAndPasswordFailure();
+      throw LogInWithEmailAndPasswordFailure(e.toString());
     }
   }
 
@@ -72,10 +76,12 @@ class AuthRepositoryImpl implements AuthRepository {
         idToken: googleAuth.idToken,
       );
       await _firebaseAuth.signInWithCredential(credential);
+    } on firebase_auth.FirebaseAuthException catch (e) {
+      throw LogInWithGoogleFailure(e.message ?? 'An unknown error occurred');
     } catch (e) {
       // Revert await if needed, analyzer said `not a subtype of Future`.
       // Let's remove await below if this block is replaced.
-      throw LogInWithGoogleFailure();
+      throw LogInWithGoogleFailure(e.toString());
     }
   }
 
@@ -103,7 +109,3 @@ extension on firebase_auth.User {
   }
 }
 
-class SignUpFailure implements Exception {}
-class LogInWithEmailAndPasswordFailure implements Exception {}
-class LogInWithGoogleFailure implements Exception {}
-class LogOutFailure implements Exception {}

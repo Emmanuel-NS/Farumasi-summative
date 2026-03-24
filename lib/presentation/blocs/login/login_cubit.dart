@@ -16,9 +16,11 @@ class LoginCubit extends Cubit<LoginState> {
         email: email,
         password: password,
       );
-      emit(const LoginState(status: LoginStatus.success));
+      emit(LoginState(status: LoginStatus.success, userEmail: email));
+    } on LogInWithEmailAndPasswordFailure catch (e) {
+      emit(LoginState(status: LoginStatus.error, errorMessage: "Login Failed: ${e.message}"));
     } catch (_) {
-      emit(const LoginState(status: LoginStatus.error, errorMessage: "Login Failed"));
+      emit(const LoginState(status: LoginStatus.error, errorMessage: "Login Failed: Unknown error"));
     }
   }
 
@@ -30,7 +32,9 @@ class LoginCubit extends Cubit<LoginState> {
         password: password,
         displayName: displayName,
       );
-      emit(const LoginState(status: LoginStatus.success));
+      emit(LoginState(status: LoginStatus.success, userEmail: email));
+    } on SignUpFailure catch (e) {
+        emit(LoginState(status: LoginStatus.error, errorMessage: "Sign Up Failed: ${e.message}"));
     } catch (_) {
         emit(const LoginState(status: LoginStatus.error, errorMessage: "Sign Up Failed"));
     }
@@ -40,7 +44,11 @@ class LoginCubit extends Cubit<LoginState> {
     emit(const LoginState(status: LoginStatus.submitting));
     try {
       await _authRepository.logInWithGoogle();
-      emit(const LoginState(status: LoginStatus.success));
+      // Google user email is retrieved dynamically from the repository
+      final userEmail = _authRepository.currentUser.email;
+      emit(LoginState(status: LoginStatus.success, userEmail: userEmail));
+    } on LogInWithGoogleFailure catch (e) {
+      emit(LoginState(status: LoginStatus.error, errorMessage: "Google Login Failed: ${e.message}"));
     } catch (_) {
       emit(const LoginState(status: LoginStatus.error, errorMessage: "Google Login Failed"));
     }

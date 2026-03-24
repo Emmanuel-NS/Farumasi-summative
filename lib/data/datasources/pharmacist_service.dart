@@ -33,7 +33,7 @@ class PharmacistService extends ChangeNotifier {
       assignedPharmacyId: "PH-01",
       assignedPharmacyName: "Farumasi Pharmacy",
       pharmacyPrice: 12000, 
-      items: [dummyMedicines[0], dummyMedicines[2]],
+      items: [CartItem(medicine: dummyMedicines[0]), CartItem(medicine: dummyMedicines[2])],
       reviewedBy: "Pharmacist (You)",
       reviewedAt: DateTime.now().subtract(Duration(minutes: 40)),
       acceptedAt: DateTime.now().subtract(Duration(minutes: 5)),
@@ -50,7 +50,7 @@ class PharmacistService extends ChangeNotifier {
       assignedPharmacyName: "City Center Chemists",
       pharmacyPrice: 4500,
       deliveryFee: 1000,
-      items: [dummyMedicines[1]],
+      items: [CartItem(medicine: dummyMedicines[1])],
       reviewedBy: "Pharmacist (You)",
     ),
     // 4. Finding Pharmacy (Broadcasting)
@@ -73,7 +73,7 @@ class PharmacistService extends ChangeNotifier {
       patientCoordinates: [-1.9470, 30.0880],
       date: DateTime.now().subtract(Duration(days: 1)),
       status: OrderStatus.delivered,
-      items: [dummyMedicines[3], dummyMedicines[0]],
+      items: [CartItem(medicine: dummyMedicines[3]), CartItem(medicine: dummyMedicines[0])],
       pharmacyPrice: 15400,
       deliveryFee: 1500,
       paymentId: "TX-998877",
@@ -103,7 +103,7 @@ class PharmacistService extends ChangeNotifier {
       patientCoordinates: [-1.9750, 30.0400],
       date: DateTime.now().subtract(Duration(hours: 2)),
       status: OrderStatus.outForDelivery,
-      items: [dummyMedicines[2]],
+      items: [CartItem(medicine: dummyMedicines[2])],
       pharmacyPrice: 3200,
       assignedDriverName: "Eric M.",
       shippedAt: DateTime.now().subtract(Duration(minutes: 30)),
@@ -130,7 +130,7 @@ class PharmacistService extends ChangeNotifier {
       date: DateTime.now().subtract(Duration(days: 5)),
       prescriptionImageUrl: "assets/rx_sample1.jpg",
       status: OrderStatus.delivered,
-      items: [dummyMedicines[4]],
+      items: [CartItem(medicine: dummyMedicines[4])],
       pharmacyPrice: 5000,
       completedAt: DateTime.now().subtract(Duration(days: 5)),
     ),
@@ -155,7 +155,7 @@ class PharmacistService extends ChangeNotifier {
       patientCoordinates: [-2.0000, 30.2000],
       date: DateTime.now().subtract(Duration(minutes: 20)),
       status: OrderStatus.paymentPending,
-      items: [dummyMedicines[0], dummyMedicines[0]],
+      items: [CartItem(medicine: dummyMedicines[0]), CartItem(medicine: dummyMedicines[0])],
       pharmacyPrice: 17000,
     ),
     // 12. Pending Review (Recent)
@@ -177,7 +177,7 @@ class PharmacistService extends ChangeNotifier {
       patientCoordinates: [-1.9800, 30.0700],
       date: DateTime.now().subtract(Duration(hours: 1, minutes: 30)),
       status: OrderStatus.driverAssigned,
-      items: [dummyMedicines[2]],
+      items: [CartItem(medicine: dummyMedicines[2])],
       pharmacyPrice: 6000,
       assignedDriverName: "Jean Paul",
     ),
@@ -191,7 +191,7 @@ class PharmacistService extends ChangeNotifier {
       prescriptionImageUrl: "assets/rx_sample1.jpg",
       status: OrderStatus.pharmacyAccepted,
       assignedPharmacyName: "HealthPlus Kimironko",
-      items: [dummyMedicines[1], dummyMedicines[3]],
+      items: [CartItem(medicine: dummyMedicines[1]), CartItem(medicine: dummyMedicines[3])],
       pharmacyPrice: 9500,
     ),
     // 15. Delivered (Yesterday)
@@ -202,7 +202,7 @@ class PharmacistService extends ChangeNotifier {
       patientCoordinates: [-1.9600, 30.0600],
       date: DateTime.now().subtract(Duration(days: 1, hours: 5)),
       status: OrderStatus.delivered,
-      items: [dummyMedicines[0]],
+      items: [CartItem(medicine: dummyMedicines[0])],
       pharmacyPrice: 8500,
       completedAt: DateTime.now().subtract(Duration(days: 1)),
     ),
@@ -361,7 +361,7 @@ class PharmacistService extends ChangeNotifier {
 
     // SIMULATION: Pharmacy Accepts after 3 seconds
     Future.delayed(Duration(seconds: 3), () {
-      order.items = [dummyMedicines[0], dummyMedicines[1]]; // Mock items added by pharmacy
+      order.items = [CartItem(medicine: dummyMedicines[0]), CartItem(medicine: dummyMedicines[1])]; // Mock items added by pharmacy
       order.pharmacyPrice = 8500.0; // Mock price set by pharmacy
       order.status = OrderStatus.pharmacyAccepted;
       notifyListeners();

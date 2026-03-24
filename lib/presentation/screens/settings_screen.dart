@@ -46,7 +46,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
       body: ListView(
         children: [
-          
           if (isLoggedIn) ...[
             _buildHeader("Notifications & Updates"),
             Container(

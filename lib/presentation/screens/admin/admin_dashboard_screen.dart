@@ -6,6 +6,9 @@ import 'package:farumasi_patient_app/presentation/screens/admin/manage_pharmacie
 import 'package:farumasi_patient_app/presentation/screens/admin/admin_consultations_screen.dart';
 import 'package:farumasi_patient_app/presentation/screens/admin/manage_health_tips_screen.dart';
 import 'package:farumasi_patient_app/presentation/screens/auth_screen.dart';
+import 'package:farumasi_patient_app/presentation/screens/home_screen.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:farumasi_patient_app/presentation/blocs/auth/auth_bloc.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -86,10 +89,15 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
              Navigator.push(context, MaterialPageRoute(builder: (_) => const ManagePharmaciesScreen()));
           }),
           const Divider(),
+          _buildDrawerLink(Icons.storefront, 'View as User', () {
+             Navigator.push(context, MaterialPageRoute(builder: (_) => const HomeScreen()));
+          }),
+          const Divider(),
           ListTile(
             leading: const Icon(Icons.logout, color: Colors.red),
             title: const Text('Logout', style: TextStyle(color: Colors.red)),
             onTap: () {
+              context.read<AuthBloc>().add(const AuthLogoutRequested());
               Navigator.of(context).pushReplacement(
                 MaterialPageRoute(builder: (context) => const AuthScreen()),
               );

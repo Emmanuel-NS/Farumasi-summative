@@ -8,3 +8,17 @@ abstract class AuthRepository {
   Future<void> logInWithGoogle();
   Future<void> logOut();
 }
+
+class SignUpFailure implements Exception {
+  final String message;
+  SignUpFailure([this.message = 'An unknown exception occurred.']);
+}
+class LogInWithEmailAndPasswordFailure implements Exception {
+  final String message;
+  LogInWithEmailAndPasswordFailure([this.message = 'An unknown exception occurred.']);
+}
+class LogInWithGoogleFailure implements Exception {
+  final String message;
+  LogInWithGoogleFailure([this.message = 'An unknown exception occurred.']);
+}
+class LogOutFailure implements Exception {}

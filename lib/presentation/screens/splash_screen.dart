@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:farumasi_patient_app/data/datasources/notification_service.dart'; // Import NotificationService
 import 'package:farumasi_patient_app/presentation/blocs/auth/auth_bloc.dart';
+import '../../core/constants/app_constants.dart';
 import 'home_screen.dart';
 import 'auth_screen.dart';
+import 'admin/admin_dashboard_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -54,9 +56,17 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     debugPrint("Splash Screen: Auth Status is ${state.status}");
 
     if (state.status == AuthStatus.authenticated) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
-      );
+      final userEmail = state.user.email.toLowerCase();
+      final isAdmin = userEmail == AppConstants.adminEmail.toLowerCase();
+      if (isAdmin) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const AdminDashboardScreen()),
+        );
+      } else {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const HomeScreen()),
+        );
+      }
     } else {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => const AuthScreen()),

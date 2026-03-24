@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import '../models/models.dart';
+import '../../core/constants/app_constants.dart';
 import '../dummy_data.dart'; // Import dummy data
 
 class StateService extends ChangeNotifier {
@@ -84,7 +85,7 @@ class StateService extends ChangeNotifier {
     User(id: '1', name: 'John Doe', email: 'john@example.com', role: 'User', phone: '+250788111222'),
     User(id: '2', name: 'Jane Pharm', email: 'jane@pharmacy.rw', role: 'Pharmacist', phone: '+250788333444'),
     User(id: '3', name: 'Mike Rider', email: 'mike@rider.rw', role: 'Rider', phone: '+250788555666'),
-    User(id: '4', name: 'Admin User', email: 'admin@farumasi.rw', role: 'Admin', phone: '+250788999000'),
+    User(id: '4', name: 'Admin User', email: AppConstants.adminEmail, role: 'Admin', phone: '+250788999000'),
   ];
   List<User> get users => _users;
 
@@ -115,7 +116,7 @@ class StateService extends ChangeNotifier {
        patientCoordinates: [-1.95, 30.09],
        date: DateTime.now().subtract(const Duration(hours: 2)),
        status: OrderStatus.pendingReview,
-       items: [dummyMedicines[0]], // Assuming dummyMedicines exists
+       items: [CartItem(medicine: dummyMedicines[0])], // Assuming dummyMedicines exists
        pharmacyPrice: 5000,
      ),
       PrescriptionOrder(
@@ -125,7 +126,7 @@ class StateService extends ChangeNotifier {
        patientCoordinates: [-1.96, 30.11],
        date: DateTime.now().subtract(const Duration(days: 1)),
        status: OrderStatus.delivered,
-       items: [dummyMedicines[1], dummyMedicines[2]], 
+       items: [CartItem(medicine: dummyMedicines[1]), CartItem(medicine: dummyMedicines[2])], 
        pharmacyPrice: 12500,
      ),
   ]; 
@@ -355,7 +356,8 @@ class StateService extends ChangeNotifier {
       (item) => item.medicine.id == medicine.id,
     );
     if (existingIndex >= 0) {
-      _cartItems[existingIndex].quantity += quantity;
+      final oldItem = _cartItems[existingIndex];
+      _cartItems[existingIndex] = oldItem.copyWith(quantity: oldItem.quantity + quantity);
     } else {
       _cartItems.add(CartItem(medicine: medicine, quantity: quantity));
     }
@@ -372,8 +374,9 @@ class StateService extends ChangeNotifier {
       (item) => item.medicine.id == medicineId,
     );
     if (existingIndex >= 0) {
-      if (_cartItems[existingIndex].quantity > 1) {
-        _cartItems[existingIndex].quantity--;
+      final oldItem = _cartItems[existingIndex];
+      if (oldItem.quantity > 1) {
+        _cartItems[existingIndex] = oldItem.copyWith(quantity: oldItem.quantity - 1);
       } else {
         _cartItems.removeAt(existingIndex);
       }
@@ -386,7 +389,8 @@ class StateService extends ChangeNotifier {
       (item) => item.medicine.id == medicineId,
     );
     if (existingIndex >= 0) {
-      _cartItems[existingIndex].quantity++;
+      final oldItem = _cartItems[existingIndex];
+      _cartItems[existingIndex] = oldItem.copyWith(quantity: oldItem.quantity + 1);
       notifyListeners();
     }
   }

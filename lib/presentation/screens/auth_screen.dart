@@ -3,31 +3,35 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../../presentation/blocs/login/login_cubit.dart';
 import '../widgets/farumasi_logo_widget.dart';
+import '../../core/constants/app_constants.dart';
 import 'admin/admin_dashboard_screen.dart'; // Keep admin backdoor
 import 'home_screen.dart';
 
 class AuthScreen extends StatelessWidget {
-  const AuthScreen({super.key});
+  final bool isLogin;
+  const AuthScreen({super.key, this.isLogin = true});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => LoginCubit(context.read<AuthRepository>()),
-      child: const AuthView(),
+      child: AuthView(initialIsLogin: isLogin),
     );
   }
 }
 
 class AuthView extends StatefulWidget {
-  const AuthView({super.key});
+  final bool initialIsLogin;
+  const AuthView({super.key, required this.initialIsLogin});
 
   @override
   State<AuthView> createState() => _AuthViewState();
 }
 
 class _AuthViewState extends State<AuthView> {
-  bool _isLogin = true;
+  late bool _isLogin;
   final _formKey = GlobalKey<FormState>();
+
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -36,6 +40,7 @@ class _AuthViewState extends State<AuthView> {
   @override
   void initState() {
     super.initState();
+    _isLogin = widget.initialIsLogin;
   }
 
   @override
@@ -51,14 +56,6 @@ class _AuthViewState extends State<AuthView> {
     if (_formKey.currentState!.validate()) {
       final email = _emailController.text.trim();
       final password = _passwordController.text.trim();
-
-      // 1. Admin Login (Backdoor for demo)
-      if (email == 'admin@farumasi.rw' && password == 'admin123') {
-         Navigator.of(context).pushReplacement(
-           MaterialPageRoute(builder: (context) => const AdminDashboardScreen()),
-         );
-         return;
-      }
 
       if (_isLogin) {
         context.read<LoginCubit>().logInWithCredentials(email, password);
@@ -83,8 +80,11 @@ class _AuthViewState extends State<AuthView> {
              SnackBar(content: Text(state.errorMessage ?? "Authentication Failed")),
            );
         } else if (state.status == LoginStatus.success) {
-           if (Navigator.canPop(context)) {
-             Navigator.pop(context);
+           final isLoggingInAsAdmin = state.userEmail?.toLowerCase() == AppConstants.adminEmail.toLowerCase();
+           if (isLoggingInAsAdmin) {
+             Navigator.of(context).pushReplacement(
+               MaterialPageRoute(builder: (context) => const AdminDashboardScreen()),
+             );
            } else {
              Navigator.of(context).pushReplacement(
                MaterialPageRoute(builder: (context) => const HomeScreen()),
@@ -158,7 +158,7 @@ class _AuthViewState extends State<AuthView> {
                                   prefixIcon: const Icon(Icons.person, color: Colors.green),
                                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                                 ),
-                                validator: (value) => value!.isEmpty ? 'Please enter your name' : null,
+                                validator: (value) => value == null || value.isEmpty ? 'Please enter your name' : null,
                               ),
                               const SizedBox(height: 16),
                             ],
@@ -185,7 +185,11 @@ class _AuthViewState extends State<AuthView> {
                                 prefixIcon: const Icon(Icons.lock, color: Colors.green),
                                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                               ),
-                              validator: (value) => value!.length < 6 ? 'Password must be at least 6 characters' : null,
+                              validator: (value) => value == null || value.isEmpty 
+                                ? 'Please enter your password'
+                                : value.length < 6 
+                                  ? 'Password must be at least 6 characters' 
+                                  : null,
                             ),
                             if (!_isLogin) ...[
                               const SizedBox(height: 16),
@@ -197,7 +201,7 @@ class _AuthViewState extends State<AuthView> {
                                   prefixIcon: const Icon(Icons.lock_outline, color: Colors.green),
                                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                                 ),
-                                validator: (value) => value!.isEmpty ? 'Please confirm your password' : null,
+                                validator: (value) => value == null || value.isEmpty ? 'Please confirm your password' : null,
                               ),
                             ],
                             const SizedBox(height: 24),

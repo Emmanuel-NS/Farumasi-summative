@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../domain/entities/health_article.dart';
-import '../../../data/repositories/health_repository_impl.dart';
 import '../../blocs/health_tips/health_tips_bloc.dart';
 import '../../blocs/health_tips/health_tips_event.dart';
 import '../../blocs/health_tips/health_tips_state.dart';
@@ -12,12 +11,9 @@ class ManageHealthTipsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => HealthTipsBloc(healthRepository: HealthRepositoryImpl())..add(LoadHealthTips()),
-      child: DefaultTabController(
-        length: 3,
-        child: _ManageHealthTipsView(),
-      ),
+    return DefaultTabController(
+      length: 3,
+      child: _ManageHealthTipsView(),
     );
   }
 }
