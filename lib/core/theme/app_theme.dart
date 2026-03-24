@@ -38,4 +38,18 @@ class AppTheme {
       labelStyle: TextStyle(color: Colors.green),
     ),
   );
+
+  static final ThemeData darkTheme = ThemeData.dark().copyWith(
+    primaryColor: Colors.green,
+    scaffoldBackgroundColor: const Color(0xFF121212),
+    colorScheme: const ColorScheme.dark(
+      primary: Colors.green,
+      secondary: Colors.lightGreen,
+    ),
+    appBarTheme: const AppBarTheme(
+      backgroundColor: Colors.black,
+      foregroundColor: Colors.white,
+      elevation: 0,
+    ),
+  );
 }
