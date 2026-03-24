@@ -19,7 +19,8 @@ class MockCartRepository implements CartRepository {
     await Future.delayed(_delay);
     final existingIndex = _cartItems.indexWhere((item) => item.medicine.id == medicine.id);
     if (existingIndex >= 0) {
-      _cartItems[existingIndex].quantity += quantity;
+      final currentItem = _cartItems[existingIndex];
+      _cartItems[existingIndex] = currentItem.copyWith(quantity: currentItem.quantity + quantity);
     } else {
       _cartItems.add(CartItem(medicine: medicine, quantity: quantity));
     }
@@ -39,7 +40,7 @@ class MockCartRepository implements CartRepository {
       if (quantity <= 0) {
          _cartItems.removeAt(existingIndex);
       } else {
-         _cartItems[existingIndex].quantity = quantity;
+         _cartItems[existingIndex] = _cartItems[existingIndex].copyWith(quantity: quantity);
       }
     }
   }
