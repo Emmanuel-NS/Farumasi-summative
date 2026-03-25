@@ -3,7 +3,8 @@ import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/auth_repository.dart';
 
 class MockAuthRepository implements AuthRepository {
-  final StreamController<UserEntity> _userController = StreamController<UserEntity>.broadcast();
+  final StreamController<UserEntity> _userController =
+      StreamController<UserEntity>.broadcast();
   UserEntity _currentUser = UserEntity.empty;
 
   MockAuthRepository() {
@@ -18,7 +19,11 @@ class MockAuthRepository implements AuthRepository {
   UserEntity get currentUser => _currentUser;
 
   @override
-  Future<void> signUp({required String email, required String password, String? displayName}) async {
+  Future<void> signUp({
+    required String email,
+    required String password,
+    String? displayName,
+  }) async {
     await Future.delayed(const Duration(seconds: 1));
     _currentUser = UserEntity(
       id: 'mock_user_id',
@@ -29,7 +34,10 @@ class MockAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<void> logInWithEmailAndPassword({required String email, required String password}) async {
+  Future<void> logInWithEmailAndPassword({
+    required String email,
+    required String password,
+  }) async {
     await Future.delayed(const Duration(seconds: 1));
     _currentUser = UserEntity(
       id: 'mock_user_id',
@@ -55,5 +63,13 @@ class MockAuthRepository implements AuthRepository {
     await Future.delayed(const Duration(seconds: 1));
     _currentUser = UserEntity.empty;
     _userController.add(_currentUser);
+  }
+
+  @override
+  Future<void> sendPasswordResetEmail(String email) async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    if (email.trim().isEmpty) {
+      throw ResetPasswordFailure('Email is required');
+    }
   }
 }
