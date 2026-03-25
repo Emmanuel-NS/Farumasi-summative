@@ -1,8 +1,13 @@
-import 'dart:io';
+﻿import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:farumasi_patient_app/data/models/models.dart';
+import 'package:farumasi_patient_app/domain/repositories/chat_repository.dart';
+import 'package:farumasi_patient_app/data/models/message.dart';
+import 'package:intl/intl.dart';
 
 class ChatScreen extends StatefulWidget {
   final Pharmacist pharmacist;
@@ -16,28 +21,24 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  final List<Message> _messages = [];
+  
+  late ChatRepository _chatRepository;
+  String? _currentUserId;
+  late String _roomId;
 
   @override
   void initState() {
     super.initState();
-    // Add some dummy initial messages
-    _messages.addAll([
-      Message(
-        id: '1',
-        senderId: widget.pharmacist.id,
-        content: 'Hello! How can I help you today?',
-        timestamp: DateTime.now().subtract(const Duration(minutes: 5)),
-        isMe: false,
-      ),
-    ]);
+    _chatRepository = RepositoryProvider.of<ChatRepository>(context);
+    _currentUserId = FirebaseAuth.instance.currentUser?.uid ?? 'unknown_user';
+    _roomId = _chatRepository.getRoomId(_currentUserId!, widget.pharmacist.id);
   }
 
   void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
         _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
+          _scrollController.position.minScrollExtent, // ListView is reversed
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeOut,
         );
@@ -45,129 +46,50 @@ class _ChatScreenState extends State<ChatScreen> {
     });
   }
 
-  Future<void> _pickImage(ImageSource source) async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: source);
-    
-    if (pickedFile != null) {
-      _sendAttachment(pickedFile.path, 'image');
-    }
-  }
-
-  Future<void> _pickDocument() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles();
-
-    if (result != null) {
-      File file = File(result.files.single.path!);
-      _sendAttachment(file.path, 'file');
-    }
-  }
-
-  void _sendAttachment(String path, String type) {
-    setState(() {
-      _messages.add(
-        Message(
-          id: DateTime.now().toString(),
-          senderId: 'user',
-          content: '', // Empty content for file-only messages
-          timestamp: DateTime.now(),
-          isMe: true,
-          attachmentPath: path,
-          attachmentType: type,
-        ),
-      );
-    });
-    _scrollToBottom();
-  }
-
-  void _showAttachmentOptions() {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(16),
-        height: 150,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            Column(
-              children: [
-                IconButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    _pickImage(ImageSource.camera);
-                  },
-                  icon: const Icon(Icons.camera_alt, size: 30, color: Colors.green),
-                ),
-                const Text("Camera"),
-              ],
-            ),
-            Column(
-              children: [
-                IconButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    _pickImage(ImageSource.gallery);
-                  },
-                  icon: const Icon(Icons.photo, size: 30, color: Colors.blue),
-                ),
-                const Text("Gallery"),
-              ],
-            ),
-            Column(
-              children: [
-                IconButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    _pickDocument();
-                  },
-                  icon: const Icon(Icons.insert_drive_file, size: 30, color: Colors.orange),
-                ),
-                const Text("Document"),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   void _sendMessage() {
     if (_messageController.text.trim().isEmpty) return;
 
-    final text = _messageController.text.trim();
+    final content = _messageController.text.trim();
     _messageController.clear();
 
-    setState(() {
-      _messages.add(
-        Message(
-          id: DateTime.now().toString(),
-          senderId: 'user', // Assuming user ID
-          content: text,
-          timestamp: DateTime.now(),
-          isMe: true,
-        ),
-      );
-    });
-    
-    _scrollToBottom();
+    final message = Message(
+      id: '', // Generated by Firestore
+      senderId: _currentUserId!,
+      content: content,
+      timestamp: DateTime.now(),
+      isMe: true, // Will be re-evaluated when reading
+    );
 
-    // simulate a response after a short delay
-    Future.delayed(const Duration(seconds: 1), () {
-      if (mounted) {
-        setState(() {
-          _messages.add(
-            Message(
-              id: DateTime.now().toString(),
-              senderId: widget.pharmacist.id,
-              content: "I'd be happy to assist with that. Could you provide more details regarding your symptoms for better advice?",
-              timestamp: DateTime.now(),
-              isMe: false,
-            ),
-          );
-        });
-        _scrollToBottom();
-      }
-    });
+    _chatRepository.sendMessage(
+      _roomId, 
+      message, 
+      patientId: _currentUserId, 
+      adminId: widget.pharmacist.id,
+    );
+    _scrollToBottom();
+  }
+
+  void _deleteMessage(String messageId) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Message'),
+        content: const Text('Are you sure you want to delete this message?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              _chatRepository.deleteMessage(_roomId, messageId);
+              Navigator.pop(context);
+            },
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -177,147 +99,161 @@ class _ChatScreenState extends State<ChatScreen> {
         title: Row(
           children: [
             CircleAvatar(
-              backgroundImage: NetworkImage(widget.pharmacist.imageUrl),
-              radius: 16,
+              backgroundImage: widget.pharmacist.imageUrl.isNotEmpty
+                  ? NetworkImage(widget.pharmacist.imageUrl)
+                  : null,
+              child: widget.pharmacist.imageUrl.isEmpty
+                  ? Text(widget.pharmacist.name.isNotEmpty ? widget.pharmacist.name[0] : 'P')
+                  : null,
             ),
-            const SizedBox(width: 8),
-            Text(widget.pharmacist.name),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.pharmacist.name,
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                  const Text(
+                    'Online',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.normal,
+                      color: Colors.greenAccent,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
-        backgroundColor: Colors.green,
-        foregroundColor: Colors.white,
       ),
       body: Column(
         children: [
           Expanded(
-            child: ListView.builder(
-              controller: _scrollController,
-              padding: const EdgeInsets.all(16),
-              itemCount: _messages.length,
-              itemBuilder: (context, index) {
-                final message = _messages[index];
-                final isMe = message.isMe;
+            child: StreamBuilder<List<Message>>(
+              stream: _chatRepository.getMessagesStream(_roomId, _currentUserId!),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (snapshot.hasError) {
+                  return const Center(child: Text('Error loading messages.'));
+                }
+                
+                final messages = snapshot.data ?? [];
+                
+                if (messages.isEmpty) {
+                  return const Center(child: Text('Say hi!'));
+                }
 
-                return Align(
-                  alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(vertical: 4),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: isMe ? Colors.green : Colors.grey[200],
-                      borderRadius: BorderRadius.circular(20).copyWith(
-                        bottomRight: isMe ? const Radius.circular(0) : null,
-                        bottomLeft: !isMe ? const Radius.circular(0) : null,
-                      ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        if (message.attachmentPath != null)
-                          message.attachmentType == 'image'
-                              ? ClipRRect(
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: Image.file(
-                                    File(message.attachmentPath!),
-                                    height: 150,
-                                    width: 150,
-                                    fit: BoxFit.cover,
-                                  ),
-                                )
-                              : Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      const Icon(Icons.insert_drive_file, color: Colors.blue),
-                                      const SizedBox(width: 8),
-                                      Flexible(
-                                        child: Text(
-                                          message.attachmentPath!.split('/').last,
-                                          style: const TextStyle(color: Colors.black87),
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                        if (message.content.isNotEmpty)
-                        Text(
-                          message.content,
-                          style: TextStyle(
-                            color: isMe ? Colors.white : Colors.black87,
-                            fontSize: 15,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          "${message.timestamp.hour}:${message.timestamp.minute.toString().padLeft(2, '0')}",
-                          style: TextStyle(
-                            color: isMe ? Colors.white70 : Colors.black54,
-                            fontSize: 10,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                return ListView.builder(
+                  controller: _scrollController,
+                  reverse: true, // Show newest at the bottom
+                  padding: const EdgeInsets.all(16),
+                  itemCount: messages.length,
+                  itemBuilder: (context, index) {
+                    final message = messages[index];
+                    return GestureDetector(
+                      onLongPress: message.isMe ? () => _deleteMessage(message.id) : null,
+                      child: _buildMessageBubble(message),
+                    );
+                  },
                 );
               },
             ),
           ),
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  offset: const Offset(0, -1),
-                  blurRadius: 5,
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.attach_file, color: Colors.grey),
-                  onPressed: _showAttachmentOptions,
-                ),
-                Expanded(
-                  child: TextField(
-                    controller: _messageController,
-                    decoration: InputDecoration(
-                      hintText: 'Type a message...',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(24),
-                        borderSide: BorderSide.none,
-                      ),
-                      filled: true,
-                      fillColor: Colors.grey[100],
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
-                    ),
-                    textCapitalization: TextCapitalization.sentences,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                CircleAvatar(
-                  backgroundColor: Colors.green,
-                  child: IconButton(
-                    icon: const Icon(Icons.send, color: Colors.white, size: 18),
-                    onPressed: _sendMessage,
-                  ),
-                ),
-              ],
-            ),
-          ),
+          _buildMessageInput(),
         ],
       ),
     );
+  }
+
+  Widget _buildMessageBubble(Message message) {
+    return Align(
+      alignment: message.isMe ? Alignment.centerRight : Alignment.centerLeft,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsets.all(12),
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width * 0.75,
+        ),
+        decoration: BoxDecoration(
+          color: message.isMe
+              ? Theme.of(context).primaryColor
+              : Colors.grey[200] ?? Colors.grey,
+          borderRadius: BorderRadius.circular(16).copyWith(
+            bottomRight: message.isMe ? const Radius.circular(0) : null,
+            bottomLeft: !message.isMe ? const Radius.circular(0) : null,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+             Text(
+                 message.content,
+                 style: TextStyle(
+                   color: message.isMe ? Colors.white : Colors.black87,
+                 ),
+             ),
+            const SizedBox(height: 4),
+            Text(
+              DateFormat('hh:mm a').format(message.timestamp),
+              style: TextStyle(
+                fontSize: 10,
+                color: message.isMe ? Colors.white70 : Colors.black54,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMessageInput() {
+    return Container(
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+          ),
+        ],
+      ),
+      child: SafeArea(
+        child: Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: _messageController,
+                decoration: const InputDecoration(
+                  hintText: 'Type a message...',
+                  border: InputBorder.none,
+                ),
+                textCapitalization: TextCapitalization.sentences,
+                onSubmitted: (_) => _sendMessage(),
+              ),
+            ),
+            IconButton(
+              onPressed: _sendMessage,
+              icon: Icon(
+                Icons.send,
+                color: Theme.of(context).primaryColor,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _messageController.dispose();
+    _scrollController.dispose();
+    super.dispose();
   }
 }

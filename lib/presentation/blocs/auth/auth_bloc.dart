@@ -11,18 +11,21 @@ part 'auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   AuthBloc({required AuthRepository authRepository})
-      : _authRepository = authRepository,
-        super(
-          authRepository.currentUser.isEmpty
-              ? const AuthState.unauthenticated()
-              : AuthState.authenticated(authRepository.currentUser),
-        ) {
+    : _authRepository = authRepository,
+      super(
+        authRepository.currentUser.isEmpty
+            ? const AuthState.unauthenticated()
+            : AuthState.authenticated(authRepository.currentUser),
+      ) {
     on<AuthUserChanged>(_onUserChanged);
     on<AuthLogoutRequested>(_onLogoutRequested);
-    
+
     // Sync initial state if user is already logged in
     if (!authRepository.currentUser.isEmpty) {
-      StateService().login(authRepository.currentUser.email, name: authRepository.currentUser.displayName);
+      StateService().login(
+        authRepository.currentUser.email,
+        name: authRepository.currentUser.displayName,
+      );
     } else {
       StateService().logout();
     }

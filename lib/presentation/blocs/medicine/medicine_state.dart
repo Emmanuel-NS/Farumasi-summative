@@ -3,7 +3,7 @@ import 'package:farumasi_patient_app/data/models/models.dart';
 
 abstract class MedicineState extends Equatable {
   const MedicineState();
-  
+
   @override
   List<Object> get props => [];
 }
@@ -18,7 +18,7 @@ class MedicineLoaded extends MedicineState {
   final String searchQuery;
 
   const MedicineLoaded({
-    required this.medicines, 
+    required this.medicines,
     this.activeCategory = 'All',
     this.searchQuery = '',
   });

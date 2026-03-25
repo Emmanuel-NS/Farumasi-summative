@@ -198,12 +198,10 @@ class _AuthViewState extends State<AuthView> {
                                 ),
                               ),
                               validator: (value) {
-                                if (value == null || value.isEmpty) {
+                                if (value == null || value.isEmpty)
                                   return 'Please enter your email';
-                                }
-                                if (!value.contains('@')) {
+                                if (!value.contains('@'))
                                   return 'Please enter a valid email';
-                                }
                                 return null;
                               },
                             ),
@@ -228,27 +226,17 @@ class _AuthViewState extends State<AuthView> {
                                   ? 'Password must be at least 6 characters'
                                   : null,
                             ),
-                            if (_isLogin)
+                            if (_isLogin) ...[
                               Align(
                                 alignment: Alignment.centerRight,
                                 child: TextButton(
                                   onPressed: () {
-                                    Navigator.of(context).push(
-                                      MaterialPageRoute<void>(
-                                        builder: (_) =>
-                                            const ForgotPasswordScreen(),
-                                      ),
-                                    );
+                                     Navigator.push(context, MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()));
                                   },
-                                  child: Text(
-                                    'Forgot password?',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.green.shade700,
-                                    ),
-                                  ),
+                                  child: const Text('Forgot Password?'),
                                 ),
                               ),
+                            ],
                             if (!_isLogin) ...[
                               const SizedBox(height: 16),
                               TextFormField(

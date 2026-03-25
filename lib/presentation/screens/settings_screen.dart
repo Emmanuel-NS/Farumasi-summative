@@ -58,44 +58,71 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ],
               ),
             ),
-            
+
             const SizedBox(height: 20),
             _buildHeader("Account Security"),
             Container(
               color: Colors.white,
               child: Column(
                 children: [
-                   ListTile(
+                  ListTile(
                     leading: Container(
                       padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(color: Colors.green.shade50, borderRadius: BorderRadius.circular(8)),
+                      decoration: BoxDecoration(
+                        color: Colors.green.shade50,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                       child: const Icon(Icons.security, color: Colors.green),
                     ),
                     title: const Text('Security Center'),
-                     subtitle: const Text('2FA, Biometrics, Login history'),
-                     trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
-                     onTap: () {
-                       Navigator.push(context, MaterialPageRoute(builder: (c) => const SecurityScreen()));
-                     },
-                   ),
-                   const Divider(height: 1, indent: 64),
-                   ListTile(
+                    subtitle: const Text('2FA, Biometrics, Login history'),
+                    trailing: const Icon(
+                      Icons.arrow_forward_ios,
+                      size: 16,
+                      color: Colors.grey,
+                    ),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (c) => const SecurityScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  const Divider(height: 1, indent: 64),
+                  ListTile(
                     leading: Container(
                       padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(color: Colors.red.shade50, borderRadius: BorderRadius.circular(8)),
-                      child: const Icon(Icons.privacy_tip, color: Colors.indigo),
+                      decoration: BoxDecoration(
+                        color: Colors.red.shade50,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(
+                        Icons.privacy_tip,
+                        color: Colors.indigo,
+                      ),
                     ),
                     title: const Text('Data Privacy'),
-                     subtitle: const Text('Manage data, permissions & passcode'),
-                     trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
-                     onTap: () {
-                       Navigator.push(context, MaterialPageRoute(builder: (c) => const DataPrivacyScreen()));
-                     },
-                   ),
+                    subtitle: const Text('Manage data, permissions & passcode'),
+                    trailing: const Icon(
+                      Icons.arrow_forward_ios,
+                      size: 16,
+                      color: Colors.grey,
+                    ),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (c) => const DataPrivacyScreen(),
+                        ),
+                      );
+                    },
+                  ),
                 ],
               ),
             ),
-             const SizedBox(height: 20),
+            const SizedBox(height: 20),
           ],
 
           _buildHeader("Transparency & Control"),
@@ -105,48 +132,91 @@ class _SettingsScreenState extends State<SettingsScreen> {
               children: [
                 if (isLoggedIn) ...[
                   ListTile(
-                    leading: const Icon(Icons.verified_user, color: Colors.blue),
+                    leading: const Icon(
+                      Icons.verified_user,
+                      color: Colors.blue,
+                    ),
                     title: const Text('Permissions & Policies'),
-                    subtitle: const Text('Pharmacists, Delivery, Data Management'),
-                    trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+                    subtitle: const Text(
+                      'Pharmacists, Delivery, Data Management',
+                    ),
+                    trailing: const Icon(
+                      Icons.arrow_forward_ios,
+                      size: 16,
+                      color: Colors.grey,
+                    ),
                     onTap: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (c) => const TransparencyPermissionsScreen()));
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (c) => const TransparencyPermissionsScreen(),
+                        ),
+                      );
                     },
                   ),
                   const Divider(height: 1, indent: 64),
                 ],
                 ListTile(
-                  leading: const Icon(Icons.description, color: Colors.blue), 
+                  leading: const Icon(Icons.description, color: Colors.blue),
                   title: const Text('Terms & Conditions'),
-                  trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+                  trailing: const Icon(
+                    Icons.arrow_forward_ios,
+                    size: 16,
+                    color: Colors.grey,
+                  ),
                   onTap: () {
-                     Navigator.push(context, MaterialPageRoute(builder: (c) => const TermsConditionsScreen()));
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (c) => const TermsConditionsScreen(),
+                      ),
+                    );
                   },
                 ),
                 const Divider(height: 1, indent: 64),
                 ListTile(
                   leading: const Icon(Icons.help_outline, color: Colors.blue),
                   title: const Text('Help & Support'),
-                  trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+                  trailing: const Icon(
+                    Icons.arrow_forward_ios,
+                    size: 16,
+                    color: Colors.grey,
+                  ),
                   onTap: () {
-                     Navigator.push(context, MaterialPageRoute(builder: (c) => const HelpScreen()));
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (c) => const HelpScreen()),
+                    );
                   },
                 ),
-                 const Divider(height: 1, indent: 64),
+                const Divider(height: 1, indent: 64),
                 ListTile(
-                  leading: const Icon(Icons.info_outline, color: Colors.blue), // Changed icon
+                  leading: const Icon(
+                    Icons.info_outline,
+                    color: Colors.blue,
+                  ), // Changed icon
                   title: const Text('About App'),
                   subtitle: const Text('Version 1.0.0'),
-                  trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+                  trailing: const Icon(
+                    Icons.arrow_forward_ios,
+                    size: 16,
+                    color: Colors.grey,
+                  ),
                   onTap: () {
-                     showAboutDialog(
+                    showAboutDialog(
                       context: context,
                       applicationName: 'Farumasi App',
                       applicationVersion: '1.0.0',
-                      applicationIcon: const Icon(Icons.local_pharmacy, size: 50, color: Colors.green),
+                      applicationIcon: const Icon(
+                        Icons.local_pharmacy,
+                        size: 50,
+                        color: Colors.green,
+                      ),
                       children: [
-                        const Text("Farumasi App connects you with trusted pharmacies and doctors for seamless healthcare delivery."),
-                      ]
+                        const Text(
+                          "Farumasi App connects you with trusted pharmacies and doctors for seamless healthcare delivery.",
+                        ),
+                      ],
                     );
                   },
                 ),
@@ -154,39 +224,51 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
 
-           const SizedBox(height: 20),
-           _buildHeader("Preferences"),
-           Container(
+          const SizedBox(height: 20),
+          _buildHeader("Preferences"),
+          Container(
             color: Colors.white,
             child: Column(
               children: [
-                 ListTile(
+                ListTile(
                   leading: const Icon(Icons.language, color: Colors.grey),
                   title: const Text('Language'),
-                   trailing: DropdownButtonHideUnderline(
-                     child: DropdownButton<String>(
-                       value: 'en',
-                       items: const [
-                         DropdownMenuItem(value: 'en', child: Text("English")),
-                         DropdownMenuItem(value: 'fr', child: Text("Français")),
-                         DropdownMenuItem(value: 'rw', child: Text("Kinyarwanda")),
-                       ], 
-                       onChanged: (v) {},
-                       style: const TextStyle(color: Colors.black87, fontSize: 14),
-                     ),
-                   ),
-                 ),
-                 const Divider(height: 1, indent: 16),
-                 ListTile(
-                  leading: const Icon(Icons.dark_mode_outlined, color: Colors.grey),
+                  trailing: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: 'en',
+                      items: const [
+                        DropdownMenuItem(value: 'en', child: Text("English")),
+                        DropdownMenuItem(value: 'fr', child: Text("Français")),
+                        DropdownMenuItem(
+                          value: 'rw',
+                          child: Text("Kinyarwanda"),
+                        ),
+                      ],
+                      onChanged: (v) {},
+                      style: const TextStyle(
+                        color: Colors.black87,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                ),
+                const Divider(height: 1, indent: 16),
+                ListTile(
+                  leading: const Icon(
+                    Icons.dark_mode_outlined,
+                    color: Colors.grey,
+                  ),
                   title: const Text('Theme'),
-                   trailing: Text("System Default", style: TextStyle(color: Colors.grey.shade600, fontSize: 14)),
-                   onTap: () {},
-                 ),
+                  trailing: Text(
+                    "System Default",
+                    style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+                  ),
+                  onTap: () {},
+                ),
               ],
             ),
-           ),
-           const SizedBox(height: 40),
+          ),
+          const SizedBox(height: 40),
         ],
       ),
     );
@@ -194,9 +276,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildChannelSection() {
     return ExpansionTile(
-      leading: const Icon(Icons.notifications_active_outlined, color: Colors.blue),
+      leading: const Icon(
+        Icons.notifications_active_outlined,
+        color: Colors.blue,
+      ),
       title: const Text("Where to reach you"),
-      subtitle: Text(_getEnabledChannels(), maxLines: 1, overflow: TextOverflow.ellipsis),
+      subtitle: Text(
+        _getEnabledChannels(),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
       children: _notificationChannels.keys.map((key) {
         return SwitchListTile(
           title: Text(_formatKey(key)),
@@ -207,7 +296,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           dense: true,
           contentPadding: const EdgeInsets.symmetric(horizontal: 16),
           onChanged: (val) {
-             setState(() => _notificationChannels[key] = val);
+            setState(() => _notificationChannels[key] = val);
           },
         );
       }).toList(),
@@ -222,27 +311,58 @@ class _SettingsScreenState extends State<SettingsScreen> {
       initiallyExpanded: true,
       children: [
         // Order Updates: Always ON (disabled switch)
-        _buildSwitch("Order Updates", "Tracking, delivery status, receipts", 'orders', isLocked: true),
-        _buildSwitch("Health Tips", "Daily remedies, wellness advice", 'health_tips'),
-        _buildSwitch("Reminders", "Medication schedules, refill alerts", 'reminders'),
-        _buildSwitch("Promotions", "Discounts, deals, flash sales", 'promotions'),
-        _buildSwitch("Did You Know?", "Fun medical facts & trivia", 'app_updates'),
+        _buildSwitch(
+          "Order Updates",
+          "Tracking, delivery status, receipts",
+          'orders',
+          isLocked: true,
+        ),
+        _buildSwitch(
+          "Health Tips",
+          "Daily remedies, wellness advice",
+          'health_tips',
+        ),
+        _buildSwitch(
+          "Reminders",
+          "Medication schedules, refill alerts",
+          'reminders',
+        ),
+        _buildSwitch(
+          "Promotions",
+          "Discounts, deals, flash sales",
+          'promotions',
+        ),
+        _buildSwitch(
+          "Did You Know?",
+          "Fun medical facts & trivia",
+          'app_updates',
+        ),
       ],
     );
   }
 
-  Widget _buildSwitch(String title, String subtitle, String key, {bool isLocked = false}) {
+  Widget _buildSwitch(
+    String title,
+    String subtitle,
+    String key, {
+    bool isLocked = false,
+  }) {
     return SwitchListTile(
       title: Text(title, style: const TextStyle(fontWeight: FontWeight.w500)),
-      subtitle: Text(subtitle, style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+      subtitle: Text(
+        subtitle,
+        style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+      ),
       value: isLocked ? true : (_notificationCategories[key] ?? false),
       activeColor: Colors.green,
       inactiveThumbColor: Colors.grey,
       inactiveTrackColor: Colors.grey.shade200,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      onChanged: isLocked ? null : (val) {
-        setState(() => _notificationCategories[key] = val);
-      },
+      onChanged: isLocked
+          ? null
+          : (val) {
+              setState(() => _notificationCategories[key] = val);
+            },
     );
   }
 
@@ -262,17 +382,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   String _formatKey(String key) {
-    switch(key) {
-      case 'push': return "Push Notifications";
-      case 'email': return "Email";
-      case 'sms': return "SMS Text Message";
-      case 'whatsapp': return "WhatsApp";
-      default: return key;
+    switch (key) {
+      case 'push':
+        return "Push Notifications";
+      case 'email':
+        return "Email";
+      case 'sms':
+        return "SMS Text Message";
+      case 'whatsapp':
+        return "WhatsApp";
+      default:
+        return key;
     }
   }
 
   String _getEnabledChannels() {
-    final enabled = _notificationChannels.entries.where((e) => e.value).map((e) => _formatKey(e.key)).toList();
+    final enabled = _notificationChannels.entries
+        .where((e) => e.value)
+        .map((e) => _formatKey(e.key))
+        .toList();
     if (enabled.isEmpty) return "None";
     if (enabled.length == _notificationChannels.length) return "All Channels";
     return enabled.join(", ");

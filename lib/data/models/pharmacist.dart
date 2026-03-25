@@ -1,8 +1,4 @@
-enum PharmacistStatus {
-  available,
-  busy,
-  offline,
-}
+enum PharmacistStatus { available, busy, offline }
 
 class Pharmacist {
   final String id;

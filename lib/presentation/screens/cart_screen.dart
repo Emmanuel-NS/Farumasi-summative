@@ -21,14 +21,17 @@ class CartScreen extends StatelessWidget {
             elevation: 0,
             backgroundColor: Colors.white,
             foregroundColor: Colors.black,
-            title: const Text('My Cart', style: TextStyle(fontWeight: FontWeight.bold)),
+            title: const Text(
+              'My Cart',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             centerTitle: true,
             actions: [
               IconButton(
                 icon: const Icon(Icons.delete_outline, color: Colors.grey),
                 tooltip: "Clear Cart",
                 onPressed: () {
-                   if (state is CartLoaded && state.cartItems.isNotEmpty) {
+                  if (state is CartLoaded && state.cartItems.isNotEmpty) {
                     _showClearCartDialog(context);
                   }
                 },
@@ -113,18 +116,25 @@ class CartScreen extends StatelessWidget {
                       onPressed: () {
                         if (!isLoggedIn) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("Please login to upload a prescription.")),
+                            const SnackBar(
+                              content: Text(
+                                "Please login to upload a prescription.",
+                              ),
+                            ),
                           );
                           return;
                         }
                         Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (context) => const PrescriptionUploadScreen(),
+                            builder: (context) =>
+                                const PrescriptionUploadScreen(),
                           ),
                         );
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: isLoggedIn ? Colors.green : Colors.grey,
+                        backgroundColor: isLoggedIn
+                            ? Colors.green
+                            : Colors.grey,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
@@ -137,7 +147,7 @@ class CartScreen extends StatelessWidget {
                 ),
               ],
             ),
-          )
+          ),
         ],
       ),
     );
@@ -200,14 +210,18 @@ class CartScreen extends StatelessWidget {
                   onPressed: () {
                     if (!isLoggedIn) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Please login to proceed.")),
+                        const SnackBar(
+                          content: Text("Please login to proceed."),
+                        ),
                       );
                       // Optionally trigger login dialog or navigate to login
                       return;
                     }
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const CheckoutScreen()),
+                      MaterialPageRoute(
+                        builder: (context) => const CheckoutScreen(),
+                      ),
                     );
                   },
                   style: ElevatedButton.styleFrom(
@@ -218,11 +232,16 @@ class CartScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(16),
                     ),
                     elevation: 4,
-                    shadowColor: isLoggedIn ? Colors.green.withOpacity(0.4) : Colors.transparent,
+                    shadowColor: isLoggedIn
+                        ? Colors.green.withOpacity(0.4)
+                        : Colors.transparent,
                   ),
                   child: Text(
                     isLoggedIn ? "Proceed to Checkout" : "Login to Checkout",
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 );
               },
@@ -337,7 +356,11 @@ class _CartItemCard extends StatelessWidget {
                     ),
                     InkWell(
                       onTap: () => _confirmRemove(context),
-                      child: const Icon(Icons.close, size: 18, color: Colors.grey),
+                      child: const Icon(
+                        Icons.close,
+                        size: 18,
+                        color: Colors.grey,
+                      ),
                     ),
                   ],
                 ),
@@ -360,18 +383,18 @@ class _CartItemCard extends StatelessWidget {
                     ),
                     Row(
                       children: [
-                        _buildQtyBtn(
-                          Icons.remove,
-                          () {
-                            if (item.quantity > 1) {
-                              context.read<CartBloc>().add(
-                                UpdateCartItemQuantity(item.medicine.id, item.quantity - 1)
-                              );
-                            } else {
-                              _confirmRemove(context);
-                            }
-                          },
-                        ),
+                        _buildQtyBtn(Icons.remove, () {
+                          if (item.quantity > 1) {
+                            context.read<CartBloc>().add(
+                              UpdateCartItemQuantity(
+                                item.medicine.id,
+                                item.quantity - 1,
+                              ),
+                            );
+                          } else {
+                            _confirmRemove(context);
+                          }
+                        }),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 12.0),
                           child: Text(
@@ -382,7 +405,10 @@ class _CartItemCard extends StatelessWidget {
                         _buildQtyBtn(
                           Icons.add,
                           () => context.read<CartBloc>().add(
-                             UpdateCartItemQuantity(item.medicine.id, item.quantity + 1)
+                            UpdateCartItemQuantity(
+                              item.medicine.id,
+                              item.quantity + 1,
+                            ),
                           ),
                         ),
                       ],

@@ -25,10 +25,10 @@ class _DataPrivacyScreenState extends State<DataPrivacyScreen> {
       body: ListView(
         children: [
           _buildInfoBanner(),
-          
+
           const SizedBox(height: 20),
           _buildSectionHeader("Access Control"),
-          
+
           SwitchListTile(
             title: const Text('Lock Order History'),
             subtitle: const Text('Require passcode to view past medicines'),
@@ -46,7 +46,10 @@ class _DataPrivacyScreenState extends State<DataPrivacyScreen> {
           SwitchListTile(
             title: const Text('Hide Sensitive Conditions'),
             subtitle: const Text('Blur sensitive items in dashboard'),
-            secondary: const Icon(Icons.visibility_off_outlined, color: Colors.indigo),
+            secondary: const Icon(
+              Icons.visibility_off_outlined,
+              color: Colors.indigo,
+            ),
             value: _hideSensitiveConditions,
             activeColor: Colors.green,
             onChanged: (val) => setState(() => _hideSensitiveConditions = val),
@@ -57,7 +60,10 @@ class _DataPrivacyScreenState extends State<DataPrivacyScreen> {
           SwitchListTile(
             title: const Text('Share Analytics'),
             subtitle: const Text('Help us improve with anonymous usage data'),
-            secondary: const Icon(Icons.analytics_outlined, color: Colors.orange),
+            secondary: const Icon(
+              Icons.analytics_outlined,
+              color: Colors.orange,
+            ),
             value: _shareAnonymousAnalytics,
             activeColor: Colors.green,
             onChanged: (val) => setState(() => _shareAnonymousAnalytics = val),
@@ -65,13 +71,20 @@ class _DataPrivacyScreenState extends State<DataPrivacyScreen> {
 
           const Divider(),
           _buildSectionHeader("Your Data Rights"),
-           ListTile(
+          ListTile(
             title: const Text('Request Data Export'),
             subtitle: const Text('Get a copy of all your stored health data'),
-            leading: const Icon(Icons.download_outlined, color: Colors.blueGrey),
+            leading: const Icon(
+              Icons.download_outlined,
+              color: Colors.blueGrey,
+            ),
             onTap: () {
-               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Export requested. You will receive an email shortly."))
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text(
+                    "Export requested. You will receive an email shortly.",
+                  ),
+                ),
               );
             },
           ),
@@ -83,7 +96,7 @@ class _DataPrivacyScreenState extends State<DataPrivacyScreen> {
               // Show retention policy
             },
           ),
-          
+
           const SizedBox(height: 24),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -124,19 +137,30 @@ class _DataPrivacyScreenState extends State<DataPrivacyScreen> {
       padding: const EdgeInsets.all(16),
       child: Row(
         children: [
-          const Icon(Icons.verified_user_outlined, color: Colors.indigo, size: 32),
+          const Icon(
+            Icons.verified_user_outlined,
+            color: Colors.indigo,
+            size: 32,
+          ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text("Your Privacy is Protected", 
-                  style: TextStyle(fontWeight: FontWeight.bold, color: Colors.indigo)),
-                Text("We comply with HIPAA & GDPR standards to keep your health data safe.",
-                  style: TextStyle(fontSize: 12, color: Colors.indigo.shade700)),
+                const Text(
+                  "Your Privacy is Protected",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.indigo,
+                  ),
+                ),
+                Text(
+                  "We comply with HIPAA & GDPR standards to keep your health data safe.",
+                  style: TextStyle(fontSize: 12, color: Colors.indigo.shade700),
+                ),
               ],
             ),
-          )
+          ),
         ],
       ),
     );
@@ -168,8 +192,8 @@ class _DataPrivacyScreenState extends State<DataPrivacyScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context), 
-            child: const Text("Cancel")
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
           ),
           ElevatedButton(
             onPressed: () {
@@ -177,7 +201,7 @@ class _DataPrivacyScreenState extends State<DataPrivacyScreen> {
                 setState(() => _requirePasscodeForOrders = true);
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Passcode set successfully!"))
+                  const SnackBar(content: Text("Passcode set successfully!")),
                 );
               }
             },
@@ -191,22 +215,30 @@ class _DataPrivacyScreenState extends State<DataPrivacyScreen> {
 
   void _confirmDeleteAccount() {
     showDialog(
-      context: context, 
+      context: context,
       builder: (ctx) => AlertDialog(
         title: const Text("Delete Account"),
-        content: const Text("Are you sure? This will permanently erase your medical history and prescriptions."),
+        content: const Text(
+          "Are you sure? This will permanently erase your medical history and prescriptions.",
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("Cancel")),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text("Cancel"),
+          ),
           TextButton(
             onPressed: () {
               // Perform delete API call
               Navigator.pop(ctx);
-              Navigator.pop(context); 
-            }, 
-            child: const Text("Delete Permanently", style: TextStyle(color: Colors.red))
+              Navigator.pop(context);
+            },
+            child: const Text(
+              "Delete Permanently",
+              style: TextStyle(color: Colors.red),
+            ),
           ),
         ],
-      )
+      ),
     );
   }
 }

@@ -14,7 +14,7 @@ class PharmacyLoading extends PharmacyState {}
 
 class PharmacyLoaded extends PharmacyState {
   final List<Pharmacy> pharmacies;
-  
+
   const PharmacyLoaded(this.pharmacies);
 
   @override

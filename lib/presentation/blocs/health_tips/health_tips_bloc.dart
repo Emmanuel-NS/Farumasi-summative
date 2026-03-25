@@ -6,7 +6,8 @@ import 'health_tips_state.dart';
 class HealthTipsBloc extends Bloc<HealthTipsEvent, HealthTipsState> {
   final HealthRepository healthRepository;
 
-  HealthTipsBloc({required this.healthRepository}) : super(HealthTipsInitial()) {
+  HealthTipsBloc({required this.healthRepository})
+    : super(HealthTipsInitial()) {
     on<LoadHealthTips>((event, emit) async {
       emit(HealthTipsLoading());
       try {
@@ -43,7 +44,7 @@ class HealthTipsBloc extends Bloc<HealthTipsEvent, HealthTipsState> {
         emit(HealthTipsError('Failed to delete article: $e'));
       }
     });
-    
+
     // Filter logic
     on<FilterHealthTips>((event, emit) async {
       if (state is HealthTipsLoaded) {

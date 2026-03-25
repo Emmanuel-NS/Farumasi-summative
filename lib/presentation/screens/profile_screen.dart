@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:farumasi_patient_app/data/datasources/state_service.dart';
-import 'package:intl/intl.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:farumasi_patient_app/presentation/blocs/auth/auth_bloc.dart';
+
+
+
+
+import 'package:farumasi_patient_app/domain/repositories/auth_repository.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -15,13 +20,60 @@ class _ProfileScreenState extends State<ProfileScreen> {
   late TextEditingController _emailController;
   late TextEditingController _phoneController;
   bool _isEditing = false;
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: StateService().userName ?? "User Name");
-    _emailController = TextEditingController(text: "user@example.com"); // details should come from service
-    _phoneController = TextEditingController(text: "+250 788 123 456");
+    _nameController = TextEditingController();
+    _emailController = TextEditingController();
+    _phoneController = TextEditingController();
+    _loadUserProfile();
+  }
+
+  void _loadUserProfile() async {
+    final authState = context.read<AuthBloc>().state;
+    if (authState.status == AuthStatus.authenticated) {
+      final user = authState.user;
+      final profile = await context.read<AuthRepository>().getUserProfile(user.id);
+      if (profile != null && mounted) {
+        setState(() {
+          _nameController.text = profile['displayName'] ?? '';
+          _emailController.text = profile['email'] ?? '';
+          _phoneController.text = profile['phoneNumber'] ?? '';
+        });
+      }
+    }
+  }
+
+  Future<void> _updateProfile() async {
+    if (_formKey.currentState!.validate()) {
+      setState(() => _isLoading = true);
+      try {
+        final authState = context.read<AuthBloc>().state;
+        if (authState.status == AuthStatus.authenticated) {
+          final userId = authState.user.id;
+          await context.read<AuthRepository>().updateProfile(uid: userId, displayName: _nameController.text.trim(), phoneNumber: _phoneController.text.trim());
+          
+          if (mounted) {
+            setState(() => _isEditing = false);
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Profile updated successfully')),
+            );
+          }
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error updating profile: ${e.toString()}')),
+          );
+        }
+      } finally {
+        if (mounted) {
+          setState(() => _isLoading = false);
+        }
+      }
+    }
   }
 
   @override
@@ -32,189 +84,97 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.dispose();
   }
 
-  void _saveProfile() {
-    if (_formKey.currentState!.validate()) {
-      // enhance: Save to backend/service
-      setState(() {
-        _isEditing = false;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Profile updated successfully')),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Profile'),
-        backgroundColor: Colors.green,
-        foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-            icon: Icon(_isEditing ? Icons.save : Icons.edit),
-            onPressed: () {
-              if (_isEditing) {
-                _saveProfile();
-              } else {
-                setState(() {
-                  _isEditing = true;
-                });
-              }
-            },
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              // Contact Details - Example
-              // ...
-              
-              const Divider(),
-              const SizedBox(height: 10),
-              
-              ListenableBuilder(
-                listenable: StateService(),
-                builder: (context, _) {
-                  final bookings = StateService().bookings;
-                  if (bookings.isEmpty) return const SizedBox.shrink();
+    return BlocBuilder<AuthBloc, AuthState>(
+      builder: (context, state) {
+        if (state.status != AuthStatus.authenticated) {
+          return const Center(child: Text('Please log in.'));
+        }
 
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                        child: Text("My Appointments", style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, color: Colors.green)),
-                      ),
-                      const SizedBox(height: 10),
-                      ...bookings.map((booking) => Card(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        child: ListTile(
-                          leading: const CircleAvatar(
-                            backgroundColor: Colors.green,
-                            child: Icon(Icons.medical_services, color: Colors.white),
-                          ),
-                          title: Text(booking.pharmacistName),
-                          subtitle: Text(
-                            "${DateFormat('MMM d').format(booking.date)} at ${booking.time}\n${booking.notes}",
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          isThreeLine: true,
-                          trailing: IconButton(
-                            icon: const Icon(Icons.cancel, color: Colors.red),
-                            tooltip: "Cancel Appointment",
-                            onPressed: () {
-                              showDialog(
-                                context: context,
-                                builder: (ctx) => AlertDialog(
-                                  title: const Text("Cancel Appointment?"),
-                                  content: const Text("This action cannot be undone."),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () => Navigator.of(ctx).pop(),
-                                      child: const Text("Keep"),
-                                    ),
-                                    TextButton(
-                                      onPressed: () {
-                                        StateService().cancelBooking(booking.id);
-                                        Navigator.of(ctx).pop();
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          const SnackBar(content: Text("Appointment cancelled."))
-                                        );
-                                      },
-                                      child: const Text("Cancel", style: TextStyle(color: Colors.red)),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      )).toList(),
-                      const SizedBox(height: 20),
-                    ],
-                  );
+        return Scaffold(
+          appBar: AppBar(
+            backgroundColor: Colors.blueAccent,
+            title: const Text('My Profile', style: TextStyle(fontWeight: FontWeight.bold)),
+            actions: [
+              IconButton(
+                icon: Icon(_isEditing ? Icons.close : Icons.edit),
+                onPressed: () {
+                  setState(() {
+                    _isEditing = !_isEditing;
+                    if (!_isEditing) _loadUserProfile(); // Reset changes
+                  });
                 },
-              ),
-              
-              const SizedBox(height: 20),
-              Stack(
+              )
+            ],
+          ),
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.all(24.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
                 children: [
                   CircleAvatar(
                     radius: 50,
-                    backgroundColor: Colors.green.shade100,
-                    child: Text(
-                      _nameController.text.isNotEmpty ? _nameController.text[0].toUpperCase() : "U",
-                      style: const TextStyle(fontSize: 40, color: Colors.green),
-                    ),
+                    backgroundColor: Colors.blue.withOpacity(0.1),
+                    child: Icon(Icons.person, size: 60, color: Colors.blueAccent),
                   ),
+                  const SizedBox(height: 24),
+                  _buildTextField('Full Name', _nameController, Icons.person, _isEditing),
+                  const SizedBox(height: 16),
+                  _buildTextField('Email Address', _emailController, Icons.email, _isEditing, isEmail: true),
+                  const SizedBox(height: 16),
+                  _buildTextField('Phone Number', _phoneController, Icons.phone, _isEditing),
+                  
+                  const SizedBox(height: 32),
                   if (_isEditing)
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: CircleAvatar(
-                        radius: 18,
-                        backgroundColor: Colors.white,
-                        child: IconButton(
-                          padding: EdgeInsets.zero,
-                          icon: const Icon(Icons.camera_alt, size: 20, color: Colors.green),
-                          onPressed: () {
-                            // enhance: Pick image
-                          },
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blueAccent,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         ),
+                        onPressed: _isLoading ? null : _updateProfile,
+                        child: _isLoading 
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : const Text('Save Changes', style: TextStyle(fontSize: 18, color: Colors.white)),
                       ),
                     ),
+                  
+                  if (!_isEditing)
+                    TextButton.icon(
+                      icon: const Icon(Icons.logout, color: Colors.red),
+                      label: const Text('Sign Out', style: TextStyle(color: Colors.red, fontSize: 16)),
+                      onPressed: () {
+                        context.read<AuthBloc>().add(AuthLogoutRequested());
+                      },
+                    )
                 ],
               ),
-              const SizedBox(height: 30),
-              _buildTextField("Full Name", _nameController, Icons.person),
-              const SizedBox(height: 16),
-              _buildTextField("Email", _emailController, Icons.email, keyBoardType: TextInputType.emailAddress),
-              const SizedBox(height: 16),
-              _buildTextField("Phone Number", _phoneController, Icons.phone, keyBoardType: TextInputType.phone),
-              const SizedBox(height: 30),
-              if (!_isEditing) ...[
-                 Card(
-                  child: ListTile(
-                    leading: const Icon(Icons.location_on, color: Colors.green),
-                    title: const Text("Manage Addresses"),
-                    trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                    onTap: () {
-                       // Navigate to address management
-                    },
-                  ),
-                 ),
-              ]
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller, IconData icon, {TextInputType? keyBoardType}) {
+  Widget _buildTextField(String label, TextEditingController controller, IconData icon, bool enabled, {bool isEmail = false}) {
     return TextFormField(
       controller: controller,
-      enabled: _isEditing,
-      keyboardType: keyBoardType,
+      enabled: enabled,
+      keyboardType: isEmail ? TextInputType.emailAddress : TextInputType.text,
       decoration: InputDecoration(
         labelText: label,
-        prefixIcon: Icon(icon, color: Colors.green),
+        prefixIcon: Icon(icon, color: enabled ? Colors.blueAccent : Colors.grey),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade300),
-        ),
+        filled: !enabled,
+        fillColor: enabled ? Colors.white : Colors.grey[100],
       ),
       validator: (value) {
         if (value == null || value.isEmpty) {
-          return 'Please enter $label';
+          return 'Please enter ${label.toLowerCase()}';
         }
         return null;
       },

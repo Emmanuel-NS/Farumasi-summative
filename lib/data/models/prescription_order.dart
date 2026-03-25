@@ -3,7 +3,9 @@ import 'cart_item.dart';
 
 class PrescriptionOrder {
   final String id;
+  final String? userId; // Added to link to user profile
   final String patientName;
+  final String? patientPhone; // Added as contact info
   final String patientLocationName; // Text address
   final List<double> patientCoordinates; // [lat, long]
   final String? prescriptionImageUrl;
@@ -13,7 +15,7 @@ class PrescriptionOrder {
   double pharmacyPrice; // Price from pharmacy
   double deliveryFee;
   double get totalPrice => pharmacyPrice + deliveryFee;
-  
+
   String? assignedPharmacyId;
   String? assignedPharmacyName;
   List<double>? pharmacyCoordinates;
@@ -27,23 +29,25 @@ class PrescriptionOrder {
   // --- Audit Trail / Full History Fields ---
   String? reviewedBy;
   DateTime? reviewedAt;
-  
+
   // acceptedAt corresponds to status findingPharmacy -> pharmacyAccepted
-  DateTime? acceptedAt; 
+  DateTime? acceptedAt;
 
   String? paymentId;
   DateTime? paidAt;
-  
+
   DateTime? shippedAt;
   DateTime? completedAt;
-  
+
   String? cancelledBy;
   DateTime? cancelledAt;
   String? cancellationReason;
 
   PrescriptionOrder({
     required this.id,
+    this.userId,
     required this.patientName,
+    this.patientPhone,
     required this.patientLocationName,
     required this.patientCoordinates,
     this.prescriptionImageUrl,
@@ -74,7 +78,9 @@ class PrescriptionOrder {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      if (userId != null) 'userId': userId,
       'patientName': patientName,
+      if (patientPhone != null) 'patientPhone': patientPhone,
       'patientLocationName': patientLocationName,
       'patientCoordinates': patientCoordinates,
       'prescriptionImageUrl': prescriptionImageUrl,
@@ -106,33 +112,63 @@ class PrescriptionOrder {
   factory PrescriptionOrder.fromJson(Map<String, dynamic> json) {
     return PrescriptionOrder(
       id: json['id'] as String? ?? '',
+      userId: json['userId'] as String?,
       patientName: json['patientName'] as String? ?? 'Unknown Patient',
-      patientLocationName: json['patientLocationName'] as String? ?? 'Unknown Location',
-      patientCoordinates: (json['patientCoordinates'] as List<dynamic>?)?.map((e) => (e as num).toDouble()).toList() ?? [0.0, 0.0],
+      patientPhone: json['patientPhone'] as String?,
+      patientLocationName:
+          json['patientLocationName'] as String? ?? 'Unknown Location',
+      patientCoordinates:
+          (json['patientCoordinates'] as List<dynamic>?)
+              ?.map((e) => (e as num).toDouble())
+              .toList() ??
+          [0.0, 0.0],
       prescriptionImageUrl: json['prescriptionImageUrl'] as String?,
-      date: json['date'] != null ? DateTime.parse(json['date'] as String) : DateTime.now(),
-      status: json['status'] != null ? OrderStatus.values.byName(json['status'] as String) : OrderStatus.pendingReview,
-      items: (json['items'] as List<dynamic>?)?.map((e) => CartItem.fromJson(e as Map<String, dynamic>)).toList() ?? [],
+      date: json['date'] != null
+          ? DateTime.parse(json['date'] as String)
+          : DateTime.now(),
+      status: json['status'] != null
+          ? OrderStatus.values.byName(json['status'] as String)
+          : OrderStatus.pendingReview,
+      items:
+          (json['items'] as List<dynamic>?)
+              ?.map((e) => CartItem.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          [],
       pharmacyPrice: (json['pharmacyPrice'] as num?)?.toDouble() ?? 0.0,
       deliveryFee: (json['deliveryFee'] as num?)?.toDouble() ?? 1500.0,
       assignedPharmacyId: json['assignedPharmacyId'] as String?,
       assignedPharmacyName: json['assignedPharmacyName'] as String?,
-      pharmacyCoordinates: (json['pharmacyCoordinates'] as List<dynamic>?)?.map((e) => (e as num).toDouble()).toList(),
+      pharmacyCoordinates: (json['pharmacyCoordinates'] as List<dynamic>?)
+          ?.map((e) => (e as num).toDouble())
+          .toList(),
       assignedDriverId: json['assignedDriverId'] as String?,
       assignedDriverName: json['assignedDriverName'] as String?,
-      driverCoordinates: (json['driverCoordinates'] as List<dynamic>?)?.map((e) => (e as num).toDouble()).toList(),
+      driverCoordinates: (json['driverCoordinates'] as List<dynamic>?)
+          ?.map((e) => (e as num).toDouble())
+          .toList(),
       insuranceProvider: json['insuranceProvider'] as String?,
       reviewedBy: json['reviewedBy'] as String?,
-      reviewedAt: json['reviewedAt'] != null ? DateTime.parse(json['reviewedAt'] as String) : null,
-      acceptedAt: json['acceptedAt'] != null ? DateTime.parse(json['acceptedAt'] as String) : null,
+      reviewedAt: json['reviewedAt'] != null
+          ? DateTime.parse(json['reviewedAt'] as String)
+          : null,
+      acceptedAt: json['acceptedAt'] != null
+          ? DateTime.parse(json['acceptedAt'] as String)
+          : null,
       paymentId: json['paymentId'] as String?,
-      paidAt: json['paidAt'] != null ? DateTime.parse(json['paidAt'] as String) : null,
-      shippedAt: json['shippedAt'] != null ? DateTime.parse(json['shippedAt'] as String) : null,
-      completedAt: json['completedAt'] != null ? DateTime.parse(json['completedAt'] as String) : null,
+      paidAt: json['paidAt'] != null
+          ? DateTime.parse(json['paidAt'] as String)
+          : null,
+      shippedAt: json['shippedAt'] != null
+          ? DateTime.parse(json['shippedAt'] as String)
+          : null,
+      completedAt: json['completedAt'] != null
+          ? DateTime.parse(json['completedAt'] as String)
+          : null,
       cancelledBy: json['cancelledBy'] as String?,
-      cancelledAt: json['cancelledAt'] != null ? DateTime.parse(json['cancelledAt'] as String) : null,
+      cancelledAt: json['cancelledAt'] != null
+          ? DateTime.parse(json['cancelledAt'] as String)
+          : null,
       cancellationReason: json['cancellationReason'] as String?,
     );
   }
 }
-

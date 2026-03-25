@@ -33,6 +33,8 @@ import 'package:farumasi_patient_app/data/repositories/pharmacy_repository_impl.
 import 'package:farumasi_patient_app/data/repositories/mock_pharmacy_repository.dart';
 import 'package:farumasi_patient_app/presentation/blocs/pharmacy/pharmacy_bloc.dart';
 import 'package:farumasi_patient_app/presentation/blocs/order/order_bloc.dart';
+import 'package:farumasi_patient_app/domain/repositories/chat_repository.dart';
+import 'package:farumasi_patient_app/data/repositories/chat_repository_impl.dart';
 import 'firebase_options.dart'; // Import the generated file
 import 'package:farumasi_patient_app/data/datasources/data_seeder.dart'; // Added for seeding
 
@@ -81,17 +83,21 @@ Future<void> main() async {
     healthRepository = MockHealthRepository();
     pharmacyRepository = MockPharmacyRepository();
   }
-  
-  final cartRepository = MockCartRepository();
 
-  runApp(FarumasiApp(
-    authRepository: authRepository,
-    medicineRepository: medicineRepository,
-    cartRepository: cartRepository,
-    orderRepository: orderRepository,
-    healthRepository: healthRepository,
-    pharmacyRepository: pharmacyRepository,
-  ));
+  final cartRepository = MockCartRepository();
+  final chatRepository = ChatRepositoryImpl();
+
+  runApp(
+    FarumasiApp(
+      authRepository: authRepository,
+      medicineRepository: medicineRepository,
+      cartRepository: cartRepository,
+      orderRepository: orderRepository,
+      healthRepository: healthRepository,
+      pharmacyRepository: pharmacyRepository,
+      chatRepository: chatRepository,
+    ),
+  );
 }
 
 class FarumasiApp extends StatelessWidget {
@@ -101,6 +107,7 @@ class FarumasiApp extends StatelessWidget {
   final OrderRepository orderRepository;
   final HealthRepository healthRepository;
   final PharmacyRepository pharmacyRepository;
+  final ChatRepository chatRepository;
 
   const FarumasiApp({
     super.key,
@@ -110,6 +117,7 @@ class FarumasiApp extends StatelessWidget {
     required this.orderRepository,
     required this.healthRepository,
     required this.pharmacyRepository,
+    required this.chatRepository,
   });
 
   @override
@@ -121,6 +129,8 @@ class FarumasiApp extends StatelessWidget {
         RepositoryProvider.value(value: cartRepository),
         RepositoryProvider.value(value: orderRepository),
         RepositoryProvider.value(value: healthRepository),
+        RepositoryProvider<ChatRepository>.value(value: chatRepository),
+        RepositoryProvider.value(value: chatRepository),
         RepositoryProvider.value(value: pharmacyRepository),
       ],
       child: MultiBlocProvider(
@@ -129,23 +139,27 @@ class FarumasiApp extends StatelessWidget {
             create: (context) => AuthBloc(authRepository: authRepository),
           ),
           BlocProvider(
-            create: (context) => MedicineBloc(medicineRepository)..add(LoadMedicines()),
+            create: (context) =>
+                MedicineBloc(medicineRepository)..add(LoadMedicines()),
           ),
           BlocProvider(
-            create: (context) => CartBloc(cartRepository: cartRepository)..add(LoadCart()),
+            create: (context) =>
+                CartBloc(cartRepository: cartRepository)..add(LoadCart()),
           ),
           BlocProvider(
             create: (context) => OrderBloc(orderRepository: orderRepository),
           ),
           BlocProvider(
-            create: (context) => HealthTipsBloc(healthRepository: healthRepository)..add(LoadHealthTips()),
+            create: (context) =>
+                HealthTipsBloc(healthRepository: healthRepository)
+                  ..add(LoadHealthTips()),
           ),
           BlocProvider(
-            create: (context) => PharmacyBloc(repository: pharmacyRepository)..add(LoadPharmacies()),
+            create: (context) =>
+                PharmacyBloc(repository: pharmacyRepository)
+                  ..add(LoadPharmacies()),
           ),
-          BlocProvider(
-            create: (context) => ThemeCubit(),
-          ),
+          BlocProvider(create: (context) => ThemeCubit()),
         ],
         child: const AppView(),
       ),
@@ -167,14 +181,12 @@ class AppView extends StatelessWidget {
           themeMode: ThemeMode.light,
           localizationsDelegates: const [
             GlobalMaterialLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        FlutterQuillLocalizations.delegate,
-      ],
-      supportedLocales: const [
-        Locale('en', 'US'),
-      ],
-      home: const SplashScreen(),
+            GlobalCupertinoLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            FlutterQuillLocalizations.delegate,
+          ],
+          supportedLocales: const [Locale('en', 'US')],
+          home: const SplashScreen(),
         );
       },
     );

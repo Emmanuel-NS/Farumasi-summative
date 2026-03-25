@@ -15,7 +15,8 @@ class PharmacistBookingScreen extends StatefulWidget {
 }
 
 class _PharmacistBookingScreenState extends State<PharmacistBookingScreen> {
-  CalendarFormat _calendarFormat = CalendarFormat.twoWeeks; // Show only 2 weeks to focus on valid days
+  CalendarFormat _calendarFormat =
+      CalendarFormat.twoWeeks; // Show only 2 weeks to focus on valid days
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
   TimeOfDay? _selectedTime;
@@ -24,15 +25,23 @@ class _PharmacistBookingScreenState extends State<PharmacistBookingScreen> {
   // Simulated Occupancy
   final Map<String, List<String>> _bookedSlots = {
     // Tomorrow example
-    DateFormat('yyyy-MM-dd').format(DateTime.now().add(const Duration(days: 1))): ["09:00", "10:40", "14:00"],
+    DateFormat(
+      'yyyy-MM-dd',
+    ).format(DateTime.now().add(const Duration(days: 1))): [
+      "09:00",
+      "10:40",
+      "14:00",
+    ],
     // Fully booked day example (Day after tomorrow)
-    DateFormat('yyyy-MM-dd').format(DateTime.now().add(const Duration(days: 2))): 
-      List.generate(18, (index) { // ~All slots
-         int totalMin = 9 * 60 + (index * 25);
-         int h = totalMin ~/ 60;
-         int m = totalMin % 60;
-         return "${h.toString().padLeft(2, '0')}:${m.toString().padLeft(2, '0')}";
-      }),
+    DateFormat('yyyy-MM-dd').format(
+      DateTime.now().add(const Duration(days: 2)),
+    ): List.generate(18, (index) {
+      // ~All slots
+      int totalMin = 9 * 60 + (index * 25);
+      int h = totalMin ~/ 60;
+      int m = totalMin % 60;
+      return "${h.toString().padLeft(2, '0')}:${m.toString().padLeft(2, '0')}";
+    }),
   };
 
   @override
@@ -52,11 +61,12 @@ class _PharmacistBookingScreenState extends State<PharmacistBookingScreen> {
     List<TimeOfDay> slots = [];
     TimeOfDay current = const TimeOfDay(hour: 9, minute: 0);
     TimeOfDay end = const TimeOfDay(hour: 17, minute: 0);
-    
+
     int toMin(TimeOfDay t) => t.hour * 60 + t.minute;
 
     while (toMin(current) + 20 <= toMin(end)) {
-      if (current.hour != 12) { // Lunch break 12-1
+      if (current.hour != 12) {
+        // Lunch break 12-1
         slots.add(current);
       }
       int nextMin = toMin(current) + 25; // 20 min session + 5 min break
@@ -68,41 +78,43 @@ class _PharmacistBookingScreenState extends State<PharmacistBookingScreen> {
   bool _isSlotTaken(DateTime date, TimeOfDay time) {
     String dateKey = DateFormat('yyyy-MM-dd').format(date);
     if (!_bookedSlots.containsKey(dateKey)) return false;
-    
-    String timeKey = "${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}";
+
+    String timeKey =
+        "${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}";
     return _bookedSlots[dateKey]!.contains(timeKey);
   }
 
   // Returns: 'full', 'busy', 'available', 'weekend'
   String _getDayStatus(DateTime date) {
-    if (date.weekday == DateTime.saturday || date.weekday == DateTime.sunday) return 'weekend';
-    
+    if (date.weekday == DateTime.saturday || date.weekday == DateTime.sunday)
+      return 'weekend';
+
     // Check if fully booked based on simulated "booked" map for testing
     // If the map has entries for this date, check count.
-    
+
     // For demo: Generate slots and check against map
     List<TimeOfDay> all = _generateDailySlots();
     int taken = 0;
     for (var t in all) {
       if (_isSlotTaken(date, t)) taken++;
     }
-    
+
     int available = all.length - taken;
-    
+
     if (available == 0) return 'full';
     if (available <= 3) return 'busy'; // High demand
     return 'available';
   }
 
   bool _isDayFull(DateTime date) {
-     final status = _getDayStatus(date);
-     return status == 'full' || status == 'weekend';
+    final status = _getDayStatus(date);
+    return status == 'full' || status == 'weekend';
   }
 
   // Helper function to build custom day cells
   Widget _buildDayCell(DateTime day, bool isSelected, {bool isToday = false}) {
     final status = _getDayStatus(day);
-    
+
     // Base styles
     Color? bgColor;
     Color textColor = Colors.black87;
@@ -128,10 +140,10 @@ class _PharmacistBookingScreenState extends State<PharmacistBookingScreen> {
     // 2. Override for Selection (keep status hint if possible, or override completely)
     if (isSelected) {
       if (status == 'available' || status == 'busy') {
-         bgColor = Colors.green;
-         textColor = Colors.white;
+        bgColor = Colors.green;
+        textColor = Colors.white;
       } else if (status == 'full') {
-         border = Border.all(color: Colors.red.shade900, width: 2);
+        border = Border.all(color: Colors.red.shade900, width: 2);
       }
     }
 
@@ -149,7 +161,9 @@ class _PharmacistBookingScreenState extends State<PharmacistBookingScreen> {
           '${day.day}',
           style: TextStyle(
             color: textColor,
-            fontWeight: (isSelected || isToday || status != 'available') ? FontWeight.bold : FontWeight.normal,
+            fontWeight: (isSelected || isToday || status != 'available')
+                ? FontWeight.bold
+                : FontWeight.normal,
           ),
         ),
       ),
@@ -169,7 +183,9 @@ class _PharmacistBookingScreenState extends State<PharmacistBookingScreen> {
           // Calendar
           TableCalendar(
             firstDay: DateTime.now(),
-            lastDay: DateTime.now().add(const Duration(days: 14)), // Restrict booking to 2 weeks
+            lastDay: DateTime.now().add(
+              const Duration(days: 14),
+            ), // Restrict booking to 2 weeks
             focusedDay: _focusedDay,
             calendarFormat: _calendarFormat,
             availableCalendarFormats: const {
@@ -222,7 +238,7 @@ class _PharmacistBookingScreenState extends State<PharmacistBookingScreen> {
               },
             ),
           ),
-          
+
           const Divider(),
 
           // Time Slots & Note
@@ -235,10 +251,13 @@ class _PharmacistBookingScreenState extends State<PharmacistBookingScreen> {
                   if (_selectedDay != null) ...[
                     Text(
                       "Available Time Slots for ${DateFormat('MMM d, yyyy').format(_selectedDay!)}",
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
                     ),
                     const SizedBox(height: 10),
-                    
+
                     if (_isDayFull(_selectedDay!))
                       Container(
                         padding: const EdgeInsets.all(12),
@@ -254,31 +273,37 @@ class _PharmacistBookingScreenState extends State<PharmacistBookingScreen> {
                           textAlign: TextAlign.center,
                         ),
                       )
-                    else 
+                    else
                       Wrap(
                         spacing: 12,
                         runSpacing: 12,
                         children: _generateDailySlots().map((time) {
                           final isTaken = _isSlotTaken(_selectedDay!, time);
                           final isSelected = _selectedTime == time;
-                          
+
                           return InkWell(
-                            onTap: isTaken ? null : () {
-                              setState(() => _selectedTime = time);
-                            },
+                            onTap: isTaken
+                                ? null
+                                : () {
+                                    setState(() => _selectedTime = time);
+                                  },
                             borderRadius: BorderRadius.circular(8),
                             child: Container(
                               width: 80,
                               padding: const EdgeInsets.symmetric(vertical: 12),
                               decoration: BoxDecoration(
-                                color: isTaken 
-                                  ? Colors.grey.shade200 
-                                  : (isSelected ? Colors.green : Colors.white),
+                                color: isTaken
+                                    ? Colors.grey.shade200
+                                    : (isSelected
+                                          ? Colors.green
+                                          : Colors.white),
                                 borderRadius: BorderRadius.circular(8),
                                 border: Border.all(
-                                  color: isTaken 
-                                    ? Colors.grey.shade400 
-                                    : (isSelected ? Colors.green : Colors.grey.shade300),
+                                  color: isTaken
+                                      ? Colors.grey.shade400
+                                      : (isSelected
+                                            ? Colors.green
+                                            : Colors.grey.shade300),
                                 ),
                               ),
                               child: Column(
@@ -287,15 +312,20 @@ class _PharmacistBookingScreenState extends State<PharmacistBookingScreen> {
                                     time.format(context),
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
-                                      color: isTaken 
-                                        ? Colors.grey 
-                                        : (isSelected ? Colors.white : Colors.black87),
+                                      color: isTaken
+                                          ? Colors.grey
+                                          : (isSelected
+                                                ? Colors.white
+                                                : Colors.black87),
                                     ),
                                   ),
                                   if (isTaken)
                                     const Text(
                                       "Busy",
-                                      style: TextStyle(fontSize: 10, color: Colors.grey),
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: Colors.grey,
+                                      ),
                                     ),
                                 ],
                               ),
@@ -303,27 +333,34 @@ class _PharmacistBookingScreenState extends State<PharmacistBookingScreen> {
                           );
                         }).toList(),
                       ),
-                  ] else 
-                    const Center(child: Text("Select a date to view available times.")),
-                  
+                  ] else
+                    const Center(
+                      child: Text("Select a date to view available times."),
+                    ),
+
                   const SizedBox(height: 24),
 
                   // User Note Field
                   if (_selectedTime != null) ...[
-                    const Text("Tell us about your concern (Optional):", style: TextStyle(fontWeight: FontWeight.bold)),
+                    const Text(
+                      "Tell us about your concern (Optional):",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                     const SizedBox(height: 8),
                     TextField(
                       controller: _noteController,
                       maxLines: 3,
                       decoration: InputDecoration(
                         hintText: "E.g., I have a skin rash and fever...",
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                         filled: true,
                         fillColor: Colors.grey.shade50,
                       ),
                     ),
                     const SizedBox(height: 24),
-                    
+
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
@@ -331,9 +368,14 @@ class _PharmacistBookingScreenState extends State<PharmacistBookingScreen> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.green,
                           padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
-                        child: const Text("Confirm Booking", style: TextStyle(color: Colors.white, fontSize: 16)),
+                        child: const Text(
+                          "Confirm Booking",
+                          style: TextStyle(color: Colors.white, fontSize: 16),
+                        ),
                       ),
                     ),
                   ],
@@ -360,14 +402,23 @@ class _PharmacistBookingScreenState extends State<PharmacistBookingScreen> {
               Text("Time: ${_selectedTime!.format(context)}"),
               const SizedBox(height: 8),
               if (_noteController.text.isNotEmpty)
-                Text("Note: ${_noteController.text}", style: const TextStyle(fontStyle: FontStyle.italic)),
+                Text(
+                  "Note: ${_noteController.text}",
+                  style: const TextStyle(fontStyle: FontStyle.italic),
+                ),
               const SizedBox(height: 16),
-              const Text("You can cancel this appointment anytime from your profile.", style: TextStyle(fontSize: 12, color: Colors.grey)),
+              const Text(
+                "You can cancel this appointment anytime from your profile.",
+                style: TextStyle(fontSize: 12, color: Colors.grey),
+              ),
             ],
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text("Back")),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text("Back"),
+          ),
           ElevatedButton(
             onPressed: () {
               // Add to global state
@@ -383,7 +434,7 @@ class _PharmacistBookingScreenState extends State<PharmacistBookingScreen> {
 
               Navigator.of(ctx).pop(); // Close dialog
               Navigator.of(context).pop(); // Close screen
-              
+
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text("Booking Confirmed! View in My Appointments."),
@@ -391,7 +442,10 @@ class _PharmacistBookingScreenState extends State<PharmacistBookingScreen> {
                 ),
               );
             },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+              foregroundColor: Colors.white,
+            ),
             child: const Text("Confirm"),
           ),
         ],

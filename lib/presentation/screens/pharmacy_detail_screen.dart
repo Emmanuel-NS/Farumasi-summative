@@ -44,15 +44,19 @@ class _PharmacyDetailScreenState extends State<PharmacyDetailScreen> {
               backgroundColor: isLoggedIn ? Colors.blue : Colors.grey,
               onPressed: () {
                 if (!isLoggedIn) {
-                   ScaffoldMessenger.of(context).showSnackBar(
-                     const SnackBar(content: Text("Please login to upload a prescription.")),
-                   );
-                   return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Please login to upload a prescription."),
+                    ),
+                  );
+                  return;
                 }
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const PrescriptionUploadScreen()),
-               );
+                  MaterialPageRoute(
+                    builder: (_) => const PrescriptionUploadScreen(),
+                  ),
+                );
               },
               tooltip: 'Upload Prescription',
               child: const Icon(Icons.upload_file, color: Colors.white),
@@ -118,7 +122,7 @@ class _PharmacyDetailScreenState extends State<PharmacyDetailScreen> {
   Widget build(BuildContext context) {
     // Simulate pharmacy-specific stock
     // In a real app, we'd fetch medicines for this pharmacy ID.
-    final allPharmacyMedicines = StateService().medicines; 
+    final allPharmacyMedicines = StateService().medicines;
 
     // Filter medicines based on search query
     final filteredMedicines = allPharmacyMedicines.where((med) {
@@ -132,249 +136,333 @@ class _PharmacyDetailScreenState extends State<PharmacyDetailScreen> {
       builder: (context, _) => Scaffold(
         floatingActionButton: _buildFloatingActions(context),
         body: CustomScrollView(
-        slivers: [
-          // Header with Image
-          SliverAppBar(
-            expandedHeight: 200,
-            pinned: true,
-            flexibleSpace: FlexibleSpaceBar(
-              title: Text(
-                widget.pharmacy.name,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  shadows: [Shadow(color: Colors.black45, blurRadius: 4)],
+          slivers: [
+            // Header with Image
+            SliverAppBar(
+              expandedHeight: 200,
+              pinned: true,
+              flexibleSpace: FlexibleSpaceBar(
+                title: Text(
+                  widget.pharmacy.name,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    shadows: [Shadow(color: Colors.black45, blurRadius: 4)],
+                  ),
+                ),
+                background: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Image.network(
+                      widget.pharmacy.imageUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) =>
+                          Container(color: Colors.grey),
+                    ),
+                    Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Colors.transparent, Colors.black87],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              background: Stack(
-                fit: StackFit.expand,
-                children: [
-                  Image.network(
-                    widget.pharmacy.imageUrl,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(color: Colors.grey),
-                  ),
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [Colors.transparent, Colors.black87],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
             ),
-          ),
 
-          // Pharmacy Info
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      const Icon(Icons.location_city, color: Colors.blue, size: 20),
-                      const SizedBox(width: 4),
-                      Text("${widget.pharmacy.province}, ${widget.pharmacy.district}"),
-                      const SizedBox(width: 16),
-                      if (widget.pharmacy.isOpen)
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.green.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: const Text("Open Now", style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 12)),
-                        )
-                      else
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.red.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: const Text("Closed", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 12)),
+            // Pharmacy Info
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.location_city,
+                          color: Colors.blue,
+                          size: 20,
                         ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      const Icon(Icons.location_on_outlined, color: Colors.grey, size: 18),
-                      const SizedBox(width: 4),
-                      Expanded(
-                        child: Text(
-                          "${widget.pharmacy.locationName}\nSector: ${widget.pharmacy.sector}, Cell: ${widget.pharmacy.cell}",
-                          style: TextStyle(color: Colors.grey.shade700),
+                        const SizedBox(width: 4),
+                        Text(
+                          "${widget.pharmacy.province}, ${widget.pharmacy.district}",
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  const Text("Supported Insurances:", style: TextStyle(fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    children: widget.pharmacy.supportedInsurances.map((ins) => Chip(
-                      label: Text(ins, style: const TextStyle(fontSize: 10)),
-                      backgroundColor: Colors.grey.shade100,
-                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    )).toList(),
-                  ),
-                  const Divider(height: 32),
-                  
-                  // Pharmacist Link
-                  InkWell(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const UserConsultationScreen(),
-                        ),
-                      );
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: Row(
-                        children: [
-                          Icon(Icons.chat_bubble_outline, color: Theme.of(context).primaryColor),
-                          const SizedBox(width: 12),
-                          Text(
-                            "Chat with a Pharmacist",
-                            style: TextStyle(
-                              color: Theme.of(context).primaryColor,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
+                        const SizedBox(width: 16),
+                        if (widget.pharmacy.isOpen)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
                             ),
-                          ),
-                          const Spacer(),
-                          const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // Actions: Prefer
-                  // Removed Block button from here, moved to PharmacistListScreen
-                  ListenableBuilder(
-                    listenable: StateService(),
-                    builder: (context, _) {
-                      final isPreferred = StateService().isPharmacyPreferred(widget.pharmacy.id);
-
-                      return SizedBox(
-                        width: double.infinity,
-                        child: OutlinedButton.icon(
-                          onPressed: () {
-                            StateService().setPharmacyPreferred(widget.pharmacy.id, !isPreferred);
-                          },
-                          icon: Icon(
-                            isPreferred ? Icons.favorite : Icons.favorite_border,
-                            color: isPreferred ? Colors.red : Colors.grey,
-                          ),
-                          label: Text(
-                            isPreferred ? "Preferred Pharmacy" : "Add to Preferred",
-                            style: TextStyle(
-                              color: isPreferred ? Colors.red : Colors.black87,
+                            decoration: BoxDecoration(
+                              color: Colors.green.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(4),
                             ),
-                          ),
-                          style: OutlinedButton.styleFrom(
-                            side: BorderSide(color: isPreferred ? Colors.red : Colors.grey.shade300),
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-
-                  const Divider(height: 32),
-                  
-                  // Search Bar for Products
-                  const Text("Available Medicines", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: _searchController,
-                    decoration: InputDecoration(
-                      hintText: "Search in this pharmacy...",
-                      prefixIcon: const Icon(Icons.search, color: Colors.grey),
-                      filled: true,
-                      fillColor: Colors.grey.shade100,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(30),
-                        borderSide: BorderSide.none,
-                      ),
-                      suffixIcon: _searchQuery.isNotEmpty 
-                        ? IconButton(
-                            icon: const Icon(Icons.clear, color: Colors.grey),
-                            onPressed: () {
-                              _searchController.clear();
-                              setState(() {
-                                _searchQuery = '';
-                              });
-                            },
+                            child: const Text(
+                              "Open Now",
+                              style: TextStyle(
+                                color: Colors.green,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                              ),
+                            ),
                           )
-                        : null,
+                        else
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.red.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: const Text(
+                              "Closed",
+                              style: TextStyle(
+                                color: Colors.red,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
-                    onChanged: (value) {
-                      setState(() {
-                        _searchQuery = value;
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                ],
-              ),
-            ),
-          ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.location_on_outlined,
+                          color: Colors.grey,
+                          size: 18,
+                        ),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            "${widget.pharmacy.locationName}\nSector: ${widget.pharmacy.sector}, Cell: ${widget.pharmacy.cell}",
+                            style: TextStyle(color: Colors.grey.shade700),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    const Text(
+                      "Supported Insurances:",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      children: widget.pharmacy.supportedInsurances
+                          .map(
+                            (ins) => Chip(
+                              label: Text(
+                                ins,
+                                style: const TextStyle(fontSize: 10),
+                              ),
+                              backgroundColor: Colors.grey.shade100,
+                              materialTapTargetSize:
+                                  MaterialTapTargetSize.shrinkWrap,
+                            ),
+                          )
+                          .toList(),
+                    ),
+                    const Divider(height: 32),
 
-          // Medicine Grid
-          filteredMedicines.isEmpty 
-          ? const SliverToBoxAdapter(
-              child: Center(
-                child: Padding(
-                  padding: EdgeInsets.all(32.0),
-                  child: Text("No medicines found matching your search.", style: TextStyle(color: Colors.grey)),
-                ),
-              ),
-            )
-          : SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            sliver: SliverGrid(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                childAspectRatio: 0.68,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-              ),
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final med = filteredMedicines[index];
-                  // Pass pharmacy context if needed, currently reusing standard item
-                  return MedicineItem(
-                    medicine: med,
-                    onAboutTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => MedicineDetailScreen(medicine: med),
+                    // Pharmacist Link
+                    InkWell(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                const UserConsultationScreen(),
+                          ),
+                        );
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.chat_bubble_outline,
+                              color: Theme.of(context).primaryColor,
+                            ),
+                            const SizedBox(width: 12),
+                            Text(
+                              "Chat with a Pharmacist",
+                              style: TextStyle(
+                                color: Theme.of(context).primaryColor,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            const Spacer(),
+                            const Icon(
+                              Icons.arrow_forward_ios,
+                              size: 16,
+                              color: Colors.grey,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  );
-                },
-                childCount: filteredMedicines.length,
+
+                    const SizedBox(height: 16),
+
+                    // Actions: Prefer
+                    // Removed Block button from here, moved to PharmacistListScreen
+                    ListenableBuilder(
+                      listenable: StateService(),
+                      builder: (context, _) {
+                        final isPreferred = StateService().isPharmacyPreferred(
+                          widget.pharmacy.id,
+                        );
+
+                        return SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton.icon(
+                            onPressed: () {
+                              StateService().setPharmacyPreferred(
+                                widget.pharmacy.id,
+                                !isPreferred,
+                              );
+                            },
+                            icon: Icon(
+                              isPreferred
+                                  ? Icons.favorite
+                                  : Icons.favorite_border,
+                              color: isPreferred ? Colors.red : Colors.grey,
+                            ),
+                            label: Text(
+                              isPreferred
+                                  ? "Preferred Pharmacy"
+                                  : "Add to Preferred",
+                              style: TextStyle(
+                                color: isPreferred
+                                    ? Colors.red
+                                    : Colors.black87,
+                              ),
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              side: BorderSide(
+                                color: isPreferred
+                                    ? Colors.red
+                                    : Colors.grey.shade300,
+                              ),
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+
+                    const Divider(height: 32),
+
+                    // Search Bar for Products
+                    const Text(
+                      "Available Medicines",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: _searchController,
+                      decoration: InputDecoration(
+                        hintText: "Search in this pharmacy...",
+                        prefixIcon: const Icon(
+                          Icons.search,
+                          color: Colors.grey,
+                        ),
+                        filled: true,
+                        fillColor: Colors.grey.shade100,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(30),
+                          borderSide: BorderSide.none,
+                        ),
+                        suffixIcon: _searchQuery.isNotEmpty
+                            ? IconButton(
+                                icon: const Icon(
+                                  Icons.clear,
+                                  color: Colors.grey,
+                                ),
+                                onPressed: () {
+                                  _searchController.clear();
+                                  setState(() {
+                                    _searchQuery = '';
+                                  });
+                                },
+                              )
+                            : null,
+                      ),
+                      onChanged: (value) {
+                        setState(() {
+                          _searchQuery = value;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                ),
               ),
             ),
-          ),
-          
-          const SliverToBoxAdapter(child: SizedBox(height: 40)),
-        ],
+
+            // Medicine Grid
+            filteredMedicines.isEmpty
+                ? const SliverToBoxAdapter(
+                    child: Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(32.0),
+                        child: Text(
+                          "No medicines found matching your search.",
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      ),
+                    ),
+                  )
+                : SliverPadding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    sliver: SliverGrid(
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            childAspectRatio: 0.68,
+                            crossAxisSpacing: 12,
+                            mainAxisSpacing: 12,
+                          ),
+                      delegate: SliverChildBuilderDelegate((context, index) {
+                        final med = filteredMedicines[index];
+                        // Pass pharmacy context if needed, currently reusing standard item
+                        return MedicineItem(
+                          medicine: med,
+                          onAboutTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  MedicineDetailScreen(medicine: med),
+                            ),
+                          ),
+                        );
+                      }, childCount: filteredMedicines.length),
+                    ),
+                  ),
+
+            const SliverToBoxAdapter(child: SizedBox(height: 40)),
+          ],
+        ),
       ),
-    ),
     );
   }
 }

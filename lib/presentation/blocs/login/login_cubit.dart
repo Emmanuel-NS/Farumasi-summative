@@ -64,6 +64,16 @@ class LoginCubit extends Cubit<LoginState> {
     }
   }
 
+  Future<void> sendPasswordReset(String email) async {
+    emit(const LoginState(status: LoginStatus.submitting));
+    try {
+      await _authRepository.sendPasswordResetEmail(email);
+      emit(const LoginState(status: LoginStatus.initial, errorMessage: "Password reset email sent"));
+    } catch (e) {
+      emit(LoginState(status: LoginStatus.error, errorMessage: e.toString()));
+    }
+  }
+
   Future<void> logInWithGoogle() async {
     emit(const LoginState(status: LoginStatus.submitting));
     try {
@@ -83,23 +93,6 @@ class LoginCubit extends Cubit<LoginState> {
         const LoginState(
           status: LoginStatus.error,
           errorMessage: "Google Login Failed",
-        ),
-      );
-    }
-  }
-
-  Future<void> sendPasswordResetEmail(String email) async {
-    emit(const LoginState(status: LoginStatus.submitting));
-    try {
-      await _authRepository.sendPasswordResetEmail(email);
-      emit(const LoginState(status: LoginStatus.passwordResetEmailSent));
-    } on ResetPasswordFailure catch (e) {
-      emit(LoginState(status: LoginStatus.error, errorMessage: e.message));
-    } catch (_) {
-      emit(
-        const LoginState(
-          status: LoginStatus.error,
-          errorMessage: 'Could not send reset email',
         ),
       );
     }

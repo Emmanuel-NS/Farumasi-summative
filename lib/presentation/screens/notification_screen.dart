@@ -30,7 +30,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
   void _loadNotifications() {
     setState(() {
       var all = NotificationService().notifications;
-      
+
       // Filter by Status
       if (_currentFilter == 'Read') {
         all = all.where((n) => n['isRead'] == true).toList();
@@ -64,7 +64,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
         return Colors.purple;
       case 'reminder':
         return Colors.amber.shade700;
-        case 'general':
+      case 'general':
       default:
         return Colors.grey;
     }
@@ -82,7 +82,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
         return Icons.local_offer;
       case 'reminder':
         return Icons.access_alarm;
-          case 'general':
+      case 'general':
       default:
         return Icons.notifications;
     }
@@ -91,7 +91,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
   void _handleNotificationTap(Map<String, dynamic> notification) {
     _markAsRead(notification['id']); // Mark as read on tap
     final category = notification['category'] as String?;
-    
+
     Widget? destinationScreen;
 
     switch (category) {
@@ -119,17 +119,17 @@ class _NotificationScreenState extends State<NotificationScreen> {
     }
 
     // if (destinationScreen != null) { // Unnecessary check if all paths return a widget or break
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => destinationScreen!),
-      );
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => destinationScreen!),
+    );
     // }
   }
 
   String _formatTime(dynamic time) {
     if (time == null) return '';
     if (time is! DateTime) return time.toString();
-    
+
     final now = DateTime.now();
     final difference = now.difference(time);
 
@@ -145,7 +145,11 @@ class _NotificationScreenState extends State<NotificationScreen> {
     }
   }
 
-  Widget _buildFilterChip(String label, bool isSelected, Function(bool) onSelected) {
+  Widget _buildFilterChip(
+    String label,
+    bool isSelected,
+    Function(bool) onSelected,
+  ) {
     return FilterChip(
       label: Text(label),
       selected: isSelected,
@@ -170,7 +174,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
               NotificationService().clearNotifications();
               _loadNotifications();
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('All notifications moved to trash')),
+                const SnackBar(
+                  content: Text('All notifications moved to trash'),
+                ),
               );
             },
           ),
@@ -178,7 +184,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
             icon: const Icon(Icons.more_vert),
             onSelected: (value) {
               if (value == 'Trash') {
-                 Navigator.push(
+                Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const TrashScreen()),
                 ).then((_) => _loadNotifications()); // Reload on return
@@ -205,22 +211,41 @@ class _NotificationScreenState extends State<NotificationScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Row(
               children: [
-                _buildFilterChip('All', _currentFilter == 'All', (sel) { setState(() { _currentFilter = 'All'; _loadNotifications(); }); }),
+                _buildFilterChip('All', _currentFilter == 'All', (sel) {
+                  setState(() {
+                    _currentFilter = 'All';
+                    _loadNotifications();
+                  });
+                }),
                 const SizedBox(width: 8),
-                _buildFilterChip('Unread', _currentFilter == 'Unread', (sel) { setState(() { _currentFilter = 'Unread'; _loadNotifications(); }); }),
+                _buildFilterChip('Unread', _currentFilter == 'Unread', (sel) {
+                  setState(() {
+                    _currentFilter = 'Unread';
+                    _loadNotifications();
+                  });
+                }),
                 const SizedBox(width: 8),
-                _buildFilterChip('Read', _currentFilter == 'Read', (sel) { setState(() { _currentFilter = 'Read'; _loadNotifications(); }); }),
+                _buildFilterChip('Read', _currentFilter == 'Read', (sel) {
+                  setState(() {
+                    _currentFilter = 'Read';
+                    _loadNotifications();
+                  });
+                }),
                 const SizedBox(width: 16),
                 DropdownButton<String>(
                   value: _currentCategory,
                   underline: Container(),
                   icon: const Icon(Icons.filter_list),
-                  items: ['All', 'order', 'health_tip', 'promo', 'reminder'].map((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value == 'All' ? 'All Categories' : value),
-                    );
-                  }).toList(),
+                  items: ['All', 'order', 'health_tip', 'promo', 'reminder']
+                      .map((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(
+                            value == 'All' ? 'All Categories' : value,
+                          ),
+                        );
+                      })
+                      .toList(),
                   onChanged: (newValue) {
                     setState(() {
                       _currentCategory = newValue!;
@@ -238,8 +263,11 @@ class _NotificationScreenState extends State<NotificationScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.notifications_off_outlined,
-                      size: 64, color: Colors.grey),
+                  Icon(
+                    Icons.notifications_off_outlined,
+                    size: 64,
+                    color: Colors.grey,
+                  ),
                   const SizedBox(height: 16),
                   Text(
                     'No notifications found',
@@ -257,7 +285,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 final isRead = notification['isRead'] == true;
 
                 return Dismissible(
-                  key: Key(notification['id'].toString()), // Use ID for uniqueness
+                  key: Key(
+                    notification['id'].toString(),
+                  ), // Use ID for uniqueness
                   // Make it harder to accidentally dismiss by increasing the threshold
                   dismissThresholds: const {
                     DismissDirection.endToStart: 0.6, // Requires 60% swipe
@@ -270,7 +300,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
                         return AlertDialog(
                           title: const Text("Delete Notification?"),
                           content: const Text(
-                              "Are you sure you want to move this notification to trash?"),
+                            "Are you sure you want to move this notification to trash?",
+                          ),
                           actions: <Widget>[
                             TextButton(
                               onPressed: () => Navigator.of(context).pop(false),
@@ -296,7 +327,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
                   ),
                   onDismissed: (direction) {
                     // Move to trash
-                    NotificationService().deleteNotification(notification['id']);
+                    NotificationService().deleteNotification(
+                      notification['id'],
+                    );
                     _loadNotifications();
 
                     // Undo Action
@@ -306,7 +339,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
                         action: SnackBarAction(
                           label: 'UNDO',
                           onPressed: () {
-                            NotificationService().restoreNotification(notification['id']);
+                            NotificationService().restoreNotification(
+                              notification['id'],
+                            );
                             _loadNotifications();
                           },
                         ),
@@ -315,14 +350,18 @@ class _NotificationScreenState extends State<NotificationScreen> {
                   },
                   child: Card(
                     color: isRead ? Colors.white : Colors.blue[50],
-                    margin:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
                     elevation: isRead ? 0.5 : 2,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                       side: BorderSide(
-                        color: isRead ? Colors.grey.shade300 : color.withValues(alpha: 0.5), 
-                        width: isRead ? 1 : 1.5
+                        color: isRead
+                            ? Colors.grey.shade300
+                            : color.withValues(alpha: 0.5),
+                        width: isRead ? 1 : 1.5,
                       ),
                     ),
                     child: InkWell(
@@ -368,15 +407,20 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
                                       Expanded(
                                         child: Text(
                                           notification['title'] ?? 'No Title',
                                           style: TextStyle(
-                                            fontWeight: isRead ? FontWeight.normal : FontWeight.bold,
+                                            fontWeight: isRead
+                                                ? FontWeight.normal
+                                                : FontWeight.bold,
                                             fontSize: 16,
-                                            color: isRead ? Colors.black87 : Colors.black,
+                                            color: isRead
+                                                ? Colors.black87
+                                                : Colors.black,
                                           ),
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
@@ -387,8 +431,12 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                         _formatTime(notification['time']),
                                         style: TextStyle(
                                           fontSize: 11,
-                                          color: isRead ? Colors.grey[500] : Colors.blueGrey,
-                                          fontWeight: isRead ? FontWeight.normal : FontWeight.w600,
+                                          color: isRead
+                                              ? Colors.grey[500]
+                                              : Colors.blueGrey,
+                                          fontWeight: isRead
+                                              ? FontWeight.normal
+                                              : FontWeight.w600,
                                         ),
                                       ),
                                     ],
@@ -398,7 +446,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                     notification['body'] ?? 'No Body',
                                     style: TextStyle(
                                       fontSize: 13,
-                                      color: isRead ? Colors.grey[600] : Colors.black87,
+                                      color: isRead
+                                          ? Colors.grey[600]
+                                          : Colors.black87,
                                       height: 1.3,
                                     ),
                                     maxLines: 2,
@@ -420,7 +470,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
         onPressed: () async {
           await NotificationService().showNotification(
             title: 'Test Notification',
-            body: 'This is a test notification generated at ${TimeOfDay.now().format(context)}',
+            body:
+                'This is a test notification generated at ${TimeOfDay.now().format(context)}',
           );
           _loadNotifications(); // Refresh the list
         },

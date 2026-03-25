@@ -17,18 +17,22 @@ class Medicine extends Equatable {
   final List<String> keywords;
   final double? maxPrice;
   final String? expiryDate;
-  
+
   final List<String> availableAtPharmacyIds;
-  final List<String> additionalCategories; 
+  final List<String> additionalCategories;
   final List<String> additionalSubCategories;
-  
+
   final String? doseMorning;
   final String? doseAfternoon;
   final String? doseEvening;
   final String? doseTimeInterval;
 
-  List<String> get allCategories => {category, ...additionalCategories}.toList();
-  List<String> get allSubCategories => {(subCategory ?? ""), ...additionalSubCategories}.where((s) => s.isNotEmpty).toList();
+  List<String> get allCategories =>
+      {category, ...additionalCategories}.toList();
+  List<String> get allSubCategories => {
+    (subCategory ?? ""),
+    ...additionalSubCategories,
+  }.where((s) => s.isNotEmpty).toList();
 
   const Medicine({
     required this.id,
@@ -58,12 +62,29 @@ class Medicine extends Equatable {
 
   @override
   List<Object?> get props => [
-    id, name, description, price, imageUrl, category, 
-    subCategory, requiresPrescription, rating, isPopular, 
-    dosage, sideEffects, manufacturer, keywords, maxPrice, 
-    expiryDate, availableAtPharmacyIds, additionalCategories, 
-    additionalSubCategories, doseMorning, doseAfternoon, 
-    doseEvening, doseTimeInterval
+    id,
+    name,
+    description,
+    price,
+    imageUrl,
+    category,
+    subCategory,
+    requiresPrescription,
+    rating,
+    isPopular,
+    dosage,
+    sideEffects,
+    manufacturer,
+    keywords,
+    maxPrice,
+    expiryDate,
+    availableAtPharmacyIds,
+    additionalCategories,
+    additionalSubCategories,
+    doseMorning,
+    doseAfternoon,
+    doseEvening,
+    doseTimeInterval,
   ];
 
   Map<String, dynamic> toJson() {
@@ -107,14 +128,32 @@ class Medicine extends Equatable {
       rating: (json['rating'] as num?)?.toDouble() ?? 0.0,
       isPopular: json['isPopular'] as bool? ?? false,
       dosage: json['dosage'] as String? ?? 'Take as directed by physician.',
-      sideEffects: json['sideEffects'] as String? ?? 'Consult a doctor if adverse reactions occur.',
+      sideEffects:
+          json['sideEffects'] as String? ??
+          'Consult a doctor if adverse reactions occur.',
       manufacturer: json['manufacturer'] as String? ?? 'Generic Pharm Co.',
-      keywords: (json['keywords'] as List<dynamic>?)?.map((e) => e as String).toList() ?? [],
+      keywords:
+          (json['keywords'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          [],
       maxPrice: (json['maxPrice'] as num?)?.toDouble(),
       expiryDate: json['expiryDate'] as String?,
-      availableAtPharmacyIds: (json['availableAtPharmacyIds'] as List<dynamic>?)?.map((e) => e as String).toList() ?? [],
-      additionalCategories: (json['additionalCategories'] as List<dynamic>?)?.map((e) => e as String).toList() ?? [],
-      additionalSubCategories: (json['additionalSubCategories'] as List<dynamic>?)?.map((e) => e as String).toList() ?? [],
+      availableAtPharmacyIds:
+          (json['availableAtPharmacyIds'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          [],
+      additionalCategories:
+          (json['additionalCategories'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          [],
+      additionalSubCategories:
+          (json['additionalSubCategories'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          [],
       doseMorning: json['doseMorning'] as String?,
       doseAfternoon: json['doseAfternoon'] as String?,
       doseEvening: json['doseEvening'] as String?,
@@ -122,4 +161,3 @@ class Medicine extends Equatable {
     );
   }
 }
-

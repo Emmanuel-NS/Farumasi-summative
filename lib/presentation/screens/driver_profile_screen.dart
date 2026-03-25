@@ -37,121 +37,151 @@ class _DriverProfileScreenState extends State<DriverProfileScreen> {
             onPressed: () => Navigator.pop(context, _isSaved),
           ),
           actions: [
-          IconButton(
-            icon: Icon(
-              _isSaved ? Icons.favorite : Icons.favorite_border,
-              color: _isSaved ? Colors.red : Colors.black,
-            ),
-            onPressed: () {
-              setState(() {
-                _isSaved = !_isSaved;
-              });
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(_isSaved ? "Driver added to favorites!" : "Driver removed from favorites."),
-                  duration: const Duration(seconds: 2),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            const SizedBox(height: 32),
-            // Profile Image
-            Center(
-              child: Stack(
-                children: [
-                   const CircleAvatar(
-                    radius: 60,
-                    backgroundColor: Colors.grey,
-                    child: Icon(Icons.person, size: 80, color: Colors.white),
-                  ),
-                  Positioned(
-                    bottom: 0,
-                    right: 0,
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: const BoxDecoration(
-                        color: Colors.green,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(Icons.check, color: Colors.white, size: 20),
+            IconButton(
+              icon: Icon(
+                _isSaved ? Icons.favorite : Icons.favorite_border,
+                color: _isSaved ? Colors.red : Colors.black,
+              ),
+              onPressed: () {
+                setState(() {
+                  _isSaved = !_isSaved;
+                });
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      _isSaved
+                          ? "Driver added to favorites!"
+                          : "Driver removed from favorites.",
                     ),
+                    duration: const Duration(seconds: 2),
                   ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              "John Doe",
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.star, color: Colors.amber.shade600, size: 20),
-                const SizedBox(width: 4),
-                const Text(
-                  "4.8 (124 deliveries)",
-                  style: TextStyle(fontSize: 16, color: Colors.grey),
-                ),
-              ],
-            ),
-            const SizedBox(height: 32),
-            
-            // Action Buttons
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Column(
-                children: [
-                  _buildMenuButton(
-                    context,
-                    icon: Icons.star_rate_rounded,
-                    label: "Rate Rider",
-                    color: Colors.orange,
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RateDriverScreen())),
-                  ),
-                  const SizedBox(height: 16),
-                  _buildMenuButton(
-                    context,
-                    icon: Icons.payments_rounded,
-                    label: "Send a Tip",
-                    color: Colors.green,
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TipDriverScreen())),
-                  ),
-                  const SizedBox(height: 16),
-                  _buildMenuButton(
-                    context,
-                    icon: Icons.forum_rounded,
-                    label: "Leave a Comment",
-                    color: Colors.blue,
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CommentDriverScreen())),
-                  ),
-                ],
-              ),
-            ),
-            
-            const SizedBox(height: 48),
-            // Badges or Stats
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _buildStatColumn("124", "Trips"),
-                _buildStatColumn("2.5", "Years"),
-                _buildStatColumn("100%", "Rating"),
-              ],
+                );
+              },
             ),
           ],
         ),
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+              const SizedBox(height: 32),
+              // Profile Image
+              Center(
+                child: Stack(
+                  children: [
+                    const CircleAvatar(
+                      radius: 60,
+                      backgroundColor: Colors.grey,
+                      child: Icon(Icons.person, size: 80, color: Colors.white),
+                    ),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: const BoxDecoration(
+                          color: Colors.green,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.check,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                "John Doe",
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.star, color: Colors.amber.shade600, size: 20),
+                  const SizedBox(width: 4),
+                  const Text(
+                    "4.8 (124 deliveries)",
+                    style: TextStyle(fontSize: 16, color: Colors.grey),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 32),
+
+              // Action Buttons
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  children: [
+                    _buildMenuButton(
+                      context,
+                      icon: Icons.star_rate_rounded,
+                      label: "Rate Rider",
+                      color: Colors.orange,
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const RateDriverScreen(),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildMenuButton(
+                      context,
+                      icon: Icons.payments_rounded,
+                      label: "Send a Tip",
+                      color: Colors.green,
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const TipDriverScreen(),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildMenuButton(
+                      context,
+                      icon: Icons.forum_rounded,
+                      label: "Leave a Comment",
+                      color: Colors.blue,
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const CommentDriverScreen(),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 48),
+              // Badges or Stats
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _buildStatColumn("124", "Trips"),
+                  _buildStatColumn("2.5", "Years"),
+                  _buildStatColumn("100%", "Rating"),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
-    ));
+    );
   }
 
-  Widget _buildMenuButton(BuildContext context, {required IconData icon, required String label, required Color color, required VoidCallback onTap}) {
+  Widget _buildMenuButton(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
@@ -185,7 +215,11 @@ class _DriverProfileScreenState extends State<DriverProfileScreen> {
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
             const Spacer(),
-            Icon(Icons.arrow_forward_ios_rounded, size: 16, color: Colors.grey.shade400),
+            Icon(
+              Icons.arrow_forward_ios_rounded,
+              size: 16,
+              color: Colors.grey.shade400,
+            ),
           ],
         ),
       ),
@@ -195,7 +229,10 @@ class _DriverProfileScreenState extends State<DriverProfileScreen> {
   Widget _buildStatColumn(String value, String label) {
     return Column(
       children: [
-        Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+        Text(
+          value,
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+        ),
         const SizedBox(height: 4),
         Text(label, style: const TextStyle(color: Colors.grey, fontSize: 14)),
       ],
@@ -216,14 +253,26 @@ class _RateDriverScreenState extends State<RateDriverScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Rate Rider"), backgroundColor: Colors.white, foregroundColor: Colors.black, elevation: 0),
+      appBar: AppBar(
+        title: const Text("Rate Rider"),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 0,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           children: [
-            const Text("How was your rider?", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+            const Text(
+              "How was your rider?",
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 16),
-            const Text("Your feedback helps improve our service", textAlign: TextAlign.center, style: TextStyle(color: Colors.grey)),
+            const Text(
+              "Your feedback helps improve our service",
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey),
+            ),
             const SizedBox(height: 48),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -240,17 +289,32 @@ class _RateDriverScreenState extends State<RateDriverScreen> {
             ),
             const SizedBox(height: 24),
             if (_rating > 0)
-              Text("You rated $_rating stars", style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.orange, fontSize: 18)),
+              Text(
+                "You rated $_rating stars",
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.orange,
+                  fontSize: 18,
+                ),
+              ),
             const Spacer(),
             SizedBox(
               width: double.infinity,
               height: 56,
               child: ElevatedButton(
                 onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Rating Submitted!")));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Rating Submitted!")),
+                  );
                   Navigator.pop(context);
                 },
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.black,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
                 child: const Text("Submit Rating"),
               ),
             ),
@@ -296,8 +360,8 @@ class _TipDriverScreenState extends State<TipDriverScreen> {
   }
 
   Future<void> _processPayment() async {
-    final int amount = _isCustomAmount 
-        ? int.tryParse(_customAmountController.text) ?? 0 
+    final int amount = _isCustomAmount
+        ? int.tryParse(_customAmountController.text) ?? 0
         : _selectedTip ?? 0;
 
     if (amount < 500) {
@@ -320,7 +384,10 @@ class _TipDriverScreenState extends State<TipDriverScreen> {
               children: [
                 CircularProgressIndicator(color: Colors.green),
                 SizedBox(height: 16),
-                Text("Processing Payment...", style: TextStyle(fontWeight: FontWeight.bold)),
+                Text(
+                  "Processing Payment...",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
               ],
             ),
           ),
@@ -330,13 +397,13 @@ class _TipDriverScreenState extends State<TipDriverScreen> {
 
     // Simulate delay
     await Future.delayed(const Duration(seconds: 2));
-    
+
     // Close loading
-    if(mounted) Navigator.pop(context);
+    if (mounted) Navigator.pop(context);
 
     // Show success
-    if(mounted) {
-       showDialog(
+    if (mounted) {
+      showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
           icon: const Icon(Icons.check_circle, color: Colors.green, size: 48),
@@ -349,7 +416,7 @@ class _TipDriverScreenState extends State<TipDriverScreen> {
                 Navigator.pop(context); // Close screen
               },
               child: const Text("Done"),
-            )
+            ),
           ],
         ),
       );
@@ -359,7 +426,12 @@ class _TipDriverScreenState extends State<TipDriverScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Send a Tip"), backgroundColor: Colors.white, foregroundColor: Colors.black, elevation: 0),
+      appBar: AppBar(
+        title: const Text("Send a Tip"),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 0,
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: Column(
@@ -370,11 +442,17 @@ class _TipDriverScreenState extends State<TipDriverScreen> {
               child: Icon(Icons.person, size: 40, color: Colors.white),
             ),
             const SizedBox(height: 16),
-            const Text("Say thanks to John!", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+            const Text(
+              "Say thanks to John!",
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 8),
-            const Text("100% of the tip goes to your rider", style: TextStyle(color: Colors.grey)),
+            const Text(
+              "100% of the tip goes to your rider",
+              style: TextStyle(color: Colors.grey),
+            ),
             const SizedBox(height: 32),
-            
+
             // Default Options
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -383,11 +461,16 @@ class _TipDriverScreenState extends State<TipDriverScreen> {
                 return GestureDetector(
                   onTap: () => _onTipSelected(amount),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 16,
+                    ),
                     decoration: BoxDecoration(
                       color: isSelected ? Colors.green : Colors.grey.shade100,
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: isSelected ? Colors.green : Colors.transparent),
+                      border: Border.all(
+                        color: isSelected ? Colors.green : Colors.transparent,
+                      ),
                     ),
                     child: Column(
                       children: [
@@ -412,13 +495,16 @@ class _TipDriverScreenState extends State<TipDriverScreen> {
                 );
               }).toList(),
             ),
-            
+
             const SizedBox(height: 32),
-            
+
             // Custom Amount
             const Align(
               alignment: Alignment.centerLeft,
-              child: Text("Or enter custom amount", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              child: Text(
+                "Or enter custom amount",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
             ),
             const SizedBox(height: 12),
             TextField(
@@ -442,12 +528,14 @@ class _TipDriverScreenState extends State<TipDriverScreen> {
                   borderRadius: BorderRadius.circular(16),
                   borderSide: const BorderSide(color: Colors.green, width: 2),
                 ),
-                suffixIcon: _isCustomAmount ? const Icon(Icons.edit, color: Colors.green) : null,
+                suffixIcon: _isCustomAmount
+                    ? const Icon(Icons.edit, color: Colors.green)
+                    : null,
               ),
             ),
 
             const SizedBox(height: 48),
-            
+
             // Pay Button
             SizedBox(
               width: double.infinity,
@@ -455,9 +543,11 @@ class _TipDriverScreenState extends State<TipDriverScreen> {
               child: ElevatedButton(
                 onPressed: _processPayment,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green, 
-                  foregroundColor: Colors.white, 
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                 ),
                 child: const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -482,19 +572,29 @@ class CommentDriverScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Leave a Comment"), backgroundColor: Colors.white, foregroundColor: Colors.black, elevation: 0),
+      appBar: AppBar(
+        title: const Text("Leave a Comment"),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 0,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Any compliments or complaints?", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+            const Text(
+              "Any compliments or complaints?",
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 32),
             TextField(
               maxLines: 5,
               decoration: InputDecoration(
                 hintText: "Write your comment here...",
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
                 filled: true,
                 fillColor: Colors.grey.shade50,
               ),
@@ -505,10 +605,18 @@ class CommentDriverScreen extends StatelessWidget {
               height: 56,
               child: ElevatedButton(
                 onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Comment Submitted!")));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Comment Submitted!")),
+                  );
                   Navigator.pop(context);
                 },
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.blue, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
                 child: const Text("Submit Comment"),
               ),
             ),

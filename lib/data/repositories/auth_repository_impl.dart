@@ -148,6 +148,15 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<void> sendPasswordResetEmail(String email) async {
+    try {
+      await _firebaseAuth.sendPasswordResetEmail(email: email);
+    } catch (e) {
+      throw LogInWithEmailAndPasswordFailure(e.toString());
+    }
+  }
+
+  @override
   Future<void> logOut() async {
     try {
       await Future.wait([_firebaseAuth.signOut(), _googleSignIn.signOut()]);
@@ -157,13 +166,63 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<void> sendPasswordResetEmail(String email) async {
+  Future<void> updateProfile({
+    required String uid,
+    String? displayName,
+    String? phoneNumber,
+    String? email,
+  }) async {
     try {
-      await _firebaseAuth.sendPasswordResetEmail(email: email.trim());
-    } on firebase_auth.FirebaseAuthException catch (e) {
-      throw ResetPasswordFailure(e.message ?? 'Could not send reset email');
+      final user = _firebaseAuth.currentUser;
+      if (user == null || user.uid != uid)
+        throw Exception('Unauthorized or user not found');
+
+      Map<String, dynamic> updates = {};
+
+      if (displayName != null && displayName.isNotEmpty) {
+        await user.updateDisplayName(displayName);
+        updates['displayName'] = displayName;
+      }
+
+      if (email != null && email.isNotEmpty && email != user.email) {
+        await user.verifyBeforeUpdateEmail(
+          email,
+        ); // Sends verification strictly
+        updates['email'] = email;
+      }
+
+      if (phoneNumber != null) {
+        updates['phoneNumber'] = phoneNumber;
+      }
+
+      if (updates.isNotEmpty) {
+        await _firestore.collection('users').doc(uid).update(updates);
+      }
     } catch (e) {
-      throw ResetPasswordFailure(e.toString());
+      throw Exception('Failed to update profile: $e');
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>?> getUserProfile(String uid) async {
+    try {
+      final doc = await _firestore.collection('users').doc(uid).get();
+      if (doc.exists) {
+        return doc.data();
+      }
+      return null;
+    } catch (e) {
+      throw Exception('Failed to fetch user profile: $e');
+    }
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getAllUsers() async {
+    try {
+      final snapshot = await _firestore.collection('users').get();
+      return snapshot.docs.map((doc) => doc.data()).toList();
+    } catch (e) {
+      throw Exception('Failed to fetch users: $e');
     }
   }
 }

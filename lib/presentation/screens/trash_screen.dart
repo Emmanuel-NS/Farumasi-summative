@@ -26,10 +26,7 @@ class _TrashScreenState extends State<TrashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Trash Bin'),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text('Trash Bin'), centerTitle: true),
       body: _trash.isEmpty
           ? Center(
               child: Column(
@@ -50,12 +47,19 @@ class _TrashScreenState extends State<TrashScreen> {
                 final notification = _trash[index];
                 return ListTile(
                   leading: const Icon(Icons.delete_forever, color: Colors.red),
-                  title: Text(notification['title'] ?? '', style: const TextStyle(decoration: TextDecoration.lineThrough)),
+                  title: Text(
+                    notification['title'] ?? '',
+                    style: const TextStyle(
+                      decoration: TextDecoration.lineThrough,
+                    ),
+                  ),
                   subtitle: Text(notification['body'] ?? ''),
                   trailing: IconButton(
                     icon: const Icon(Icons.restore, color: Colors.green),
                     onPressed: () {
-                      NotificationService().restoreNotification(notification['id']);
+                      NotificationService().restoreNotification(
+                        notification['id'],
+                      );
                       _loadTrash();
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('Notification Restored')),
