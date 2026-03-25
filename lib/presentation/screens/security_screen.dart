@@ -52,7 +52,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
               // Navigate to change password
             },
           ),
-          
+
           const Divider(),
           _buildSectionHeader('Data Privacy (Health Data)'),
           ListTile(
@@ -69,7 +69,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
               // Open app settings
             },
           ),
-           ListTile(
+          ListTile(
             title: const Text('Download My Data'),
             subtitle: const Text('Request copy of your medical history'),
             trailing: const Icon(Icons.download),
@@ -83,12 +83,15 @@ class _SecurityScreenState extends State<SecurityScreen> {
           ListTile(
             title: const Text('Active Sessions'),
             subtitle: const Text('Samsung S21 (Current) • Kigali, RW'),
-            trailing: const Text('Log out all', style: TextStyle(color: Colors.red)),
+            trailing: const Text(
+              'Log out all',
+              style: TextStyle(color: Colors.red),
+            ),
             onTap: () {
               // Log out other sessions
             },
           ),
-          
+
           const SizedBox(height: 24),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -96,26 +99,37 @@ class _SecurityScreenState extends State<SecurityScreen> {
               onPressed: () {
                 // Show delete confirmation
                 showDialog(
-                  context: context, 
+                  context: context,
                   builder: (ctx) => AlertDialog(
                     title: const Text("Delete Account"),
-                    content: const Text("Are you sure you want to delete your account? This action is permanent and cannot be undone. All your health data will be erased."),
+                    content: const Text(
+                      "Are you sure you want to delete your account? This action is permanent and cannot be undone. All your health data will be erased.",
+                    ),
                     actions: [
-                      TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("Cancel")),
+                      TextButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        child: const Text("Cancel"),
+                      ),
                       TextButton(
                         onPressed: () {
                           // Perform delete API call
                           Navigator.pop(ctx);
                           Navigator.pop(context); // Go back to settings/login
-                        }, 
-                        child: const Text("Delete", style: TextStyle(color: Colors.red))
+                        },
+                        child: const Text(
+                          "Delete",
+                          style: TextStyle(color: Colors.red),
+                        ),
                       ),
                     ],
-                  )
+                  ),
                 );
               },
               icon: const Icon(Icons.delete_forever, color: Colors.red),
-              label: const Text('Delete Account', style: TextStyle(color: Colors.red)),
+              label: const Text(
+                'Delete Account',
+                style: TextStyle(color: Colors.red),
+              ),
               style: OutlinedButton.styleFrom(
                 side: const BorderSide(color: Colors.red),
                 padding: const EdgeInsets.all(16),

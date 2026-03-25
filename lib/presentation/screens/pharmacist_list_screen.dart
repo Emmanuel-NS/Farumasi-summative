@@ -21,7 +21,7 @@ class PharmacistListScreen extends StatelessWidget {
 
   void _showBlockPharmacyDialog(BuildContext context) {
     if (pharmacy == null) return;
-    
+
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -53,11 +53,13 @@ class PharmacistListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // In a real app, filter pharmacists by pharmacy ID if pharmacy is provided
-    final pharmacists = dummyPharmacists; 
+    final pharmacists = dummyPharmacists;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(pharmacy != null ? "Our Pharmacists" : "Consult a Pharmacist"),
+        title: Text(
+          pharmacy != null ? "Our Pharmacists" : "Consult a Pharmacist",
+        ),
         backgroundColor: Colors.green,
         foregroundColor: Colors.white,
       ),
@@ -101,7 +103,9 @@ class PharmacistListScreen extends StatelessWidget {
                         margin: const EdgeInsets.only(right: 12, bottom: 8),
                         child: Card(
                           elevation: 3,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                           color: Colors.green.shade50,
                           child: Padding(
                             padding: const EdgeInsets.all(12),
@@ -113,41 +117,70 @@ class PharmacistListScreen extends StatelessWidget {
                                     const CircleAvatar(
                                       radius: 16,
                                       backgroundColor: Colors.green,
-                                      child: Icon(Icons.person, size: 20, color: Colors.white),
+                                      child: Icon(
+                                        Icons.person,
+                                        size: 20,
+                                        color: Colors.white,
+                                      ),
                                     ),
                                     const SizedBox(width: 8),
                                     Expanded(
                                       child: Text(
                                         booking.pharmacistName,
-                                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                        ),
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
                                     IconButton(
-                                      icon: const Icon(Icons.close, size: 18, color: Colors.red),
+                                      icon: const Icon(
+                                        Icons.close,
+                                        size: 18,
+                                        color: Colors.red,
+                                      ),
                                       padding: EdgeInsets.zero,
                                       constraints: const BoxConstraints(),
                                       tooltip: "Cancel",
                                       onPressed: () {
-                                         showDialog(
+                                        showDialog(
                                           context: context,
                                           builder: (ctx) => AlertDialog(
-                                            title: const Text("Cancel Session?"),
-                                            content: const Text("Are you sure you want to cancel this booking?"),
+                                            title: const Text(
+                                              "Cancel Session?",
+                                            ),
+                                            content: const Text(
+                                              "Are you sure you want to cancel this booking?",
+                                            ),
                                             actions: [
                                               TextButton(
-                                                onPressed: () => Navigator.pop(ctx),
+                                                onPressed: () =>
+                                                    Navigator.pop(ctx),
                                                 child: const Text("Keep"),
                                               ),
                                               TextButton(
                                                 onPressed: () {
-                                                  StateService().cancelBooking(booking.id);
+                                                  StateService().cancelBooking(
+                                                    booking.id,
+                                                  );
                                                   Navigator.pop(ctx);
-                                                  ScaffoldMessenger.of(context).showSnackBar(
-                                                    const SnackBar(content: Text("Session cancelled")),
+                                                  ScaffoldMessenger.of(
+                                                    context,
+                                                  ).showSnackBar(
+                                                    const SnackBar(
+                                                      content: Text(
+                                                        "Session cancelled",
+                                                      ),
+                                                    ),
                                                   );
                                                 },
-                                                child: const Text("Cancel", style: TextStyle(color: Colors.red)),
+                                                child: const Text(
+                                                  "Cancel",
+                                                  style: TextStyle(
+                                                    color: Colors.red,
+                                                  ),
+                                                ),
                                               ),
                                             ],
                                           ),
@@ -159,18 +192,29 @@ class PharmacistListScreen extends StatelessWidget {
                                 const Divider(),
                                 Row(
                                   children: [
-                                    const Icon(Icons.calendar_today, size: 14, color: Colors.grey),
+                                    const Icon(
+                                      Icons.calendar_today,
+                                      size: 14,
+                                      color: Colors.grey,
+                                    ),
                                     const SizedBox(width: 4),
                                     Text(
                                       "${booking.date.day}/${booking.date.month}/${booking.date.year}",
                                       style: const TextStyle(fontSize: 13),
                                     ),
                                     const SizedBox(width: 12),
-                                    const Icon(Icons.access_time, size: 14, color: Colors.grey),
+                                    const Icon(
+                                      Icons.access_time,
+                                      size: 14,
+                                      color: Colors.grey,
+                                    ),
                                     const SizedBox(width: 4),
                                     Text(
                                       booking.time,
-                                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -178,7 +222,11 @@ class PharmacistListScreen extends StatelessWidget {
                                 if (booking.notes.isNotEmpty)
                                   Text(
                                     "Note: ${booking.notes}",
-                                    style: TextStyle(fontSize: 12, color: Colors.grey[700], fontStyle: FontStyle.italic),
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey[700],
+                                      fontStyle: FontStyle.italic,
+                                    ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
@@ -200,7 +248,7 @@ class PharmacistListScreen extends StatelessWidget {
                   separatorBuilder: (_, __) => const Divider(),
                   itemBuilder: (context, index) {
                     final pharmacist = pharmacists[index];
-                    
+
                     Color statusColor;
                     String statusText;
                     switch (pharmacist.status) {
@@ -220,27 +268,30 @@ class PharmacistListScreen extends StatelessWidget {
 
                     return ListTile(
                       leading: Stack(
-                          children: [
-                            CircleAvatar(
-                              backgroundImage: NetworkImage(pharmacist.imageUrl),
-                              radius: 28,
-                              onBackgroundImageError: (_, __) =>
-                                  const Icon(Icons.person, size: 28),
-                            ),
-                            Positioned(
-                              right: 0,
-                              bottom: 0,
-                              child: Container(
-                                width: 14,
-                                height: 14,
-                                decoration: BoxDecoration(
-                                  color: statusColor,
-                                  shape: BoxShape.circle,
-                                  border: Border.all(color: Colors.white, width: 2),
+                        children: [
+                          CircleAvatar(
+                            backgroundImage: NetworkImage(pharmacist.imageUrl),
+                            radius: 28,
+                            onBackgroundImageError: (_, __) =>
+                                const Icon(Icons.person, size: 28),
+                          ),
+                          Positioned(
+                            right: 0,
+                            bottom: 0,
+                            child: Container(
+                              width: 14,
+                              height: 14,
+                              decoration: BoxDecoration(
+                                color: statusColor,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: 2,
                                 ),
                               ),
                             ),
-                          ],
+                          ),
+                        ],
                       ),
                       title: Text(
                         pharmacist.name,
@@ -253,60 +304,81 @@ class PharmacistListScreen extends StatelessWidget {
                           const SizedBox(height: 2),
                           Text(
                             pharmacist.organization,
-                            style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[700],
+                            ),
                           ),
                           const SizedBox(height: 2),
                           Text(
                             statusText,
                             style: TextStyle(
-                              fontSize: 12, 
-                              color: statusColor, 
-                              fontWeight: FontWeight.w600
+                              fontSize: 12,
+                              color: statusColor,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ],
                       ),
-                      trailing: pharmacy != null 
-                        ? null // Hide actions for partner pharmacy pharmacists
-                        : Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                           if (pharmacist.status != PharmacistStatus.offline)
-                            IconButton(
-                              icon: const Icon(Icons.calendar_month, color: Colors.blue),
-                              tooltip: "Book Session",
-                              onPressed: () => _bookSession(context, pharmacist),
-                            ),
-                          
-                          // Chat Button Logic: Only active if AVAILABLE
-                          if (pharmacist.status == PharmacistStatus.available)
-                            IconButton(
-                              icon: const Icon(Icons.chat_bubble_outline, color: Colors.green),
-                              tooltip: "Chat with Pharmacist",
-                              onPressed: () {
-                                 Navigator.push(
-                                   context,
-                                   MaterialPageRoute(
-                                     builder: (_) => ChatScreen(pharmacist: pharmacist),
-                                   ),
-                                 );
-                              },
-                            )
-                          else
-                            IconButton(
-                              icon: const Icon(Icons.lock_outline, color: Colors.grey),
-                              tooltip: "Chat Unavailable (${statusText})",
-                              onPressed: () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text("${pharmacist.name} is currently $statusText. Please try again later."),
-                                    duration: const Duration(seconds: 2),
+                      trailing: pharmacy != null
+                          ? null // Hide actions for partner pharmacy pharmacists
+                          : Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (pharmacist.status !=
+                                    PharmacistStatus.offline)
+                                  IconButton(
+                                    icon: const Icon(
+                                      Icons.calendar_month,
+                                      color: Colors.blue,
+                                    ),
+                                    tooltip: "Book Session",
+                                    onPressed: () =>
+                                        _bookSession(context, pharmacist),
                                   ),
-                                );
-                              },
+
+                                // Chat Button Logic: Only active if AVAILABLE
+                                if (pharmacist.status ==
+                                    PharmacistStatus.available)
+                                  IconButton(
+                                    icon: const Icon(
+                                      Icons.chat_bubble_outline,
+                                      color: Colors.green,
+                                    ),
+                                    tooltip: "Chat with Pharmacist",
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => ChatScreen(
+                                            pharmacist: pharmacist,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  )
+                                else
+                                  IconButton(
+                                    icon: const Icon(
+                                      Icons.lock_outline,
+                                      color: Colors.grey,
+                                    ),
+                                    tooltip: "Chat Unavailable (${statusText})",
+                                    onPressed: () {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            "${pharmacist.name} is currently $statusText. Please try again later.",
+                                          ),
+                                          duration: const Duration(seconds: 2),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                              ],
                             ),
-                        ],
-                      ),
                     );
                   },
                 ),
@@ -316,7 +388,9 @@ class PharmacistListScreen extends StatelessWidget {
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: Colors.grey.shade50,
-                    border: Border(top: BorderSide(color: Colors.grey.shade200)),
+                    border: Border(
+                      top: BorderSide(color: Colors.grey.shade200),
+                    ),
                   ),
                   child: SafeArea(
                     child: Column(
@@ -328,17 +402,27 @@ class PharmacistListScreen extends StatelessWidget {
                           decoration: BoxDecoration(
                             color: Colors.blue.withOpacity(0.05),
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.blue.withOpacity(0.1)),
+                            border: Border.all(
+                              color: Colors.blue.withOpacity(0.1),
+                            ),
                           ),
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Icon(Icons.privacy_tip_outlined, size: 20, color: Colors.blueGrey),
+                              const Icon(
+                                Icons.privacy_tip_outlined,
+                                size: 20,
+                                color: Colors.blueGrey,
+                              ),
                               const SizedBox(width: 12),
                               const Expanded(
                                 child: Text(
                                   "Your comfort and privacy matter. If any pharmacist listed here makes you feel uncomfortable viewing your order details, you have the right to block this pharmacy. Blocking prevents them from processing your future orders. You can unblock them anytime if you change your mind.",
-                                  style: TextStyle(color: Colors.black87, fontSize: 13, height: 1.4),
+                                  style: TextStyle(
+                                    color: Colors.black87,
+                                    fontSize: 13,
+                                    height: 1.4,
+                                  ),
                                 ),
                               ),
                             ],
@@ -347,13 +431,21 @@ class PharmacistListScreen extends StatelessWidget {
                         ListenableBuilder(
                           listenable: StateService(),
                           builder: (context, _) {
-                            final isBlocked = StateService().isPharmacyBlocked(pharmacy!.id);
+                            final isBlocked = StateService().isPharmacyBlocked(
+                              pharmacy!.id,
+                            );
                             if (isBlocked) {
-                               return OutlinedButton.icon(
+                              return OutlinedButton.icon(
                                 onPressed: () {
-                                   StateService().setPharmacyBlocked(pharmacy!.id, false);
+                                  StateService().setPharmacyBlocked(
+                                    pharmacy!.id,
+                                    false,
+                                  );
                                 },
-                                icon: const Icon(Icons.check_circle, color: Colors.green),
+                                icon: const Icon(
+                                  Icons.check_circle,
+                                  color: Colors.green,
+                                ),
                                 label: const Text("Unblock Pharmacy"),
                                 style: OutlinedButton.styleFrom(
                                   foregroundColor: Colors.green,
@@ -363,7 +455,8 @@ class PharmacistListScreen extends StatelessWidget {
                               );
                             }
                             return ElevatedButton.icon(
-                              onPressed: () => _showBlockPharmacyDialog(context),
+                              onPressed: () =>
+                                  _showBlockPharmacyDialog(context),
                               icon: const Icon(Icons.block),
                               label: const Text("Block Pharmacy"),
                               style: ElevatedButton.styleFrom(

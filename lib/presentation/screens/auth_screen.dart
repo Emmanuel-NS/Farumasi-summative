@@ -5,6 +5,7 @@ import '../../presentation/blocs/login/login_cubit.dart';
 import '../widgets/farumasi_logo_widget.dart';
 import '../../core/constants/app_constants.dart';
 import 'admin/admin_dashboard_screen.dart'; // Keep admin backdoor
+import 'forgot_password_screen.dart';
 import 'home_screen.dart';
 
 class AuthScreen extends StatelessWidget {
@@ -61,12 +62,16 @@ class _AuthViewState extends State<AuthView> {
         context.read<LoginCubit>().logInWithCredentials(email, password);
       } else {
         if (password != _confirmPasswordController.text.trim()) {
-           ScaffoldMessenger.of(context).showSnackBar(
-             const SnackBar(content: Text("Passwords do not match")),
-           );
-           return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Passwords do not match")),
+          );
+          return;
         }
-        context.read<LoginCubit>().signUp(email, password, displayName: _nameController.text.trim());
+        context.read<LoginCubit>().signUp(
+          email,
+          password,
+          displayName: _nameController.text.trim(),
+        );
       }
     }
   }
@@ -76,20 +81,26 @@ class _AuthViewState extends State<AuthView> {
     return BlocListener<LoginCubit, LoginState>(
       listener: (context, state) {
         if (state.status == LoginStatus.error) {
-           ScaffoldMessenger.of(context).showSnackBar(
-             SnackBar(content: Text(state.errorMessage ?? "Authentication Failed")),
-           );
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.errorMessage ?? "Authentication Failed"),
+            ),
+          );
         } else if (state.status == LoginStatus.success) {
-           final isLoggingInAsAdmin = state.userEmail?.toLowerCase() == AppConstants.adminEmail.toLowerCase();
-           if (isLoggingInAsAdmin) {
-             Navigator.of(context).pushReplacement(
-               MaterialPageRoute(builder: (context) => const AdminDashboardScreen()),
-             );
-           } else {
-             Navigator.of(context).pushReplacement(
-               MaterialPageRoute(builder: (context) => const HomeScreen()),
-             );
-           }
+          final isLoggingInAsAdmin =
+              state.userEmail?.toLowerCase() ==
+              AppConstants.adminEmail.toLowerCase();
+          if (isLoggingInAsAdmin) {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                builder: (context) => const AdminDashboardScreen(),
+              ),
+            );
+          } else {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (context) => const HomeScreen()),
+            );
+          }
         }
       },
       child: Scaffold(
@@ -124,7 +135,10 @@ class _AuthViewState extends State<AuthView> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const FarumasiLogo(size: 60, color: Colors.green),
+                                const FarumasiLogo(
+                                  size: 60,
+                                  color: Colors.green,
+                                ),
                                 const SizedBox(width: 12),
                                 Flexible(
                                   child: Text(
@@ -155,10 +169,18 @@ class _AuthViewState extends State<AuthView> {
                                 controller: _nameController,
                                 decoration: InputDecoration(
                                   labelText: 'Full Name',
-                                  prefixIcon: const Icon(Icons.person, color: Colors.green),
-                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                                  prefixIcon: const Icon(
+                                    Icons.person,
+                                    color: Colors.green,
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
                                 ),
-                                validator: (value) => value == null || value.isEmpty ? 'Please enter your name' : null,
+                                validator: (value) =>
+                                    value == null || value.isEmpty
+                                    ? 'Please enter your name'
+                                    : null,
                               ),
                               const SizedBox(height: 16),
                             ],
@@ -167,12 +189,19 @@ class _AuthViewState extends State<AuthView> {
                               keyboardType: TextInputType.emailAddress,
                               decoration: InputDecoration(
                                 labelText: 'Email Address',
-                                prefixIcon: const Icon(Icons.email, color: Colors.green),
-                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                                prefixIcon: const Icon(
+                                  Icons.email,
+                                  color: Colors.green,
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
                               ),
                               validator: (value) {
-                                if (value == null || value.isEmpty) return 'Please enter your email';
-                                if (!value.contains('@')) return 'Please enter a valid email';
+                                if (value == null || value.isEmpty)
+                                  return 'Please enter your email';
+                                if (!value.contains('@'))
+                                  return 'Please enter a valid email';
                                 return null;
                               },
                             ),
@@ -182,15 +211,32 @@ class _AuthViewState extends State<AuthView> {
                               obscureText: true,
                               decoration: InputDecoration(
                                 labelText: 'Password',
-                                prefixIcon: const Icon(Icons.lock, color: Colors.green),
-                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                                prefixIcon: const Icon(
+                                  Icons.lock,
+                                  color: Colors.green,
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
                               ),
-                              validator: (value) => value == null || value.isEmpty 
-                                ? 'Please enter your password'
-                                : value.length < 6 
-                                  ? 'Password must be at least 6 characters' 
+                              validator: (value) =>
+                                  value == null || value.isEmpty
+                                  ? 'Please enter your password'
+                                  : value.length < 6
+                                  ? 'Password must be at least 6 characters'
                                   : null,
                             ),
+                            if (_isLogin) ...[
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: TextButton(
+                                  onPressed: () {
+                                     Navigator.push(context, MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()));
+                                  },
+                                  child: const Text('Forgot Password?'),
+                                ),
+                              ),
+                            ],
                             if (!_isLogin) ...[
                               const SizedBox(height: 16),
                               TextFormField(
@@ -198,17 +244,27 @@ class _AuthViewState extends State<AuthView> {
                                 obscureText: true,
                                 decoration: InputDecoration(
                                   labelText: 'Confirm Password',
-                                  prefixIcon: const Icon(Icons.lock_outline, color: Colors.green),
-                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                                  prefixIcon: const Icon(
+                                    Icons.lock_outline,
+                                    color: Colors.green,
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
                                 ),
-                                validator: (value) => value == null || value.isEmpty ? 'Please confirm your password' : null,
+                                validator: (value) =>
+                                    value == null || value.isEmpty
+                                    ? 'Please confirm your password'
+                                    : null,
                               ),
                             ],
                             const SizedBox(height: 24),
                             BlocBuilder<LoginCubit, LoginState>(
                               builder: (context, state) {
                                 if (state.status == LoginStatus.submitting) {
-                                  return const Center(child: CircularProgressIndicator());
+                                  return const Center(
+                                    child: CircularProgressIndicator(),
+                                  );
                                 }
                                 return SizedBox(
                                   width: double.infinity,
@@ -216,12 +272,20 @@ class _AuthViewState extends State<AuthView> {
                                     onPressed: _submit,
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: Colors.green.shade700,
-                                      padding: const EdgeInsets.symmetric(vertical: 16),
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 16,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
                                     ),
                                     child: Text(
                                       _isLogin ? 'Login' : 'Create Account',
-                                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                                      style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
                                     ),
                                   ),
                                 );
@@ -231,7 +295,11 @@ class _AuthViewState extends State<AuthView> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Text(_isLogin ? "Don't have an account? " : "Already have an account? "),
+                                Text(
+                                  _isLogin
+                                      ? "Don't have an account? "
+                                      : "Already have an account? ",
+                                ),
                                 TextButton(
                                   onPressed: () {
                                     setState(() {
@@ -240,7 +308,10 @@ class _AuthViewState extends State<AuthView> {
                                   },
                                   child: Text(
                                     _isLogin ? 'Sign Up' : 'Login',
-                                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green.shade700),
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.green.shade700,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -253,11 +324,15 @@ class _AuthViewState extends State<AuthView> {
                                 icon: const Icon(Icons.g_mobiledata, size: 30),
                                 label: const Text("Sign in with Google"),
                                 onPressed: () {
-                                   context.read<LoginCubit>().logInWithGoogle();
+                                  context.read<LoginCubit>().logInWithGoogle();
                                 },
                                 style: OutlinedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(vertical: 12),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
                                 ),
                               ),
                             ),

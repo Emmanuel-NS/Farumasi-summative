@@ -29,7 +29,7 @@ class _HealthTipsViewState extends State<_HealthTipsView>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final TextEditingController _searchController = TextEditingController();
-  
+
   @override
   void initState() {
     super.initState();
@@ -50,137 +50,149 @@ class _HealthTipsViewState extends State<_HealthTipsView>
       child: Scaffold(
         backgroundColor: Colors.grey.shade50,
         body: NestedScrollView(
-        headerSliverBuilder: (context, innerBoxIsScrolled) {
-          return [
-            SliverAppBar(
-              expandedHeight: 180,
-              floating: true,
-              pinned: true,
-              elevation: 0,
-              backgroundColor: Colors.white,
-              foregroundColor: Colors.green.shade900,
-              flexibleSpace: FlexibleSpaceBar(
-                titlePadding: const EdgeInsets.only(left: 16, bottom: 120),
-                title: Text(
-                  "Discover Wellness",
-                  style: TextStyle(
-                    color: Colors.green.shade900,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 22,
+          headerSliverBuilder: (context, innerBoxIsScrolled) {
+            return [
+              SliverAppBar(
+                expandedHeight: 180,
+                floating: true,
+                pinned: true,
+                elevation: 0,
+                backgroundColor: Colors.white,
+                foregroundColor: Colors.green.shade900,
+                flexibleSpace: FlexibleSpaceBar(
+                  titlePadding: const EdgeInsets.only(left: 16, bottom: 120),
+                  title: Text(
+                    "Discover Wellness",
+                    style: TextStyle(
+                      color: Colors.green.shade900,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 22,
+                    ),
                   ),
-                ),
-                background: Stack(
-                  children: [
-                    Positioned(
-                      right: -30,
-                      top: -30,
-                      child: Opacity(
-                        opacity: 0.1,
-                        child: const Icon(Icons.spa, size: 180, color: Colors.green),
-                      ),
-                    ),
-                    // Search Bar
-                    Positioned(
-                      left: 16,
-                      right: 16,
-                      bottom: 70,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        height: 45,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(30),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            )
-                          ]
-                        ),
-                        child: TextField(
-                          controller: _searchController,
-                          decoration: const InputDecoration(
-                            icon: Icon(Icons.search, color: Colors.grey),
-                            hintText: "Search tips, remedies...",
-                            border: InputBorder.none,
+                  background: Stack(
+                    children: [
+                      Positioned(
+                        right: -30,
+                        top: -30,
+                        child: Opacity(
+                          opacity: 0.1,
+                          child: const Icon(
+                            Icons.spa,
+                            size: 180,
+                            color: Colors.green,
                           ),
-                          onChanged: (val) {
-                             context.read<HealthTipsBloc>().add(FilterHealthTips(val));
-                          },
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-              bottom: PreferredSize(
-                preferredSize: const Size.fromHeight(60),
-                child: Container(
-                  height: 60,
-                  alignment: Alignment.centerLeft,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: TabBar(
-                    controller: _tabController,
-                    isScrollable: true,
-                    labelColor: Colors.white,
-                    unselectedLabelColor: Colors.green.shade700,
-                    indicator: BoxDecoration(
-                      borderRadius: BorderRadius.circular(30),
-                      color: Colors.green,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.green.withOpacity(0.3),
-                          blurRadius: 8,
-                          offset: const Offset(0, 4),
+                      // Search Bar
+                      Positioned(
+                        left: 16,
+                        right: 16,
+                        bottom: 70,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          height: 45,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(30),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.05),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: TextField(
+                            controller: _searchController,
+                            decoration: const InputDecoration(
+                              icon: Icon(Icons.search, color: Colors.grey),
+                              hintText: "Search tips, remedies...",
+                              border: InputBorder.none,
+                            ),
+                            onChanged: (val) {
+                              context.read<HealthTipsBloc>().add(
+                                FilterHealthTips(val),
+                              );
+                            },
+                          ),
                         ),
-                      ],
-                    ),
-                    indicatorSize: TabBarIndicatorSize.label,
-                    padding: EdgeInsets.zero,
-                    labelPadding: const EdgeInsets.symmetric(horizontal: 8),
-                    tabs: [
-                      _buildTab("General Tips"),
-                      _buildTab("Remedies"),
-                      _buildTab("Did You Know?"),
+                      ),
                     ],
                   ),
                 ),
+                bottom: PreferredSize(
+                  preferredSize: const Size.fromHeight(60),
+                  child: Container(
+                    height: 60,
+                    alignment: Alignment.centerLeft,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: TabBar(
+                      controller: _tabController,
+                      isScrollable: true,
+                      labelColor: Colors.white,
+                      unselectedLabelColor: Colors.green.shade700,
+                      indicator: BoxDecoration(
+                        borderRadius: BorderRadius.circular(30),
+                        color: Colors.green,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.green.withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      indicatorSize: TabBarIndicatorSize.label,
+                      padding: EdgeInsets.zero,
+                      labelPadding: const EdgeInsets.symmetric(horizontal: 8),
+                      tabs: [
+                        _buildTab("General Tips"),
+                        _buildTab("Remedies"),
+                        _buildTab("Did You Know?"),
+                      ],
+                    ),
+                  ),
+                ),
               ),
-            ),
-          ];
-        },
-        body: BlocBuilder<HealthTipsBloc, HealthTipsState>(
-          builder: (context, state) {
-            if (state is HealthTipsLoading) {
-               return const Center(child: CircularProgressIndicator());
-            }
-            if (state is HealthTipsError) {
-              return Center(child: Text("Error: ${state.message}"));
-            }
-            
-            // Default to empty list if initial
-            List<HealthArticle> articles = [];
-            if (state is HealthTipsLoaded) {
-               articles = state.filteredArticles;
-            }
-
-            final tips = articles.where((a) => a.type == HealthArticleType.tip).toList();
-            final remedies = articles.where((a) => a.type == HealthArticleType.remedy).toList();
-            final facts = articles.where((a) => a.type == HealthArticleType.didYouKnow).toList();
-
-            return TabBarView(
-              controller: _tabController,
-              children: [
-                _buildArticleList(tips),
-                _buildArticleList(remedies),
-                _buildArticleList(facts, isFact: true),
-              ],
-            );
+            ];
           },
+          body: BlocBuilder<HealthTipsBloc, HealthTipsState>(
+            builder: (context, state) {
+              if (state is HealthTipsLoading) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              if (state is HealthTipsError) {
+                return Center(child: Text("Error: ${state.message}"));
+              }
+
+              // Default to empty list if initial
+              List<HealthArticle> articles = [];
+              if (state is HealthTipsLoaded) {
+                articles = state.filteredArticles;
+              }
+
+              final tips = articles
+                  .where((a) => a.type == HealthArticleType.tip)
+                  .toList();
+              final remedies = articles
+                  .where((a) => a.type == HealthArticleType.remedy)
+                  .toList();
+              final facts = articles
+                  .where((a) => a.type == HealthArticleType.didYouKnow)
+                  .toList();
+
+              return TabBarView(
+                controller: _tabController,
+                children: [
+                  _buildArticleList(tips),
+                  _buildArticleList(remedies),
+                  _buildArticleList(facts, isFact: true),
+                ],
+              );
+            },
+          ),
         ),
       ),
-    ),
     );
   }
 
@@ -199,19 +211,19 @@ class _HealthTipsViewState extends State<_HealthTipsView>
 
   Widget _buildArticleList(List<HealthArticle> items, {bool isFact = false}) {
     if (items.isEmpty) {
-       return Center(
-         child: Column(
-           mainAxisAlignment: MainAxisAlignment.center,
-           children: [
-             Icon(Icons.search_off, size: 64, color: Colors.grey.shade300),
-             const SizedBox(height: 16),
-             Text(
-               "No results found",
-               style: TextStyle(color: Colors.grey.shade500, fontSize: 16),
-             ),
-           ],
-         ),
-       );
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.search_off, size: 64, color: Colors.grey.shade300),
+            const SizedBox(height: 16),
+            Text(
+              "No results found",
+              style: TextStyle(color: Colors.grey.shade500, fontSize: 16),
+            ),
+          ],
+        ),
+      );
     }
     return ListView.separated(
       keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
@@ -268,7 +280,7 @@ class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
   }
 
   @override
-  void dispose() {  
+  void dispose() {
     _quillController.dispose();
     _quillScrollController.dispose();
     _quillFocusNode.dispose();
@@ -278,7 +290,9 @@ class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
   @override
   Widget build(BuildContext context) {
     // Check if we use Quill (valid controller with document length > 1 or specific check)
-    final bool isJson = widget.article.fullContent.trim().startsWith('[') && widget.article.fullContent.trim().endsWith(']');
+    final bool isJson =
+        widget.article.fullContent.trim().startsWith('[') &&
+        widget.article.fullContent.trim().endsWith(']');
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -343,11 +357,18 @@ class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
                         ),
                       ),
                       const Spacer(),
-                      const Icon(Icons.access_time, size: 16, color: Colors.grey),
+                      const Icon(
+                        Icons.access_time,
+                        size: 16,
+                        color: Colors.grey,
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         "${widget.article.readTimeMin} min read",
-                        style: const TextStyle(color: Colors.grey, fontSize: 13),
+                        style: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 13,
+                        ),
                       ),
                     ],
                   ),
@@ -422,7 +443,9 @@ class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
                               ),
                               Text(
                                 widget.article.source,
-                                style: const TextStyle(fontWeight: FontWeight.bold),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ],
                           ),
@@ -543,7 +566,10 @@ class _ModernArticleCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       article.subtitle,
-                      style: const TextStyle(color: Colors.white70, fontSize: 14),
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 14,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -595,7 +621,11 @@ class _DidYouKnowCard extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.lightbulb, color: Colors.orange, size: 20),
+                      const Icon(
+                        Icons.lightbulb,
+                        color: Colors.orange,
+                        size: 20,
+                      ),
                       const SizedBox(width: 8),
                       Text(
                         "DID YOU KNOW?",
@@ -661,7 +691,10 @@ class _DidYouKnowCard extends StatelessWidget {
                           width: 90,
                           height: 90,
                           color: Colors.orange.shade100,
-                          child: const Icon(Icons.broken_image, color: Colors.orange),
+                          child: const Icon(
+                            Icons.broken_image,
+                            color: Colors.orange,
+                          ),
                         ),
                       ),
                     ),
@@ -675,5 +708,3 @@ class _DidYouKnowCard extends StatelessWidget {
     );
   }
 }
-
-

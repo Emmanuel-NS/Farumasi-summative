@@ -142,8 +142,11 @@ class _PrescriptionUploadScreenState extends State<PrescriptionUploadScreen> {
                     ? Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.picture_as_pdf,
-                              size: 64, color: Colors.red),
+                          Icon(
+                            Icons.picture_as_pdf,
+                            size: 64,
+                            color: Colors.red,
+                          ),
                           SizedBox(height: 16),
                           Padding(
                             padding: const EdgeInsets.all(16.0),
@@ -151,7 +154,9 @@ class _PrescriptionUploadScreenState extends State<PrescriptionUploadScreen> {
                               _fileName ?? "Selected Document",
                               textAlign: TextAlign.center,
                               style: TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 16),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
                             ),
                           ),
                         ],
@@ -336,7 +341,7 @@ class _PrescriptionUploadScreenState extends State<PrescriptionUploadScreen> {
               ),
             ],
           ),
-          
+
         SizedBox(height: 40),
         // Instructions
         Container(

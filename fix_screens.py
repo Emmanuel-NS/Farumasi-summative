@@ -1,10 +1,124 @@
-import 'package:flutter/material.dart';
+import os
+
+with open('lib/presentation/screens/orders_screen.dart', 'w', encoding='utf-8') as f:
+    f.write(r'''import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
+import 'package:farumasi_patient_app/presentation/blocs/order/order_bloc.dart';
+import 'package:farumasi_patient_app/presentation/blocs/order/order_event.dart';
+import 'package:farumasi_patient_app/presentation/blocs/order/order_state.dart';
+import 'package:farumasi_patient_app/data/models/prescription_order.dart';
+import 'package:farumasi_patient_app/presentation/blocs/auth/auth_bloc.dart';
+import 'package:farumasi_patient_app/presentation/blocs/auth/auth_state.dart';
+
+class OrdersScreen extends StatefulWidget {
+  const OrdersScreen({super.key});
+
+  @override
+  State<OrdersScreen> createState() => _OrdersScreenState();
+}
+
+class _OrdersScreenState extends State<OrdersScreen> {
+  @override
+  void initState() {
+    super.initState();
+    final authState = context.read<AuthBloc>().state;
+    if (authState is AuthAuthenticated) {
+       context.read<OrderBloc>().add(LoadUserOrders(authState.user.id));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<AuthBloc, AuthState>(
+      builder: (context, authState) {
+        if (authState is! AuthAuthenticated) {
+           return const Center(child: Text('Please log in to view orders.'));
+        }
+
+        return Scaffold(
+          appBar: AppBar(
+            backgroundColor: Colors.blueAccent,
+            title: const Text('My Orders', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+          body: BlocBuilder<OrderBloc, OrderState>(
+            builder: (context, state) {
+              if (state is OrderLoading) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              if (state is OrderError) {
+                return Center(child: Text('Error: ${state.message}'));
+              }
+              
+              if (state is OrdersLoaded) {
+                 final orders = state.orders;
+                 
+                 if (orders.isEmpty) {
+                   return Center(
+                     child: Column(
+                       mainAxisAlignment: MainAxisAlignment.center,
+                       children: [
+                         Icon(Icons.history, size: 80, color: Colors.grey[400]),
+                         const SizedBox(height: 16),
+                         const Text('No orders yet', style: TextStyle(fontSize: 18, color: Colors.grey)),
+                       ],
+                     ),
+                   );
+                 }
+
+                 return ListView.builder(
+                   padding: const EdgeInsets.all(16.0),
+                   itemCount: orders.length,
+                   itemBuilder: (context, index) {
+                     final order = orders[index];
+                     return Card(
+                       margin: const EdgeInsets.only(bottom: 16),
+                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                       elevation: 3,
+                       child: Padding(
+                         padding: const EdgeInsets.all(16.0),
+                         child: Column(
+                           crossAxisAlignment: CrossAxisAlignment.start,
+                           children: [
+                             Row(
+                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                               children: [
+                                 Text('Order #${order.id.substring(0, 8)}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                                 Text(DateFormat('MMM dd, yyyy').format(order.date), style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                               ],
+                             ),
+                             const SizedBox(height: 8),
+                             Text('Status: ${order.status.toString().split(".").last.toUpperCase()}', 
+                               style: TextStyle(color: order.status == OrderStatus.delivered ? Colors.green : Colors.orange, fontWeight: FontWeight.bold)),
+                             const SizedBox(height: 8),
+                             Text('Total: KSH ${order.totalAmount.toStringAsFixed(2)}', style: const TextStyle(fontSize: 16)),
+                             const SizedBox(height: 12),
+                             const Divider(),
+                             Text('Delivery Address: ${order.deliveryAddress}', style: TextStyle(color: Colors.grey[600], fontSize: 13)),
+                           ],
+                         ),
+                       ),
+                     );
+                   },
+                 );
+              }
+              
+              return const Center(child: Text('Initialize orders...'));
+            },
+          ),
+        );
+      }
+    );
+  }
+}
+''')
+
+with open('lib/presentation/screens/profile_screen.dart', 'w', encoding='utf-8') as f:
+    f.write(r'''import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:farumasi_patient_app/presentation/blocs/auth/auth_bloc.dart';
-
-
-
-
+import 'package:farumasi_patient_app/presentation/blocs/auth/auth_event.dart';
+import 'package:farumasi_patient_app/presentation/blocs/auth/auth_state.dart';
 import 'package:farumasi_patient_app/domain/repositories/auth_repository.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -33,7 +147,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   void _loadUserProfile() async {
     final authState = context.read<AuthBloc>().state;
-    if (authState.status == AuthStatus.authenticated) {
+    if (authState is AuthAuthenticated) {
       final user = authState.user;
       final profile = await context.read<AuthRepository>().getUserProfile(user.id);
       if (profile != null && mounted) {
@@ -51,9 +165,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
       setState(() => _isLoading = true);
       try {
         final authState = context.read<AuthBloc>().state;
-        if (authState.status == AuthStatus.authenticated) {
+        if (authState is AuthAuthenticated) {
           final userId = authState.user.id;
-          await context.read<AuthRepository>().updateProfile(uid: userId, displayName: _nameController.text.trim(), phoneNumber: _phoneController.text.trim());
+          await context.read<AuthRepository>().updateProfile(userId, {
+            'displayName': _nameController.text.trim(),
+            'email': _emailController.text.trim(),
+            'phoneNumber': _phoneController.text.trim(),
+          });
           
           if (mounted) {
             setState(() => _isEditing = false);
@@ -88,7 +206,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, state) {
-        if (state.status != AuthStatus.authenticated) {
+        if (state is! AuthAuthenticated) {
           return const Center(child: Text('Please log in.'));
         }
 
@@ -148,7 +266,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       icon: const Icon(Icons.logout, color: Colors.red),
                       label: const Text('Sign Out', style: TextStyle(color: Colors.red, fontSize: 16)),
                       onPressed: () {
-                        context.read<AuthBloc>().add(AuthLogoutRequested());
+                        context.read<AuthBloc>().add(LogoutRequested());
                       },
                     )
                 ],
@@ -181,3 +299,4 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 }
+''')
