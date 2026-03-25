@@ -42,7 +42,7 @@ class DataSeeder {
       } else {
         debugPrint('Scaling DB: Health Articles already exist. Skipping seed.');
       }
-    } catch(e) {
+    } catch (e) {
       debugPrint("Error seeding health articles: $e");
     }
 
@@ -77,7 +77,7 @@ class DataSeeder {
       'imageUrl': article.imageUrl,
       'source': article.source,
       // Store enum as string (e.g., 'tip', 'news') or handle specifically
-      'type': article.type.toString().split('.').last, 
+      'type': article.type.toString().split('.').last,
     };
   }
 }

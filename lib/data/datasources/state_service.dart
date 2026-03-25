@@ -12,7 +12,7 @@ class StateService extends ChangeNotifier {
   // Auth State
   bool _isLoggedIn = false;
   String _currentUserId = "user1"; // For simulation
-  
+
   // Data State
   final List<Medicine> _medicines = List.from(dummyMedicines);
   List<Medicine> get medicines => _medicines;
@@ -82,10 +82,34 @@ class StateService extends ChangeNotifier {
 
   // Users State
   final List<User> _users = [
-    User(id: '1', name: 'John Doe', email: 'john@example.com', role: 'User', phone: '+250788111222'),
-    User(id: '2', name: 'Jane Pharm', email: 'jane@pharmacy.rw', role: 'Pharmacist', phone: '+250788333444'),
-    User(id: '3', name: 'Mike Rider', email: 'mike@rider.rw', role: 'Rider', phone: '+250788555666'),
-    User(id: '4', name: 'Admin User', email: AppConstants.adminEmail, role: 'Admin', phone: '+250788999000'),
+    User(
+      id: '1',
+      name: 'John Doe',
+      email: 'john@example.com',
+      role: 'User',
+      phone: '+250788111222',
+    ),
+    User(
+      id: '2',
+      name: 'Jane Pharm',
+      email: 'jane@pharmacy.rw',
+      role: 'Pharmacist',
+      phone: '+250788333444',
+    ),
+    User(
+      id: '3',
+      name: 'Mike Rider',
+      email: 'mike@rider.rw',
+      role: 'Rider',
+      phone: '+250788555666',
+    ),
+    User(
+      id: '4',
+      name: 'Admin User',
+      email: AppConstants.adminEmail,
+      role: 'Admin',
+      phone: '+250788999000',
+    ),
   ];
   List<User> get users => _users;
 
@@ -101,7 +125,7 @@ class StateService extends ChangeNotifier {
       notifyListeners();
     }
   }
-  
+
   void deleteUser(String id) {
     _users.removeWhere((u) => u.id == id);
     notifyListeners();
@@ -109,27 +133,32 @@ class StateService extends ChangeNotifier {
 
   // Orders State
   final List<PrescriptionOrder> _orders = [
-     PrescriptionOrder(
-       id: "ORD-1001",
-       patientName: "Alice M.",
-       patientLocationName: "Kigali Heights",
-       patientCoordinates: [-1.95, 30.09],
-       date: DateTime.now().subtract(const Duration(hours: 2)),
-       status: OrderStatus.pendingReview,
-       items: [CartItem(medicine: dummyMedicines[0])], // Assuming dummyMedicines exists
-       pharmacyPrice: 5000,
-     ),
-      PrescriptionOrder(
-       id: "ORD-1002",
-       patientName: "Bob K.",
-       patientLocationName: "Remera, Giporoso",
-       patientCoordinates: [-1.96, 30.11],
-       date: DateTime.now().subtract(const Duration(days: 1)),
-       status: OrderStatus.delivered,
-       items: [CartItem(medicine: dummyMedicines[1]), CartItem(medicine: dummyMedicines[2])], 
-       pharmacyPrice: 12500,
-     ),
-  ]; 
+    PrescriptionOrder(
+      id: "ORD-1001",
+      patientName: "Alice M.",
+      patientLocationName: "Kigali Heights",
+      patientCoordinates: [-1.95, 30.09],
+      date: DateTime.now().subtract(const Duration(hours: 2)),
+      status: OrderStatus.pendingReview,
+      items: [
+        CartItem(medicine: dummyMedicines[0]),
+      ], // Assuming dummyMedicines exists
+      pharmacyPrice: 5000,
+    ),
+    PrescriptionOrder(
+      id: "ORD-1002",
+      patientName: "Bob K.",
+      patientLocationName: "Remera, Giporoso",
+      patientCoordinates: [-1.96, 30.11],
+      date: DateTime.now().subtract(const Duration(days: 1)),
+      status: OrderStatus.delivered,
+      items: [
+        CartItem(medicine: dummyMedicines[1]),
+        CartItem(medicine: dummyMedicines[2]),
+      ],
+      pharmacyPrice: 12500,
+    ),
+  ];
   List<PrescriptionOrder> get orders => _orders;
 
   void addOrder(PrescriptionOrder order) {
@@ -163,6 +192,7 @@ class StateService extends ChangeNotifier {
     _bookings.removeWhere((b) => b.id == id);
     notifyListeners();
   }
+
   String? _userEmail;
   String? _userName;
 
@@ -192,8 +222,13 @@ class StateService extends ChangeNotifier {
       startedAt: DateTime.now().subtract(Duration(hours: 1)),
       unreadCount: 1,
       messages: [
-        ChatMessage(id: "m1", text: "Hello, how often should I take Paracetamol?", senderId: "1", timestamp: DateTime.now().subtract(Duration(minutes: 58))),
-      ]
+        ChatMessage(
+          id: "m1",
+          text: "Hello, how often should I take Paracetamol?",
+          senderId: "1",
+          timestamp: DateTime.now().subtract(Duration(minutes: 58)),
+        ),
+      ],
     ),
     ConsultationSession(
       id: "C-102",
@@ -203,9 +238,20 @@ class StateService extends ChangeNotifier {
       startedAt: DateTime.now().subtract(Duration(days: 1)),
       unreadCount: 0,
       messages: [
-         ChatMessage(id: "m2", text: "Is my prescription ready?", senderId: "2", timestamp: DateTime.now().subtract(Duration(days: 1))),
-         ChatMessage(id: "m3", text: "Yes, it is being processed.", senderId: "admin", timestamp: DateTime.now().subtract(Duration(hours: 23)), isMe: true),
-      ]
+        ChatMessage(
+          id: "m2",
+          text: "Is my prescription ready?",
+          senderId: "2",
+          timestamp: DateTime.now().subtract(Duration(days: 1)),
+        ),
+        ChatMessage(
+          id: "m3",
+          text: "Yes, it is being processed.",
+          senderId: "admin",
+          timestamp: DateTime.now().subtract(Duration(hours: 23)),
+          isMe: true,
+        ),
+      ],
     ),
   ];
   List<ConsultationSession> get consultations => _consultations;
@@ -221,7 +267,7 @@ class StateService extends ChangeNotifier {
           senderId: "admin",
           timestamp: DateTime.now(),
           isMe: true, // Admin is "Me" in admin view
-        )
+        ),
       );
       notifyListeners();
     }
@@ -230,11 +276,13 @@ class StateService extends ChangeNotifier {
   // --- User Side Consultation ---
   ConsultationSession get userConsultation {
     // Find existing session for current user or create one
-    final existingIndex = _consultations.indexWhere((c) => c.userId == _currentUserId);
+    final existingIndex = _consultations.indexWhere(
+      (c) => c.userId == _currentUserId,
+    );
     if (existingIndex != -1) {
       return _consultations[existingIndex];
     }
-    
+
     // Create new if none
     final newSession = ConsultationSession(
       id: "C-${DateTime.now().millisecondsSinceEpoch}",
@@ -242,7 +290,7 @@ class StateService extends ChangeNotifier {
       userName: _userName ?? "User",
       topic: "General Inquiry",
       startedAt: DateTime.now(),
-      messages: []
+      messages: [],
     );
     _consultations.add(newSession);
     return newSession;
@@ -257,19 +305,19 @@ class StateService extends ChangeNotifier {
         senderId: _currentUserId,
         timestamp: DateTime.now(),
         isMe: true, // User is "Me" in user view
-      )
+      ),
     );
-    
+
     // Simulate auto-reply for demo
     Future.delayed(const Duration(seconds: 2), () {
-        session.messages.add(
+      session.messages.add(
         ChatMessage(
           id: "${DateTime.now().millisecondsSinceEpoch}_reply",
           text: "Thank you for your message. A pharmacist will reply shortly.",
           senderId: "admin",
           timestamp: DateTime.now(),
-          isMe: false, 
-        )
+          isMe: false,
+        ),
       );
       notifyListeners();
     });
@@ -277,7 +325,7 @@ class StateService extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Suggests the user enables location services, requests permissions, 
+  /// Suggests the user enables location services, requests permissions,
   /// and updates the state with real GPS coordinates.
   Future<void> fetchRealLocation() async {
     bool serviceEnabled;
@@ -287,7 +335,7 @@ class StateService extends ChangeNotifier {
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       // Location services are not enabled don't continue
-      // accessing the position and request users of the 
+      // accessing the position and request users of the
       // App to enable the location services.
       return Future.error('Location services are disabled.');
     }
@@ -298,30 +346,31 @@ class StateService extends ChangeNotifier {
       if (permission == LocationPermission.denied) {
         // Permissions are denied, next time you could try
         // requesting permissions again (this is also where
-        // Android's shouldShowRequestPermissionRationale 
+        // Android's shouldShowRequestPermissionRationale
         // returned true. According to Android guidelines
         // your App should show an explanatory UI now.
         return Future.error('Location permissions are denied');
       }
     }
-    
+
     if (permission == LocationPermission.deniedForever) {
-      // Permissions are denied forever, handle appropriately. 
+      // Permissions are denied forever, handle appropriately.
       return Future.error(
-        'Location permissions are permanently denied, we cannot request permissions.');
-    } 
+        'Location permissions are permanently denied, we cannot request permissions.',
+      );
+    }
 
     // When we reach here, permissions are granted and we can
     // continue accessing the position of the device.
     Position position = await Geolocator.getCurrentPosition();
-    
+
     // Update state with real coordinates
     // Note: To get address from coordinates, we would need 'geocoding' package.
-    // For now, we update coordinates and keep a generic "Current Location" label 
+    // For now, we update coordinates and keep a generic "Current Location" label
     // or previous address if user didn't type one.
     setLocation(
-      _userAddress ?? "Current GPS Location", 
-      "${position.latitude.toStringAsFixed(4)}, ${position.longitude.toStringAsFixed(4)}"
+      _userAddress ?? "Current GPS Location",
+      "${position.latitude.toStringAsFixed(4)}, ${position.longitude.toStringAsFixed(4)}",
     );
   }
 
@@ -357,7 +406,9 @@ class StateService extends ChangeNotifier {
     );
     if (existingIndex >= 0) {
       final oldItem = _cartItems[existingIndex];
-      _cartItems[existingIndex] = oldItem.copyWith(quantity: oldItem.quantity + quantity);
+      _cartItems[existingIndex] = oldItem.copyWith(
+        quantity: oldItem.quantity + quantity,
+      );
     } else {
       _cartItems.add(CartItem(medicine: medicine, quantity: quantity));
     }
@@ -376,7 +427,9 @@ class StateService extends ChangeNotifier {
     if (existingIndex >= 0) {
       final oldItem = _cartItems[existingIndex];
       if (oldItem.quantity > 1) {
-        _cartItems[existingIndex] = oldItem.copyWith(quantity: oldItem.quantity - 1);
+        _cartItems[existingIndex] = oldItem.copyWith(
+          quantity: oldItem.quantity - 1,
+        );
       } else {
         _cartItems.removeAt(existingIndex);
       }
@@ -390,7 +443,9 @@ class StateService extends ChangeNotifier {
     );
     if (existingIndex >= 0) {
       final oldItem = _cartItems[existingIndex];
-      _cartItems[existingIndex] = oldItem.copyWith(quantity: oldItem.quantity + 1);
+      _cartItems[existingIndex] = oldItem.copyWith(
+        quantity: oldItem.quantity + 1,
+      );
       notifyListeners();
     }
   }

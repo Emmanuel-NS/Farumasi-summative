@@ -32,8 +32,11 @@ class PharmacistService extends ChangeNotifier {
       status: OrderStatus.pharmacyAccepted,
       assignedPharmacyId: "PH-01",
       assignedPharmacyName: "Farumasi Pharmacy",
-      pharmacyPrice: 12000, 
-      items: [CartItem(medicine: dummyMedicines[0]), CartItem(medicine: dummyMedicines[2])],
+      pharmacyPrice: 12000,
+      items: [
+        CartItem(medicine: dummyMedicines[0]),
+        CartItem(medicine: dummyMedicines[2]),
+      ],
       reviewedBy: "Pharmacist (You)",
       reviewedAt: DateTime.now().subtract(Duration(minutes: 40)),
       acceptedAt: DateTime.now().subtract(Duration(minutes: 5)),
@@ -73,7 +76,10 @@ class PharmacistService extends ChangeNotifier {
       patientCoordinates: [-1.9470, 30.0880],
       date: DateTime.now().subtract(Duration(days: 1)),
       status: OrderStatus.delivered,
-      items: [CartItem(medicine: dummyMedicines[3]), CartItem(medicine: dummyMedicines[0])],
+      items: [
+        CartItem(medicine: dummyMedicines[3]),
+        CartItem(medicine: dummyMedicines[0]),
+      ],
       pharmacyPrice: 15400,
       deliveryFee: 1500,
       paymentId: "TX-998877",
@@ -155,7 +161,10 @@ class PharmacistService extends ChangeNotifier {
       patientCoordinates: [-2.0000, 30.2000],
       date: DateTime.now().subtract(Duration(minutes: 20)),
       status: OrderStatus.paymentPending,
-      items: [CartItem(medicine: dummyMedicines[0]), CartItem(medicine: dummyMedicines[0])],
+      items: [
+        CartItem(medicine: dummyMedicines[0]),
+        CartItem(medicine: dummyMedicines[0]),
+      ],
       pharmacyPrice: 17000,
     ),
     // 12. Pending Review (Recent)
@@ -191,7 +200,10 @@ class PharmacistService extends ChangeNotifier {
       prescriptionImageUrl: "assets/rx_sample1.jpg",
       status: OrderStatus.pharmacyAccepted,
       assignedPharmacyName: "HealthPlus Kimironko",
-      items: [CartItem(medicine: dummyMedicines[1]), CartItem(medicine: dummyMedicines[3])],
+      items: [
+        CartItem(medicine: dummyMedicines[1]),
+        CartItem(medicine: dummyMedicines[3]),
+      ],
       pharmacyPrice: 9500,
     ),
     // 15. Delivered (Yesterday)
@@ -210,40 +222,40 @@ class PharmacistService extends ChangeNotifier {
 
   List<Pharmacy> partnerPharmacies = [
     Pharmacy(
-      id: "PH-01", 
-      name: "Farumasi Pharmacy", 
-      locationName: "Kigali Heights", 
-      coordinates: [-1.9540, 30.0926], 
-      supportedInsurances: ["RSSB", "UAP", "MMI"]
+      id: "PH-01",
+      name: "Farumasi Pharmacy",
+      locationName: "Kigali Heights",
+      coordinates: [-1.9540, 30.0926],
+      supportedInsurances: ["RSSB", "UAP", "MMI"],
     ),
     Pharmacy(
-      id: "PH-02", 
-      name: "HealthPlus Kimironko", 
-      locationName: "Kimironko Market", 
-      coordinates: [-1.9495, 30.1260], 
-      supportedInsurances: ["RSSB"]
+      id: "PH-02",
+      name: "HealthPlus Kimironko",
+      locationName: "Kimironko Market",
+      coordinates: [-1.9495, 30.1260],
+      supportedInsurances: ["RSSB"],
     ),
     Pharmacy(
-      id: "PH-03", 
-      name: "City Center Chemists", 
-      locationName: "UTC Building", 
-      coordinates: [-1.9446, 30.0624], 
-      supportedInsurances: ["UAP", "MMI"]
+      id: "PH-03",
+      name: "City Center Chemists",
+      locationName: "UTC Building",
+      coordinates: [-1.9446, 30.0624],
+      supportedInsurances: ["UAP", "MMI"],
     ),
   ];
 
   List<Driver> activeDrivers = [
     Driver(
-      id: "DR-01", 
-      name: "Jean Paul", 
-      phoneNumber: "+250788123456", 
-      currentCoordinates: [-1.9450, 30.1000] // Near Nyarutarama
+      id: "DR-01",
+      name: "Jean Paul",
+      phoneNumber: "+250788123456",
+      currentCoordinates: [-1.9450, 30.1000], // Near Nyarutarama
     ),
     Driver(
-      id: "DR-02", 
-      name: "Eric M.", 
-      phoneNumber: "+250788654321", 
-      currentCoordinates: [-1.9700, 30.1000] // Near Kicukiro
+      id: "DR-02",
+      name: "Eric M.",
+      phoneNumber: "+250788654321",
+      currentCoordinates: [-1.9700, 30.1000], // Near Kicukiro
     ),
   ];
 
@@ -283,15 +295,15 @@ class PharmacistService extends ChangeNotifier {
       status: "Confirmed",
     ),
   ];
-  
+
   // --- HELPERS FOR DASHBOARD ---
 
   List<PharmacistBooking> get upcomingSessions => bookings
       .where((b) => b.status == "Confirmed" || b.status == "Pending")
       .toList();
 
-  double get totalRevenue => completedOrders
-      .fold(0, (sum, order) => sum + order.totalPrice);
+  double get totalRevenue =>
+      completedOrders.fold(0, (sum, order) => sum + order.totalPrice);
 
   double get todayRevenue => totalRevenue * 0.4; // Mock calculation for today
   double get weeklyRevenue => totalRevenue * 2.5; // Mock calculation for week
@@ -320,23 +332,32 @@ class PharmacistService extends ChangeNotifier {
       orders.where((o) => o.status == OrderStatus.pendingReview).toList();
 
   List<PrescriptionOrder> get processingOrders => orders
-      .where((o) => [
-            OrderStatus.findingPharmacy,
-            OrderStatus.pharmacyAccepted,
-            OrderStatus.paymentPending
-          ].contains(o.status))
+      .where(
+        (o) => [
+          OrderStatus.findingPharmacy,
+          OrderStatus.pharmacyAccepted,
+          OrderStatus.paymentPending,
+        ].contains(o.status),
+      )
       .toList();
 
   List<PrescriptionOrder> get deliveryQueue => orders
-      .where((o) => [
-            OrderStatus.readyForPickup,
-            OrderStatus.driverAssigned,
-            OrderStatus.outForDelivery
-          ].contains(o.status))
+      .where(
+        (o) => [
+          OrderStatus.readyForPickup,
+          OrderStatus.driverAssigned,
+          OrderStatus.outForDelivery,
+        ].contains(o.status),
+      )
       .toList();
 
-  List<PrescriptionOrder> get completedOrders => 
-      orders.where((o) => o.status == OrderStatus.delivered || o.status == OrderStatus.cancelled).toList();
+  List<PrescriptionOrder> get completedOrders => orders
+      .where(
+        (o) =>
+            o.status == OrderStatus.delivered ||
+            o.status == OrderStatus.cancelled,
+      )
+      .toList();
 
   // --- WORKFLOW ACTIONS ---
 
@@ -361,7 +382,10 @@ class PharmacistService extends ChangeNotifier {
 
     // SIMULATION: Pharmacy Accepts after 3 seconds
     Future.delayed(Duration(seconds: 3), () {
-      order.items = [CartItem(medicine: dummyMedicines[0]), CartItem(medicine: dummyMedicines[1])]; // Mock items added by pharmacy
+      order.items = [
+        CartItem(medicine: dummyMedicines[0]),
+        CartItem(medicine: dummyMedicines[1]),
+      ]; // Mock items added by pharmacy
       order.pharmacyPrice = 8500.0; // Mock price set by pharmacy
       order.status = OrderStatus.pharmacyAccepted;
       notifyListeners();
@@ -374,7 +398,7 @@ class PharmacistService extends ChangeNotifier {
     notifyListeners();
     // Simulation: None (Wait for manual "Confirm Payment")
   }
-  
+
   // Step 3b: Confirm Payment Received
   void markAsPaid(PrescriptionOrder order) {
     order.status = OrderStatus.readyForPickup;
@@ -385,7 +409,7 @@ class PharmacistService extends ChangeNotifier {
   void assignDriver(PrescriptionOrder order, Driver driver) {
     order.assignedDriverId = driver.id;
     order.assignedDriverName = driver.name;
-    order.driverCoordinates = driver.currentCoordinates; 
+    order.driverCoordinates = driver.currentCoordinates;
     order.status = OrderStatus.driverAssigned;
     notifyListeners();
 
@@ -401,6 +425,4 @@ class PharmacistService extends ChangeNotifier {
     }
     notifyListeners();
   }
-
-
 }
