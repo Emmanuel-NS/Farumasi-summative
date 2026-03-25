@@ -13,14 +13,16 @@ class AuthRepositoryImpl implements AuthRepository {
     firebase_auth.FirebaseAuth? firebaseAuth,
     GoogleSignIn? googleSignIn,
     FirebaseFirestore? firestore,
-  })  : _firebaseAuth = firebaseAuth ?? firebase_auth.FirebaseAuth.instance,
-        _googleSignIn = googleSignIn ?? GoogleSignIn(scopes: ['email']),
-        _firestore = firestore ?? FirebaseFirestore.instance;
+  }) : _firebaseAuth = firebaseAuth ?? firebase_auth.FirebaseAuth.instance,
+       _googleSignIn = googleSignIn ?? GoogleSignIn(scopes: ['email']),
+       _firestore = firestore ?? FirebaseFirestore.instance;
 
   @override
   Stream<UserEntity> get user {
     return _firebaseAuth.authStateChanges().map((firebaseUser) {
-      final user = firebaseUser == null ? UserEntity.empty : firebaseUser.toUser;
+      final user = firebaseUser == null
+          ? UserEntity.empty
+          : firebaseUser.toUser;
       return user;
     });
   }
@@ -31,7 +33,11 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<void> signUp({required String email, required String password, String? displayName}) async {
+  Future<void> signUp({
+    required String email,
+    required String password,
+    String? displayName,
+  }) async {
     try {
       final credential = await _firebaseAuth.createUserWithEmailAndPassword(
         email: email,
@@ -40,7 +46,7 @@ class AuthRepositoryImpl implements AuthRepository {
       if (displayName != null) {
         await credential.user?.updateDisplayName(displayName);
       }
-      
+
       // Save user to Firestore
       if (credential.user != null) {
         await _firestore.collection('users').doc(credential.user!.uid).set({
@@ -71,15 +77,19 @@ class AuthRepositoryImpl implements AuthRepository {
         email: email,
         password: password,
       );
-      
+
       if (credential.user != null && !credential.user!.emailVerified) {
         // Automatically send a new verification email if they try to log in and aren't verified
         // You can comment this out if you prefer them to request it manually
         await credential.user?.sendEmailVerification();
-        throw LogInWithEmailAndPasswordFailure('Please verify your email to log in. A new verification link has been sent.');
+        throw LogInWithEmailAndPasswordFailure(
+          'Please verify your email to log in. A new verification link has been sent.',
+        );
       }
     } on firebase_auth.FirebaseAuthException catch (e) {
-      throw LogInWithEmailAndPasswordFailure(e.message ?? 'An unknown error occurred');
+      throw LogInWithEmailAndPasswordFailure(
+        e.message ?? 'An unknown error occurred',
+      );
     } catch (e) {
       if (e is LogInWithEmailAndPasswordFailure) rethrow;
       throw LogInWithEmailAndPasswordFailure(e.toString());
@@ -92,29 +102,40 @@ class AuthRepositoryImpl implements AuthRepository {
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) {
         // User cancelled the sign-in flow
-        return; 
+        return;
       }
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
       final firebase_auth.AuthCredential credential =
           firebase_auth.GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
+            accessToken: googleAuth.accessToken,
+            idToken: googleAuth.idToken,
+          );
+      final userCredential = await _firebaseAuth.signInWithCredential(
+        credential,
       );
-      final userCredential = await _firebaseAuth.signInWithCredential(credential);
-      
+
       // Save user to Firestore if new
       if (userCredential.user != null) {
-        final userDoc = await _firestore.collection('users').doc(userCredential.user!.uid).get();
+        final userDoc = await _firestore
+            .collection('users')
+            .doc(userCredential.user!.uid)
+            .get();
         if (!userDoc.exists) {
-          await _firestore.collection('users').doc(userCredential.user!.uid).set({
-            'uid': userCredential.user!.uid,
-            'email': userCredential.user!.email ?? googleUser.email,
-            'displayName': userCredential.user!.displayName ?? googleUser.displayName ?? '',
-            'photoUrl': userCredential.user!.photoURL,
-            'role': 'patient',
-            'createdAt': FieldValue.serverTimestamp(),
-          });
+          await _firestore
+              .collection('users')
+              .doc(userCredential.user!.uid)
+              .set({
+                'uid': userCredential.user!.uid,
+                'email': userCredential.user!.email ?? googleUser.email,
+                'displayName':
+                    userCredential.user!.displayName ??
+                    googleUser.displayName ??
+                    '',
+                'photoUrl': userCredential.user!.photoURL,
+                'role': 'patient',
+                'createdAt': FieldValue.serverTimestamp(),
+              });
         }
       }
     } on firebase_auth.FirebaseAuthException catch (e) {
@@ -127,14 +148,81 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<void> sendPasswordResetEmail(String email) async {
+    try {
+      await _firebaseAuth.sendPasswordResetEmail(email: email);
+    } catch (e) {
+      throw LogInWithEmailAndPasswordFailure(e.toString());
+    }
+  }
+
+  @override
   Future<void> logOut() async {
     try {
-      await Future.wait([
-        _firebaseAuth.signOut(),
-        _googleSignIn.signOut(),
-      ]);
+      await Future.wait([_firebaseAuth.signOut(), _googleSignIn.signOut()]);
     } catch (_) {
       throw LogOutFailure();
+    }
+  }
+
+  @override
+  Future<void> updateProfile({
+    required String uid,
+    String? displayName,
+    String? phoneNumber,
+    String? email,
+  }) async {
+    try {
+      final user = _firebaseAuth.currentUser;
+      if (user == null || user.uid != uid)
+        throw Exception('Unauthorized or user not found');
+
+      Map<String, dynamic> updates = {};
+
+      if (displayName != null && displayName.isNotEmpty) {
+        await user.updateDisplayName(displayName);
+        updates['displayName'] = displayName;
+      }
+
+      if (email != null && email.isNotEmpty && email != user.email) {
+        await user.verifyBeforeUpdateEmail(
+          email,
+        ); // Sends verification strictly
+        updates['email'] = email;
+      }
+
+      if (phoneNumber != null) {
+        updates['phoneNumber'] = phoneNumber;
+      }
+
+      if (updates.isNotEmpty) {
+        await _firestore.collection('users').doc(uid).update(updates);
+      }
+    } catch (e) {
+      throw Exception('Failed to update profile: $e');
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>?> getUserProfile(String uid) async {
+    try {
+      final doc = await _firestore.collection('users').doc(uid).get();
+      if (doc.exists) {
+        return doc.data();
+      }
+      return null;
+    } catch (e) {
+      throw Exception('Failed to fetch user profile: $e');
+    }
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getAllUsers() async {
+    try {
+      final snapshot = await _firestore.collection('users').get();
+      return snapshot.docs.map((doc) => doc.data()).toList();
+    } catch (e) {
+      throw Exception('Failed to fetch users: $e');
     }
   }
 }
@@ -149,4 +237,3 @@ extension on firebase_auth.User {
     );
   }
 }
-

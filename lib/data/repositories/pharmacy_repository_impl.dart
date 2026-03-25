@@ -12,13 +12,15 @@ class PharmacyRepositoryImpl implements PharmacyRepository {
   final FirebaseFirestore _firestore;
 
   PharmacyRepositoryImpl({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   @override
   Future<List<Pharmacy>> getPharmacies() async {
     try {
       final snapshot = await _firestore.collection('pharmacies').get();
-      return snapshot.docs.map((doc) => Pharmacy.fromJson(doc.data(), doc.id)).toList();
+      return snapshot.docs
+          .map((doc) => Pharmacy.fromJson(doc.data(), doc.id))
+          .toList();
     } catch (e) {
       return [];
     }
@@ -26,12 +28,18 @@ class PharmacyRepositoryImpl implements PharmacyRepository {
 
   @override
   Future<void> addPharmacy(Pharmacy pharmacy) async {
-    await _firestore.collection('pharmacies').doc(pharmacy.id.isEmpty ? null : pharmacy.id).set(pharmacy.toJson());
+    await _firestore
+        .collection('pharmacies')
+        .doc(pharmacy.id.isEmpty ? null : pharmacy.id)
+        .set(pharmacy.toJson());
   }
 
   @override
   Future<void> updatePharmacy(Pharmacy pharmacy) async {
-    await _firestore.collection('pharmacies').doc(pharmacy.id).update(pharmacy.toJson());
+    await _firestore
+        .collection('pharmacies')
+        .doc(pharmacy.id)
+        .update(pharmacy.toJson());
   }
 
   @override

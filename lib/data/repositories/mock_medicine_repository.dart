@@ -25,12 +25,16 @@ class MockMedicineRepository implements MedicineRepository {
   Future<List<Medicine>> searchMedicines(String query) async {
     await Future.delayed(_delay);
     if (query.isEmpty) return dummyMedicines;
-    
+
     final lowerQuery = query.toLowerCase();
     return dummyMedicines.where((medicine) {
       final nameMatches = medicine.name.toLowerCase().contains(lowerQuery);
-      final categoryMatches = medicine.category.toLowerCase().contains(lowerQuery);
-      final keywordMatches = medicine.keywords.any((k) => k.toLowerCase().contains(lowerQuery));
+      final categoryMatches = medicine.category.toLowerCase().contains(
+        lowerQuery,
+      );
+      final keywordMatches = medicine.keywords.any(
+        (k) => k.toLowerCase().contains(lowerQuery),
+      );
       return nameMatches || categoryMatches || keywordMatches;
     }).toList();
   }
