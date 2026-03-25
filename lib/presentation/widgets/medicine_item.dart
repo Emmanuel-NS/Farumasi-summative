@@ -19,9 +19,9 @@ class MedicineItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<CartBloc, CartState>(
       builder: (context, state) {
-        final isInCart = state is CartLoaded && state.cartItems.any(
-          (item) => item.medicine.id == medicine.id,
-        );
+        final isInCart =
+            state is CartLoaded &&
+            state.cartItems.any((item) => item.medicine.id == medicine.id);
 
         return Card(
           elevation: 2,
@@ -34,19 +34,28 @@ class MedicineItem extends StatelessWidget {
             children: [
               Expanded(
                 child: InkWell(
-                  onTap: () => _toggleCart(context, isInCart), // Image tap -> Toggle Cart
+                  onTap: () => _toggleCart(
+                    context,
+                    isInCart,
+                  ), // Image tap -> Toggle Cart
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
                       ClipRRect(
-                        borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(12),
+                        ),
                         child: Image.network(
                           medicine.imageUrl,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) {
                             return Container(
                               color: Colors.grey.shade200,
-                              child: const Icon(Icons.medication, size: 50, color: Colors.grey),
+                              child: const Icon(
+                                Icons.medication,
+                                size: 50,
+                                color: Colors.grey,
+                              ),
                             );
                           },
                         ),
@@ -55,10 +64,16 @@ class MedicineItem extends StatelessWidget {
                         Container(
                           decoration: BoxDecoration(
                             color: Colors.black.withOpacity(0.3),
-                            borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                            borderRadius: const BorderRadius.vertical(
+                              top: Radius.circular(12),
+                            ),
                           ),
                           child: const Center(
-                            child: Icon(Icons.check, color: Colors.white, size: 40),
+                            child: Icon(
+                              Icons.check,
+                              color: Colors.white,
+                              size: 40,
+                            ),
                           ),
                         ),
                     ],
@@ -74,7 +89,10 @@ class MedicineItem extends StatelessWidget {
                       onTap: onAboutTap, // Title tap -> Details
                       child: Text(
                         medicine.name,
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -82,7 +100,10 @@ class MedicineItem extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       medicine.manufacturer,
-                      style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+                      style: TextStyle(
+                        color: Colors.grey.shade600,
+                        fontSize: 12,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     Row(
@@ -102,11 +123,15 @@ class MedicineItem extends StatelessWidget {
                           child: Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: isInCart ? Colors.red.shade50 : Colors.green.shade50,
+                              color: isInCart
+                                  ? Colors.red.shade50
+                                  : Colors.green.shade50,
                               shape: BoxShape.circle,
                             ),
                             child: Icon(
-                              isInCart ? Icons.remove_shopping_cart : Icons.add_shopping_cart,
+                              isInCart
+                                  ? Icons.remove_shopping_cart
+                                  : Icons.add_shopping_cart,
                               size: 20,
                               color: isInCart ? Colors.red : Colors.green,
                             ),
@@ -135,7 +160,7 @@ class MedicineItem extends StatelessWidget {
           backgroundColor: Colors.amber,
         ),
       );
-      return; 
+      return;
     }
 
     if (isInCart) {

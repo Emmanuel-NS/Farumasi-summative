@@ -10,7 +10,9 @@ import 'package:farumasi_patient_app/presentation/blocs/cart/cart_state.dart';
 import 'package:farumasi_patient_app/presentation/widgets/medicine_item.dart';
 
 class MockCartBloc extends MockBloc<CartEvent, CartState> implements CartBloc {}
+
 class FakeCartEvent extends Fake implements CartEvent {}
+
 class FakeCartState extends Fake implements CartState {}
 
 void main() {
@@ -34,7 +36,9 @@ void main() {
     category: 'General',
   );
 
-  testWidgets('MedicineItem displays name and price', (WidgetTester tester) async {
+  testWidgets('MedicineItem displays name and price', (
+    WidgetTester tester,
+  ) async {
     // Arrange
     when(() => mockCartBloc.state).thenReturn(const CartLoaded(cartItems: []));
 
@@ -44,10 +48,7 @@ void main() {
         home: BlocProvider<CartBloc>.value(
           value: mockCartBloc,
           child: Scaffold(
-            body: MedicineItem(
-              medicine: testMedicine,
-              onAboutTap: () {},
-            ),
+            body: MedicineItem(medicine: testMedicine, onAboutTap: () {}),
           ),
         ),
       ),
