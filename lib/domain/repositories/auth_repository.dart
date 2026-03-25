@@ -15,18 +15,6 @@ abstract class AuthRepository {
   Future<void> logInWithGoogle();
   Future<void> logOut();
   Future<void> sendPasswordResetEmail(String email);
-
-  // User Profile
-  Future<void> updateProfile({
-    required String uid,
-    String? displayName,
-    String? phoneNumber,
-    String? email,
-  });
-  Future<Map<String, dynamic>?> getUserProfile(String uid);
-
-  // Admin functions
-  Future<List<Map<String, dynamic>>> getAllUsers();
 }
 
 class SignUpFailure implements Exception {
@@ -47,3 +35,8 @@ class LogInWithGoogleFailure implements Exception {
 }
 
 class LogOutFailure implements Exception {}
+
+class ResetPasswordFailure implements Exception {
+  final String message;
+  ResetPasswordFailure([this.message = 'An unknown exception occurred.']);
+}
