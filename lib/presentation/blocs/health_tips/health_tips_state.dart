@@ -15,7 +15,7 @@ class HealthTipsLoading extends HealthTipsState {}
 class HealthTipsLoaded extends HealthTipsState {
   final List<HealthArticle> allArticles;
   final List<HealthArticle> filteredArticles;
-  
+
   const HealthTipsLoaded(this.allArticles, {this.filteredArticles = const []});
 
   @override

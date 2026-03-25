@@ -24,14 +24,19 @@ void main() {
 
     test('initial state is CartLoaded with empty items', () {
       // Assuming CartBloc initializes with empty loaded state
-      expect(cartBloc.state, equals(const CartLoaded(cartItems: [], totalAmount: 0.0)));
+      expect(
+        cartBloc.state,
+        equals(const CartLoaded(cartItems: [], totalAmount: 0.0)),
+      );
     });
 
     blocTest<CartBloc, CartState>(
       'emits [CartLoading, CartLoaded] when LoadCart is added and succeeds',
       build: () {
         when(() => cartRepository.getCartItems()).thenAnswer((_) async => []);
-        when(() => cartRepository.getTotalAmount()).thenAnswer((_) async => 0.0);
+        when(
+          () => cartRepository.getTotalAmount(),
+        ).thenAnswer((_) async => 0.0);
         return cartBloc;
       },
       act: (bloc) => bloc.add(LoadCart()),

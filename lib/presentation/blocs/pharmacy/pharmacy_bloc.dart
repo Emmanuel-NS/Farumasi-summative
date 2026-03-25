@@ -16,7 +16,10 @@ class PharmacyBloc extends Bloc<PharmacyEvent, PharmacyState> {
     on<DeletePharmacy>(_onDeletePharmacy);
   }
 
-  Future<void> _onLoadPharmacies(LoadPharmacies event, Emitter<PharmacyState> emit) async {
+  Future<void> _onLoadPharmacies(
+    LoadPharmacies event,
+    Emitter<PharmacyState> emit,
+  ) async {
     emit(PharmacyLoading());
     try {
       final pharmacies = await repository.getPharmacies();
@@ -26,7 +29,10 @@ class PharmacyBloc extends Bloc<PharmacyEvent, PharmacyState> {
     }
   }
 
-  Future<void> _onAddPharmacy(AddPharmacy event, Emitter<PharmacyState> emit) async {
+  Future<void> _onAddPharmacy(
+    AddPharmacy event,
+    Emitter<PharmacyState> emit,
+  ) async {
     try {
       await repository.addPharmacy(event.pharmacy);
       add(LoadPharmacies());
@@ -35,7 +41,10 @@ class PharmacyBloc extends Bloc<PharmacyEvent, PharmacyState> {
     }
   }
 
-  Future<void> _onUpdatePharmacy(UpdatePharmacy event, Emitter<PharmacyState> emit) async {
+  Future<void> _onUpdatePharmacy(
+    UpdatePharmacy event,
+    Emitter<PharmacyState> emit,
+  ) async {
     try {
       await repository.updatePharmacy(event.pharmacy);
       add(LoadPharmacies());
@@ -44,7 +53,10 @@ class PharmacyBloc extends Bloc<PharmacyEvent, PharmacyState> {
     }
   }
 
-  Future<void> _onDeletePharmacy(DeletePharmacy event, Emitter<PharmacyState> emit) async {
+  Future<void> _onDeletePharmacy(
+    DeletePharmacy event,
+    Emitter<PharmacyState> emit,
+  ) async {
     try {
       await repository.deletePharmacy(event.id);
       add(LoadPharmacies());

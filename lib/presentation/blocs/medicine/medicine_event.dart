@@ -10,7 +10,7 @@ abstract class MedicineEvent extends Equatable {
 
 class LoadMedicines extends MedicineEvent {
   final String category;
-  
+
   const LoadMedicines({this.category = 'All'});
 
   @override
@@ -28,7 +28,7 @@ class SearchMedicines extends MedicineEvent {
 
 class FilterMedicinesByCategory extends MedicineEvent {
   final String category;
-  
+
   const FilterMedicinesByCategory(this.category);
 
   @override

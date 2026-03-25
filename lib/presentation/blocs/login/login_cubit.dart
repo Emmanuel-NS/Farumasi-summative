@@ -18,13 +18,27 @@ class LoginCubit extends Cubit<LoginState> {
       );
       emit(LoginState(status: LoginStatus.success, userEmail: email));
     } on LogInWithEmailAndPasswordFailure catch (e) {
-      emit(LoginState(status: LoginStatus.error, errorMessage: "Login Failed: ${e.message}"));
+      emit(
+        LoginState(
+          status: LoginStatus.error,
+          errorMessage: "Login Failed: ${e.message}",
+        ),
+      );
     } catch (_) {
-      emit(const LoginState(status: LoginStatus.error, errorMessage: "Login Failed: Unknown error"));
+      emit(
+        const LoginState(
+          status: LoginStatus.error,
+          errorMessage: "Login Failed: Unknown error",
+        ),
+      );
     }
   }
 
-  Future<void> signUp(String email, String password, {String? displayName}) async {
+  Future<void> signUp(
+    String email,
+    String password, {
+    String? displayName,
+  }) async {
     emit(const LoginState(status: LoginStatus.submitting));
     try {
       await _authRepository.signUp(
@@ -34,9 +48,29 @@ class LoginCubit extends Cubit<LoginState> {
       );
       emit(LoginState(status: LoginStatus.success, userEmail: email));
     } on SignUpFailure catch (e) {
-        emit(LoginState(status: LoginStatus.error, errorMessage: "Sign Up Failed: ${e.message}"));
+      emit(
+        LoginState(
+          status: LoginStatus.error,
+          errorMessage: "Sign Up Failed: ${e.message}",
+        ),
+      );
     } catch (_) {
-        emit(const LoginState(status: LoginStatus.error, errorMessage: "Sign Up Failed"));
+      emit(
+        const LoginState(
+          status: LoginStatus.error,
+          errorMessage: "Sign Up Failed",
+        ),
+      );
+    }
+  }
+
+  Future<void> sendPasswordReset(String email) async {
+    emit(const LoginState(status: LoginStatus.submitting));
+    try {
+      await _authRepository.sendPasswordResetEmail(email);
+      emit(const LoginState(status: LoginStatus.initial, errorMessage: "Password reset email sent"));
+    } catch (e) {
+      emit(LoginState(status: LoginStatus.error, errorMessage: e.toString()));
     }
   }
 
@@ -48,9 +82,19 @@ class LoginCubit extends Cubit<LoginState> {
       final userEmail = _authRepository.currentUser.email;
       emit(LoginState(status: LoginStatus.success, userEmail: userEmail));
     } on LogInWithGoogleFailure catch (e) {
-      emit(LoginState(status: LoginStatus.error, errorMessage: "Google Login Failed: ${e.message}"));
+      emit(
+        LoginState(
+          status: LoginStatus.error,
+          errorMessage: "Google Login Failed: ${e.message}",
+        ),
+      );
     } catch (_) {
-      emit(const LoginState(status: LoginStatus.error, errorMessage: "Google Login Failed"));
+      emit(
+        const LoginState(
+          status: LoginStatus.error,
+          errorMessage: "Google Login Failed",
+        ),
+      );
     }
   }
 }

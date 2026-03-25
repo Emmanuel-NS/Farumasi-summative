@@ -19,24 +19,23 @@ class MedicineBloc extends Bloc<MedicineEvent, MedicineState> {
   }
 
   Future<void> _onLoadMedicines(
-    LoadMedicines event, 
+    LoadMedicines event,
     Emitter<MedicineState> emit,
   ) async {
     emit(MedicineLoading());
     try {
       final medicines = await repository.getMedicinesByCategory(event.category);
       // Also potentially handle initial search query if needed, but for now just load
-      emit(MedicineLoaded(
-        medicines: medicines,
-        activeCategory: event.category,
-      ));
+      emit(
+        MedicineLoaded(medicines: medicines, activeCategory: event.category),
+      );
     } catch (e) {
       emit(MedicineError('Failed to load medicines: ${e.toString()}'));
     }
   }
 
   Future<void> _onSearchMedicines(
-    SearchMedicines event, 
+    SearchMedicines event,
     Emitter<MedicineState> emit,
   ) async {
     // If we're already loaded, we want to stay loaded but filter.
@@ -44,33 +43,37 @@ class MedicineBloc extends Bloc<MedicineEvent, MedicineState> {
     emit(MedicineLoading());
     try {
       final medicines = await repository.searchMedicines(event.query);
-      emit(MedicineLoaded(
-        medicines: medicines,
-        searchQuery: event.query,
-        activeCategory: 'All', // Reset category on search usually
-      ));
+      emit(
+        MedicineLoaded(
+          medicines: medicines,
+          searchQuery: event.query,
+          activeCategory: 'All', // Reset category on search usually
+        ),
+      );
     } catch (e) {
       emit(MedicineError('Search failed: $e'));
     }
   }
 
   Future<void> _onFilterByCategory(
-    FilterMedicinesByCategory event, 
+    FilterMedicinesByCategory event,
     Emitter<MedicineState> emit,
   ) async {
     emit(MedicineLoading());
     try {
       final medicines = await repository.getMedicinesByCategory(event.category);
-      emit(MedicineLoaded(
-        medicines: medicines,
-        activeCategory: event.category,
-      ));
+      emit(
+        MedicineLoaded(medicines: medicines, activeCategory: event.category),
+      );
     } catch (e) {
       emit(MedicineError('Failed to filter medicines: $e'));
     }
   }
 
-  Future<void> _onAddMedicine(AddMedicine event, Emitter<MedicineState> emit) async {
+  Future<void> _onAddMedicine(
+    AddMedicine event,
+    Emitter<MedicineState> emit,
+  ) async {
     try {
       await repository.addMedicine(event.medicine);
       add(const LoadMedicines());
@@ -79,7 +82,10 @@ class MedicineBloc extends Bloc<MedicineEvent, MedicineState> {
     }
   }
 
-  Future<void> _onUpdateMedicine(UpdateMedicine event, Emitter<MedicineState> emit) async {
+  Future<void> _onUpdateMedicine(
+    UpdateMedicine event,
+    Emitter<MedicineState> emit,
+  ) async {
     try {
       await repository.updateMedicine(event.medicine);
       add(const LoadMedicines());
@@ -88,7 +94,10 @@ class MedicineBloc extends Bloc<MedicineEvent, MedicineState> {
     }
   }
 
-  Future<void> _onDeleteMedicine(DeleteMedicine event, Emitter<MedicineState> emit) async {
+  Future<void> _onDeleteMedicine(
+    DeleteMedicine event,
+    Emitter<MedicineState> emit,
+  ) async {
     try {
       await repository.deleteMedicine(event.id);
       add(const LoadMedicines());
