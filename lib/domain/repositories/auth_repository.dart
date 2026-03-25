@@ -15,6 +15,14 @@ abstract class AuthRepository {
   Future<void> logInWithGoogle();
   Future<void> logOut();
   Future<void> sendPasswordResetEmail(String email);
+  Future<void> updateProfile({
+    required String uid,
+    String? displayName,
+    String? phoneNumber,
+    String? email,
+  });
+  Future<Map<String, dynamic>?> getUserProfile(String uid);
+  Future<List<Map<String, dynamic>>> getAllUsers();
 }
 
 class SignUpFailure implements Exception {
