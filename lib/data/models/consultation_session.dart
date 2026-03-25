@@ -2,7 +2,7 @@ import 'chat_message.dart';
 
 class ConsultationSession {
   final String id;
-  final String userId; 
+  final String userId;
   final String userName;
   final String topic; // e.g. "General Inquiry", "Prescription Help"
   final DateTime startedAt;

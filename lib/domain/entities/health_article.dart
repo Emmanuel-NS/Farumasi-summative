@@ -29,7 +29,15 @@ class HealthArticle extends Equatable {
 
   @override
   List<Object?> get props => [
-    id, title, subtitle, summary, fullContent, 
-    imageUrl, source, category, type, readTimeMin
+    id,
+    title,
+    subtitle,
+    summary,
+    fullContent,
+    imageUrl,
+    source,
+    category,
+    type,
+    readTimeMin,
   ];
 }

@@ -13,4 +13,3 @@ export 'pharmacist.dart';
 export 'pharmacist_booking.dart';
 // export 'health_article_model.dart'; // Use specific import if needed or domain entity
 export '../../domain/entities/health_article.dart'; // Export domain entity to satisfy usages of HealthArticle
-

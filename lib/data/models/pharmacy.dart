@@ -18,7 +18,8 @@ class Pharmacy {
     required this.coordinates,
     required this.supportedInsurances,
     this.isOpen = true,
-    this.imageUrl = 'https://images.unsplash.com/photo-1631549916768-4119b2e5f926?q=80&w=2938&auto=format&fit=crop', // Default image
+    this.imageUrl =
+        'https://images.unsplash.com/photo-1631549916768-4119b2e5f926?q=80&w=2938&auto=format&fit=crop', // Default image
     this.province = 'Kigali City',
     this.district = 'Nyarugenge',
     this.sector = 'Nyarugenge',
@@ -33,7 +34,9 @@ class Pharmacy {
       coordinates: List<double>.from(json['coordinates'] ?? []),
       supportedInsurances: List<String>.from(json['supportedInsurances'] ?? []),
       isOpen: json['isOpen'] ?? true,
-      imageUrl: json['imageUrl'] ?? 'https://images.unsplash.com/photo-1631549916768-4119b2e5f926?q=80&w=2938&auto=format&fit=crop',
+      imageUrl:
+          json['imageUrl'] ??
+          'https://images.unsplash.com/photo-1631549916768-4119b2e5f926?q=80&w=2938&auto=format&fit=crop',
       province: json['province'] ?? 'Kigali City',
       district: json['district'] ?? 'Nyarugenge',
       sector: json['sector'] ?? 'Nyarugenge',

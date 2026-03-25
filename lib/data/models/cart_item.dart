@@ -3,7 +3,8 @@ import 'medicine.dart';
 
 class CartItem extends Equatable {
   final Medicine medicine;
-  final int quantity; // Made final for Equatable, mutation should be handled via copyWith
+  final int
+  quantity; // Made final for Equatable, mutation should be handled via copyWith
 
   const CartItem({required this.medicine, this.quantity = 1});
 
@@ -20,10 +21,7 @@ class CartItem extends Equatable {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'medicine': medicine.toJson(),
-      'quantity': quantity,
-    };
+    return {'medicine': medicine.toJson(), 'quantity': quantity};
   }
 
   factory CartItem.fromJson(Map<String, dynamic> json) {
@@ -33,4 +31,3 @@ class CartItem extends Equatable {
     );
   }
 }
-
