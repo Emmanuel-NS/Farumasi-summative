@@ -32,12 +32,18 @@ class _AddEditPharmacyScreenState extends State<AddEditPharmacyScreen> {
     super.initState();
     final p = widget.pharmacy;
     _nameController = TextEditingController(text: p?.name ?? '');
-    _locationNameController = TextEditingController(text: p?.locationName ?? '');
-    _provinceController = TextEditingController(text: p?.province ?? 'Kigali City');
+    _locationNameController = TextEditingController(
+      text: p?.locationName ?? '',
+    );
+    _provinceController = TextEditingController(
+      text: p?.province ?? 'Kigali City',
+    );
     _districtController = TextEditingController(text: p?.district ?? '');
     _sectorController = TextEditingController(text: p?.sector ?? '');
     _cellController = TextEditingController(text: p?.cell ?? '');
-    _imageUrlController = TextEditingController(text: p?.imageUrl ?? 'https://placehold.co/600x400/png');
+    _imageUrlController = TextEditingController(
+      text: p?.imageUrl ?? 'https://placehold.co/600x400/png',
+    );
     _isOpen = p?.isOpen ?? true;
   }
 
@@ -59,14 +65,17 @@ class _AddEditPharmacyScreenState extends State<AddEditPharmacyScreen> {
         id: widget.pharmacy?.id ?? const Uuid().v4(),
         name: _nameController.text,
         locationName: _locationNameController.text,
-        coordinates: widget.pharmacy?.coordinates ?? [-1.9706, 30.1044], // Default Kigali
+        coordinates:
+            widget.pharmacy?.coordinates ??
+            [-1.9706, 30.1044], // Default Kigali
         province: _provinceController.text,
         district: _districtController.text,
         sector: _sectorController.text,
         cell: _cellController.text,
         imageUrl: _imageUrlController.text,
         isOpen: _isOpen,
-        supportedInsurances: widget.pharmacy?.supportedInsurances ?? ['RSSB', 'Radiant'],
+        supportedInsurances:
+            widget.pharmacy?.supportedInsurances ?? ['RSSB', 'Radiant'],
       );
 
       if (widget.pharmacy == null) {
@@ -101,11 +110,20 @@ class _AddEditPharmacyScreenState extends State<AddEditPharmacyScreen> {
                     const FarumasiLogo(size: 80, color: Colors.green),
                     const SizedBox(height: 16),
                     Text(
-                      widget.pharmacy == null ? "New Pharmacy" : "Edit Pharmacy",
-                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.green),
+                      widget.pharmacy == null
+                          ? "New Pharmacy"
+                          : "Edit Pharmacy",
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green,
+                      ),
                     ),
                     const SizedBox(height: 4),
-                    const Text("Fill in the branch details", style: TextStyle(color: Colors.grey)),
+                    const Text(
+                      "Fill in the branch details",
+                      style: TextStyle(color: Colors.grey),
+                    ),
                   ],
                 ),
               ),
@@ -138,41 +156,41 @@ class _AddEditPharmacyScreenState extends State<AddEditPharmacyScreen> {
               const SizedBox(height: 16),
               Row(
                 children: [
-                   Expanded(
-                     child: _buildTextField(
-                       controller: _provinceController, 
-                       label: 'Province',
-                       icon: Icons.map
-                      )
+                  Expanded(
+                    child: _buildTextField(
+                      controller: _provinceController,
+                      label: 'Province',
+                      icon: Icons.map,
                     ),
-                   const SizedBox(width: 12),
-                   Expanded(
-                     child: _buildTextField(
-                       controller: _districtController, 
-                       label: 'District',
-                       icon: Icons.holiday_village
-                      )
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildTextField(
+                      controller: _districtController,
+                      label: 'District',
+                      icon: Icons.holiday_village,
                     ),
+                  ),
                 ],
               ),
               const SizedBox(height: 16),
               Row(
                 children: [
-                   Expanded(
-                     child: _buildTextField(
-                       controller: _sectorController, 
-                       label: 'Sector',
-                       icon: Icons.domain
-                      )
+                  Expanded(
+                    child: _buildTextField(
+                      controller: _sectorController,
+                      label: 'Sector',
+                      icon: Icons.domain,
                     ),
-                   const SizedBox(width: 12),
-                   Expanded(
-                     child: _buildTextField(
-                       controller: _cellController, 
-                       label: 'Cell',
-                       icon: Icons.house
-                      )
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildTextField(
+                      controller: _cellController,
+                      label: 'Cell',
+                      icon: Icons.house,
                     ),
+                  ),
                 ],
               ),
 
@@ -181,11 +199,15 @@ class _AddEditPharmacyScreenState extends State<AddEditPharmacyScreen> {
               const SizedBox(height: 12),
               SwitchListTile(
                 title: const Text('Is Open for Business?'),
-                subtitle: Text(_isOpen ? "Pharmacy is listed as OPEN" : "Pharmacy is listed as CLOSED"),
+                subtitle: Text(
+                  _isOpen
+                      ? "Pharmacy is listed as OPEN"
+                      : "Pharmacy is listed as CLOSED",
+                ),
                 value: _isOpen,
                 activeColor: Colors.green,
                 onChanged: (val) => setState(() => _isOpen = val),
-                 shape: RoundedRectangleBorder(
+                shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                   side: BorderSide(color: Colors.grey.shade300),
                 ),
@@ -198,12 +220,20 @@ class _AddEditPharmacyScreenState extends State<AddEditPharmacyScreen> {
                   backgroundColor: Colors.green,
                   foregroundColor: Colors.white,
                   minimumSize: const Size(double.infinity, 56),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   elevation: 2,
                 ),
                 child: Text(
-                  widget.pharmacy == null ? 'CREATE PHARMACY' : 'UPDATE PHARMACY',
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 1),
+                  widget.pharmacy == null
+                      ? 'CREATE PHARMACY'
+                      : 'UPDATE PHARMACY',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1,
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
@@ -217,8 +247,20 @@ class _AddEditPharmacyScreenState extends State<AddEditPharmacyScreen> {
   Widget _buildSectionTitle(String title) {
     return Row(
       children: [
-        Container(width: 4, height: 24, color: Colors.green, margin: const EdgeInsets.only(right: 8)),
-        Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
+        Container(
+          width: 4,
+          height: 24,
+          color: Colors.green,
+          margin: const EdgeInsets.only(right: 8),
+        ),
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
+        ),
       ],
     );
   }
@@ -239,9 +281,18 @@ class _AddEditPharmacyScreenState extends State<AddEditPharmacyScreen> {
       decoration: InputDecoration(
         labelText: label,
         prefixIcon: Icon(icon, color: Colors.green),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.green, width: 2)),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Colors.green, width: 2),
+        ),
         filled: true,
         fillColor: Colors.grey.shade50,
       ),

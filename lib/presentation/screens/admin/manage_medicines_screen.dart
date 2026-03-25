@@ -34,50 +34,62 @@ class _ManageMedicinesScreenState extends State<ManageMedicinesScreen> {
             foregroundColor: Colors.white,
           ),
           body: state is MedicineLoading
-            ? const Center(child: CircularProgressIndicator())
-            : (medicines.isEmpty
-              ? const Center(child: Text('No medicines found'))
-              : ListView.builder(
-                  itemCount: medicines.length,
-                  itemBuilder: (context, index) {
-                    final medicine = medicines[index];
-                    return ListTile(
-                      leading: CircleAvatar(
-                        backgroundImage: NetworkImage(medicine.imageUrl),
-                        onBackgroundImageError: (_, __) => const Icon(Icons.error),
-                      ),
-                      title: Text(medicine.name),
-                      subtitle: Text('${medicine.price} RWF'),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.edit, color: Colors.blue),
-                            onPressed: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (context) => AddEditMedicineScreen(medicine: medicine),
+              ? const Center(child: CircularProgressIndicator())
+              : (medicines.isEmpty
+                    ? const Center(child: Text('No medicines found'))
+                    : ListView.builder(
+                        itemCount: medicines.length,
+                        itemBuilder: (context, index) {
+                          final medicine = medicines[index];
+                          return ListTile(
+                            leading: CircleAvatar(
+                              backgroundImage: NetworkImage(medicine.imageUrl),
+                              onBackgroundImageError: (_, __) =>
+                                  const Icon(Icons.error),
+                            ),
+                            title: Text(medicine.name),
+                            subtitle: Text('${medicine.price} RWF'),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.edit,
+                                    color: Colors.blue,
+                                  ),
+                                  onPressed: () {
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            AddEditMedicineScreen(
+                                              medicine: medicine,
+                                            ),
+                                      ),
+                                    );
+                                  },
                                 ),
-                              );
-                            },
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.delete, color: Colors.red),
-                            onPressed: () {
-                              _confirmDelete(context, medicine);
-                            },
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                )),
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.delete,
+                                    color: Colors.red,
+                                  ),
+                                  onPressed: () {
+                                    _confirmDelete(context, medicine);
+                                  },
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      )),
           floatingActionButton: FloatingActionButton(
             backgroundColor: Colors.green,
             foregroundColor: Colors.white,
             onPressed: () {
               Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => const AddEditMedicineScreen()),
+                MaterialPageRoute(
+                  builder: (context) => const AddEditMedicineScreen(),
+                ),
               );
             },
             child: const Icon(Icons.add),

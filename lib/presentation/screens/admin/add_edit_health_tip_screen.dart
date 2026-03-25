@@ -14,12 +14,12 @@ class AddEditHealthTipScreen extends StatefulWidget {
 
 class _AddEditHealthTipScreenState extends State<AddEditHealthTipScreen> {
   final _formKey = GlobalKey<FormState>();
-  
+
   // Controllers
   final _titleController = TextEditingController();
   final _subtitleController = TextEditingController();
   final _summaryController = TextEditingController();
-  
+
   // Quill Controller for Full Content
   late quill.QuillController _quillController;
   final ScrollController _quillScrollController = ScrollController();
@@ -28,7 +28,7 @@ class _AddEditHealthTipScreenState extends State<AddEditHealthTipScreen> {
   final _imageController = TextEditingController();
   final _sourceController = TextEditingController();
   final _categoryController = TextEditingController();
-  
+
   HealthArticleType _selectedType = HealthArticleType.tip;
   int _readTime = 5;
 
@@ -40,7 +40,7 @@ class _AddEditHealthTipScreenState extends State<AddEditHealthTipScreen> {
       _titleController.text = a.title;
       _subtitleController.text = a.subtitle;
       _summaryController.text = a.summary;
-      
+
       // Load Quill Content
       try {
         final decoded = jsonDecode(a.fullContent);
@@ -51,7 +51,7 @@ class _AddEditHealthTipScreenState extends State<AddEditHealthTipScreen> {
           );
         } else {
           // Fallback if not list
-           _quillController = quill.QuillController(
+          _quillController = quill.QuillController(
             document: quill.Document()..insert(0, a.fullContent),
             selection: const TextSelection.collapsed(offset: 0),
           );
@@ -60,11 +60,11 @@ class _AddEditHealthTipScreenState extends State<AddEditHealthTipScreen> {
         // Not JSON, assume plain text (Markdown)
         // Insert as plain text
         _quillController = quill.QuillController(
-            document: quill.Document()..insert(0, a.fullContent),
-            selection: const TextSelection.collapsed(offset: 0),
+          document: quill.Document()..insert(0, a.fullContent),
+          selection: const TextSelection.collapsed(offset: 0),
         );
       }
-      
+
       _imageController.text = a.imageUrl;
       _sourceController.text = a.source;
       _categoryController.text = a.category;
@@ -79,7 +79,7 @@ class _AddEditHealthTipScreenState extends State<AddEditHealthTipScreen> {
   }
 
   @override
-  void dispose() {  
+  void dispose() {
     _titleController.dispose();
     _subtitleController.dispose();
     _summaryController.dispose();
@@ -95,7 +95,9 @@ class _AddEditHealthTipScreenState extends State<AddEditHealthTipScreen> {
   Future<void> _save() async {
     if (_formKey.currentState!.validate()) {
       // Get JSON form of document
-      final deltaJson = jsonEncode(_quillController.document.toDelta().toJson());
+      final deltaJson = jsonEncode(
+        _quillController.document.toDelta().toJson(),
+      );
 
       final newArticle = HealthArticle(
         id: widget.article?.id ?? '',
@@ -103,7 +105,9 @@ class _AddEditHealthTipScreenState extends State<AddEditHealthTipScreen> {
         subtitle: _subtitleController.text,
         summary: _summaryController.text,
         fullContent: deltaJson, // Store as JSON
-        imageUrl: _imageController.text.isEmpty? "https://images.unsplash.com/photo-1505751172876-fa1923c5c528" : _imageController.text, // Default
+        imageUrl: _imageController.text.isEmpty
+            ? "https://images.unsplash.com/photo-1505751172876-fa1923c5c528"
+            : _imageController.text, // Default
         source: _sourceController.text,
         category: _categoryController.text,
         type: _selectedType,
@@ -120,12 +124,14 @@ class _AddEditHealthTipScreenState extends State<AddEditHealthTipScreen> {
         if (mounted) Navigator.pop(context, true);
       } catch (e) {
         if (mounted) {
-           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Error: $e')));
         }
       }
     }
   }
-  
+
   // Custom styled Input Decoration
   InputDecoration _inputDecoration(String label, IconData icon) {
     return InputDecoration(
@@ -144,11 +150,14 @@ class _AddEditHealthTipScreenState extends State<AddEditHealthTipScreen> {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide:    const BorderSide(color: Colors.green, width: 2),
+        borderSide: const BorderSide(color: Colors.green, width: 2),
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       labelStyle: TextStyle(color: Colors.grey.shade600, fontSize: 13),
-      floatingLabelStyle: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
+      floatingLabelStyle: const TextStyle(
+        color: Colors.green,
+        fontWeight: FontWeight.bold,
+      ),
     );
   }
 
@@ -194,10 +203,12 @@ class _AddEditHealthTipScreenState extends State<AddEditHealthTipScreen> {
                   foregroundColor: Colors.green.shade700,
                   textStyle: const TextStyle(fontWeight: FontWeight.bold),
                   padding: const EdgeInsets.symmetric(horizontal: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
                 ),
               ),
-            )
+            ),
           ],
         ),
         body: SingleChildScrollView(
@@ -212,7 +223,9 @@ class _AddEditHealthTipScreenState extends State<AddEditHealthTipScreen> {
                 Card(
                   elevation: 0,
                   color: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                   child: Padding(
                     padding: const EdgeInsets.all(20.0),
                     child: Column(
@@ -221,59 +234,91 @@ class _AddEditHealthTipScreenState extends State<AddEditHealthTipScreen> {
                         DropdownButtonFormField<HealthArticleType>(
                           value: _selectedType,
                           decoration: _inputDecoration('Type', Icons.category),
-                          items: HealthArticleType.values.map((t) => DropdownMenuItem(
-                            value: t, child: Text(t.name.toUpperCase().replaceAll("DIDYOUKNOW", "FUN FACT")),
-                          )).toList(),
+                          items: HealthArticleType.values
+                              .map(
+                                (t) => DropdownMenuItem(
+                                  value: t,
+                                  child: Text(
+                                    t.name.toUpperCase().replaceAll(
+                                      "DIDYOUKNOW",
+                                      "FUN FACT",
+                                    ),
+                                  ),
+                                ),
+                              )
+                              .toList(),
                           onChanged: (val) {
-                            if (val != null) setState(() => _selectedType = val);
+                            if (val != null)
+                              setState(() => _selectedType = val);
                           },
                         ),
                         const SizedBox(height: 16),
                         TextFormField(
                           controller: _categoryController,
-                          decoration: _inputDecoration('Category', Icons.label_outline),
+                          decoration: _inputDecoration(
+                            'Category',
+                            Icons.label_outline,
+                          ),
                           validator: (v) => v!.isEmpty ? 'Required' : null,
                         ),
                         const SizedBox(height: 16),
                         TextFormField(
                           controller: _titleController,
-                          decoration: _inputDecoration('Article Title', Icons.title).copyWith(
-                             hintText: "e.g., 5 Ways to Stay Hydrated",
+                          decoration: _inputDecoration(
+                            'Article Title',
+                            Icons.title,
+                          ).copyWith(hintText: "e.g., 5 Ways to Stay Hydrated"),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
                           ),
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                           validator: (v) => v!.isEmpty ? 'Required' : null,
                         ),
                         TextFormField(
                           controller: _subtitleController,
-                          decoration: _inputDecoration('Subtitle / Hook', Icons.short_text).copyWith(
-                            hintText: "Catchy phrase below the title",
-                          ),
+                          decoration: _inputDecoration(
+                            'Subtitle / Hook',
+                            Icons.short_text,
+                          ).copyWith(hintText: "Catchy phrase below the title"),
                         ),
                         Row(
-                           children: [
-                              Expanded(
-                                child: TextFormField(
-                                  controller: _sourceController,
-                                  decoration: _inputDecoration('Source / Author', Icons.source).copyWith(
-                                    hintText: "e.g., WHO or Mayo Clinic",
-                                  ),
-                                ),
+                          children: [
+                            Expanded(
+                              child: TextFormField(
+                                controller: _sourceController,
+                                decoration:
+                                    _inputDecoration(
+                                      'Source / Author',
+                                      Icons.source,
+                                    ).copyWith(
+                                      hintText: "e.g., WHO or Mayo Clinic",
+                                    ),
                               ),
-                              const SizedBox(width: 12),
-                              SizedBox(
-                                width: 140,
-                                child: DropdownButtonFormField<int>(
-                                  value: _readTime,
-                                  decoration: _inputDecoration('Read Time', Icons.timer),
-                                  items: [1, 2, 3, 4, 5, 7, 10, 15].map((t) => DropdownMenuItem(
-                                    value: t, child: Text("$t min"),
-                                  )).toList(),
-                                  onChanged: (val) {
-                                    if (val != null) setState(() => _readTime = val);
-                                  },
+                            ),
+                            const SizedBox(width: 12),
+                            SizedBox(
+                              width: 140,
+                              child: DropdownButtonFormField<int>(
+                                value: _readTime,
+                                decoration: _inputDecoration(
+                                  'Read Time',
+                                  Icons.timer,
                                 ),
+                                items: [1, 2, 3, 4, 5, 7, 10, 15]
+                                    .map(
+                                      (t) => DropdownMenuItem(
+                                        value: t,
+                                        child: Text("$t min"),
+                                      ),
+                                    )
+                                    .toList(),
+                                onChanged: (val) {
+                                  if (val != null)
+                                    setState(() => _readTime = val);
+                                },
                               ),
-                           ],
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -285,29 +330,44 @@ class _AddEditHealthTipScreenState extends State<AddEditHealthTipScreen> {
                 Card(
                   elevation: 0,
                   color: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                   child: Padding(
                     padding: const EdgeInsets.all(20.0),
                     child: Column(
                       children: [
                         TextFormField(
                           controller: _summaryController,
-                          decoration: _inputDecoration('Short Summary', Icons.description).copyWith(
-                            hintText: "Brief description shown on list view (1-2 sentences)",
-                            fillColor: Colors.amber.shade50, // Highlight this is important
-                          ),
+                          decoration:
+                              _inputDecoration(
+                                'Short Summary',
+                                Icons.description,
+                              ).copyWith(
+                                hintText:
+                                    "Brief description shown on list view (1-2 sentences)",
+                                fillColor: Colors
+                                    .amber
+                                    .shade50, // Highlight this is important
+                              ),
                           maxLines: 3,
                           validator: (v) => v!.isEmpty ? 'Required' : null,
                         ),
                         const SizedBox(height: 16),
-                        
+
                         // --- FULL TEXT EDITOR (Quill) ---
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             const Padding(
                               padding: EdgeInsets.only(bottom: 8.0),
-                              child: Text("Full Content", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
+                              child: Text(
+                                "Full Content",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.grey,
+                                ),
+                              ),
                             ),
                             Container(
                               decoration: BoxDecoration(
@@ -329,9 +389,12 @@ class _AddEditHealthTipScreenState extends State<AddEditHealthTipScreen> {
                                       // headerStyleType: quill.HeaderStyleType.buttons, // Removed potentially problematic param
                                     ),
                                   ),
-                                  Divider(height: 1, color: Colors.grey.shade300),
+                                  Divider(
+                                    height: 1,
+                                    color: Colors.grey.shade300,
+                                  ),
                                   Container(
-                                    height: 300, 
+                                    height: 300,
                                     padding: const EdgeInsets.all(12),
                                     child: quill.QuillEditor(
                                       focusNode: _quillFocusNode,
@@ -361,22 +424,28 @@ class _AddEditHealthTipScreenState extends State<AddEditHealthTipScreen> {
                 Card(
                   elevation: 0,
                   color: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                   child: Padding(
                     padding: const EdgeInsets.all(20.0),
                     child: Column(
                       children: [
                         TextFormField(
                           controller: _imageController,
-                          decoration: _inputDecoration('Cover Image URL', Icons.image).copyWith(
-                            suffixIcon: IconButton(
-                              icon: const Icon(Icons.refresh),
-                              onPressed: () => setState((){}), 
-                              tooltip: "Refresh Preview",
-                            ),
-                            hintText: "https://..."
-                          ),
-                          onChanged: (_) => setState((){}),
+                          decoration:
+                              _inputDecoration(
+                                'Cover Image URL',
+                                Icons.image,
+                              ).copyWith(
+                                suffixIcon: IconButton(
+                                  icon: const Icon(Icons.refresh),
+                                  onPressed: () => setState(() {}),
+                                  tooltip: "Refresh Preview",
+                                ),
+                                hintText: "https://...",
+                              ),
+                          onChanged: (_) => setState(() {}),
                         ),
                         if (_imageController.text.isNotEmpty) ...[
                           const SizedBox(height: 12),
@@ -387,20 +456,32 @@ class _AddEditHealthTipScreenState extends State<AddEditHealthTipScreen> {
                               height: 180,
                               width: double.infinity,
                               fit: BoxFit.cover,
-                              errorBuilder: (_,__,___) => Container(
-                                height: 100, 
+                              errorBuilder: (_, __, ___) => Container(
+                                height: 100,
                                 decoration: BoxDecoration(
                                   color: Colors.grey.shade100,
                                   borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: Colors.grey.shade300, style: BorderStyle.solid),
-                                ), 
+                                  border: Border.all(
+                                    color: Colors.grey.shade300,
+                                    style: BorderStyle.solid,
+                                  ),
+                                ),
                                 child: Center(
                                   child: Column(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      Icon(Icons.broken_image, color: Colors.grey.shade400),
+                                      Icon(
+                                        Icons.broken_image,
+                                        color: Colors.grey.shade400,
+                                      ),
                                       const SizedBox(height: 4),
-                                      const Text("Invalid Image URL", style: TextStyle(color: Colors.grey, fontSize: 12)),
+                                      const Text(
+                                        "Invalid Image URL",
+                                        style: TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: 12,
+                                        ),
+                                      ),
                                     ],
                                   ),
                                 ),

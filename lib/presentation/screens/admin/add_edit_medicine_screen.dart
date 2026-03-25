@@ -27,7 +27,7 @@ class _AddEditMedicineScreenState extends State<AddEditMedicineScreen> {
   late TextEditingController _dosageController;
   late TextEditingController _sideEffectsController;
   late List<String> _selectedPharmacyIds; // Track selected pharmacies
-  
+
   // Multi-Category Support
   final List<String> _allCategories = [
     'Pain Relief',
@@ -42,9 +42,9 @@ class _AddEditMedicineScreenState extends State<AddEditMedicineScreen> {
     'First Aid',
     'Chronic Care',
     'Nutrition',
-    'Herbal Medicines'
+    'Herbal Medicines',
   ];
-  
+
   List<String> _selectedCategories = [];
 
   @override
@@ -54,17 +54,23 @@ class _AddEditMedicineScreenState extends State<AddEditMedicineScreen> {
     _nameController = TextEditingController(text: m?.name ?? '');
     _descriptionController = TextEditingController(text: m?.description ?? '');
     _priceController = TextEditingController(text: m?.price.toString() ?? '');
-    _imageUrlController = TextEditingController(text: m?.imageUrl ?? 'https://placehold.co/600x400/png');
-    _manufacturerController = TextEditingController(text: m?.manufacturer ?? '');
+    _imageUrlController = TextEditingController(
+      text: m?.imageUrl ?? 'https://placehold.co/600x400/png',
+    );
+    _manufacturerController = TextEditingController(
+      text: m?.manufacturer ?? '',
+    );
     _dosageController = TextEditingController(text: m?.dosage ?? '');
     _sideEffectsController = TextEditingController(text: m?.sideEffects ?? '');
     _selectedPharmacyIds = List.from(m?.availableAtPharmacyIds ?? []);
-    
+
     // Initialize selected categories
     if (m != null) {
       if (m.category.isNotEmpty) _selectedCategories.add(m.category);
       _selectedCategories.addAll(m.additionalCategories);
-      _selectedCategories = _selectedCategories.toSet().toList(); // Remove duplicates
+      _selectedCategories = _selectedCategories
+          .toSet()
+          .toList(); // Remove duplicates
     }
   }
 
@@ -99,8 +105,8 @@ class _AddEditMedicineScreenState extends State<AddEditMedicineScreen> {
 
       // First category is primary, rest are additional
       final primaryCategory = _selectedCategories.first;
-      final additionalCats = _selectedCategories.length > 1 
-          ? _selectedCategories.sublist(1) 
+      final additionalCats = _selectedCategories.length > 1
+          ? _selectedCategories.sublist(1)
           : <String>[];
 
       final newMedicine = Medicine(
@@ -162,10 +168,17 @@ class _AddEditMedicineScreenState extends State<AddEditMedicineScreen> {
                     const SizedBox(height: 16),
                     Text(
                       widget.medicine == null ? "New Product" : "Edit Product",
-                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.green),
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green,
+                      ),
                     ),
                     const SizedBox(height: 8),
-                    const Text("Fill in the details below", style: TextStyle(color: Colors.grey)),
+                    const Text(
+                      "Fill in the details below",
+                      style: TextStyle(color: Colors.grey),
+                    ),
                   ],
                 ),
               ),
@@ -195,11 +208,14 @@ class _AddEditMedicineScreenState extends State<AddEditMedicineScreen> {
                 keyboardType: TextInputType.number,
                 validator: (v) => v!.isEmpty ? 'Required' : null,
               ),
-              
+
               const SizedBox(height: 32),
               _buildSectionTitle("Categories"),
               const SizedBox(height: 8),
-              const Text("Select one or more categories:", style: TextStyle(color: Colors.grey)),
+              const Text(
+                "Select one or more categories:",
+                style: TextStyle(color: Colors.grey),
+              ),
               const SizedBox(height: 12),
               Container(
                 width: double.infinity,
@@ -221,8 +237,12 @@ class _AddEditMedicineScreenState extends State<AddEditMedicineScreen> {
                       checkmarkColor: Colors.green,
                       backgroundColor: Colors.grey.shade50,
                       labelStyle: TextStyle(
-                        color: isSelected ? Colors.green.shade900 : Colors.black87,
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                        color: isSelected
+                            ? Colors.green.shade900
+                            : Colors.black87,
+                        fontWeight: isSelected
+                            ? FontWeight.bold
+                            : FontWeight.normal,
                       ),
                       onSelected: (bool selected) {
                         setState(() {
@@ -236,7 +256,9 @@ class _AddEditMedicineScreenState extends State<AddEditMedicineScreen> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
                         side: BorderSide(
-                          color: isSelected ? Colors.green : Colors.grey.shade300,
+                          color: isSelected
+                              ? Colors.green
+                              : Colors.grey.shade300,
                         ),
                       ),
                     );
@@ -258,7 +280,7 @@ class _AddEditMedicineScreenState extends State<AddEditMedicineScreen> {
                 label: 'Side Effects',
                 icon: Icons.warning_amber,
               ),
-               const SizedBox(height: 16),
+              const SizedBox(height: 16),
               _buildTextField(
                 controller: _manufacturerController,
                 label: 'Manufacturer',
@@ -278,7 +300,10 @@ class _AddEditMedicineScreenState extends State<AddEditMedicineScreen> {
               const SizedBox(height: 32),
               _buildSectionTitle("Inventory & Location"),
               const SizedBox(height: 8),
-              const Text("Select pharmacies where this product is available:", style: TextStyle(color: Colors.grey)),
+              const Text(
+                "Select pharmacies where this product is available:",
+                style: TextStyle(color: Colors.grey),
+              ),
               const SizedBox(height: 12),
               _buildPharmacySelector(),
 
@@ -289,12 +314,18 @@ class _AddEditMedicineScreenState extends State<AddEditMedicineScreen> {
                   backgroundColor: Colors.green,
                   foregroundColor: Colors.white,
                   minimumSize: const Size(double.infinity, 56),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   elevation: 2,
                 ),
                 child: Text(
                   widget.medicine == null ? 'CREATE PRODUCT' : 'UPDATE PRODUCT',
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 1),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1,
+                  ),
                 ),
               ),
               const SizedBox(height: 40),
@@ -308,8 +339,20 @@ class _AddEditMedicineScreenState extends State<AddEditMedicineScreen> {
   Widget _buildSectionTitle(String title) {
     return Row(
       children: [
-        Container(width: 4, height: 24, color: Colors.green, margin: const EdgeInsets.only(right: 8)),
-        Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
+        Container(
+          width: 4,
+          height: 24,
+          color: Colors.green,
+          margin: const EdgeInsets.only(right: 8),
+        ),
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
+        ),
       ],
     );
   }
@@ -330,9 +373,18 @@ class _AddEditMedicineScreenState extends State<AddEditMedicineScreen> {
       decoration: InputDecoration(
         labelText: label,
         prefixIcon: Icon(icon, color: Colors.green),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.green, width: 2)),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Colors.green, width: 2),
+        ),
         filled: true,
         fillColor: Colors.grey.shade50,
       ),
@@ -349,12 +401,19 @@ class _AddEditMedicineScreenState extends State<AddEditMedicineScreen> {
           if (pharmacies.isEmpty) {
             return Container(
               padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(color: Colors.orange.shade50, borderRadius: BorderRadius.circular(12)),
+              decoration: BoxDecoration(
+                color: Colors.orange.shade50,
+                borderRadius: BorderRadius.circular(12),
+              ),
               child: const Row(
                 children: [
                   Icon(Icons.warning_amber, color: Colors.orange),
                   SizedBox(width: 12),
-                  Expanded(child: Text("No pharmacies available. Add one via 'Manage Pharmacies' first.")),
+                  Expanded(
+                    child: Text(
+                      "No pharmacies available. Add one via 'Manage Pharmacies' first.",
+                    ),
+                  ),
                 ],
               ),
             );
@@ -373,38 +432,52 @@ class _AddEditMedicineScreenState extends State<AddEditMedicineScreen> {
                 return Column(
                   children: [
                     CheckboxListTile(
-                      title: Text(p.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                      title: Text(
+                        p.name,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
                       subtitle: Text(p.locationName),
                       value: isSelected,
                       activeColor: Colors.green,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 4,
+                      ),
                       secondary: CircleAvatar(
                         backgroundColor: Colors.green.shade50,
-                        backgroundImage: p.imageUrl.isNotEmpty ? NetworkImage(p.imageUrl) : null,
-                        onBackgroundImageError: (_,__) {},
-                        child: p.imageUrl.isEmpty ? const Icon(Icons.store, color: Colors.green) : null,
+                        backgroundImage: p.imageUrl.isNotEmpty
+                            ? NetworkImage(p.imageUrl)
+                            : null,
+                        onBackgroundImageError: (_, __) {},
+                        child: p.imageUrl.isEmpty
+                            ? const Icon(Icons.store, color: Colors.green)
+                            : null,
                       ),
                       onChanged: (val) {
-                         setState(() {
-                           if (val == true) {
-                             _selectedPharmacyIds.add(p.id);
-                           } else {
-                             _selectedPharmacyIds.remove(p.id);
-                           }
-                         });
-                      }
+                        setState(() {
+                          if (val == true) {
+                            _selectedPharmacyIds.add(p.id);
+                          } else {
+                            _selectedPharmacyIds.remove(p.id);
+                          }
+                        });
+                      },
                     ),
-                    if (entry.key != pharmacies.length - 1) const Divider(height: 1, indent: 16, endIndent: 16),
+                    if (entry.key != pharmacies.length - 1)
+                      const Divider(height: 1, indent: 16, endIndent: 16),
                   ],
                 );
               }).toList(),
             ),
           );
         } else if (state is PharmacyError) {
-          return Text('Error loading pharmacies: ${state.message}', style: const TextStyle(color: Colors.red));
+          return Text(
+            'Error loading pharmacies: ${state.message}',
+            style: const TextStyle(color: Colors.red),
+          );
         }
         return const SizedBox.shrink();
-      }
+      },
     );
   }
 }
