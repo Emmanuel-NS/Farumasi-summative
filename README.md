@@ -1,6 +1,6 @@
 ﻿# 🏥 Farumasi Patient App
 
-A comprehensive Flutter-based mobile application designed to bridge the gap between patients, pharmacies, and essential healthcare products. It operates as a fully functional medical e-commerce and health management platform, providing users with the ability to find medications, locate pharmacies, manage their carts, and receive health tips—all backed by a secure Firebase backend.
+A Flutter-based mobile application that connects patients with pharmacies and essential healthcare products. The platform enables users to search for medications, locate nearby pharmacies, manage shopping carts, and access health tips—all powered by a secure Firebase backend.
 
 ## 🌟 Key Features
 
