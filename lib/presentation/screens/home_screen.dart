@@ -9,8 +9,6 @@ import 'package:farumasi_patient_app/presentation/screens/user_consultation_scre
 import 'package:farumasi_patient_app/presentation/screens/orders_screen.dart';
 import 'package:farumasi_patient_app/presentation/screens/auth_screen.dart';
 import 'package:farumasi_patient_app/presentation/screens/prescription_upload_screen.dart';
-import 'package:farumasi_patient_app/presentation/blocs/cart/cart_bloc.dart';
-import 'package:farumasi_patient_app/presentation/blocs/cart/cart_state.dart';
 import 'package:farumasi_patient_app/data/datasources/state_service.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -111,7 +109,7 @@ class _HomeScreenState extends State<HomeScreen>
                 animationCurve: Curves.easeInOut,
                 animationDuration: const Duration(milliseconds: 300),
                 items: <Widget>[
-                  Icon(Icons.store, size: 30, color: _currentIndex == 0 ? Colors.green : Colors.white),
+                  Icon(Icons.home, size: 30, color: _currentIndex == 0 ? Colors.green : Colors.white),
                   Icon(Icons.health_and_safety, size: 30, color: _currentIndex == 1 ? Colors.green : Colors.white),
                   Icon(Icons.document_scanner_outlined, size: 30, color: _currentIndex == 2 ? Colors.green : Colors.white), // Upload Rx
                   Icon(Icons.chat_bubble_outline, size: 30, color: _currentIndex == 3 ? Colors.green : Colors.white),
