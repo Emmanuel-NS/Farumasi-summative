@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mockito/mockito.dart';
 import 'package:farumasi_patient_app/data/repositories/mock_auth_repository.dart';
 
 void main() {
@@ -8,7 +9,7 @@ void main() {
       
       // Act & Assert
       await expectLater(
-        repository.sendPasswordResetEmail('test@example.com'),
+        repository.sendPasswordResetEmail(email: 'test@example.com'),
         completes,
       );
     });
