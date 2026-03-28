@@ -1,10 +1,19 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:farumasi_patient_app/data/repositories/mock_auth_repository.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:farumasi_patient_app/domain/repositories/auth_repository.dart';
+
+class MockAuthRepo extends Mock implements AuthRepository {}
 
 void main() {
   group('AuthRepository Reset Password', () {
+    late MockAuthRepo repository;
+
+    setUp(() {
+      repository = MockAuthRepo();
+    });
+
     test('sendPasswordResetEmail should complete without error', () async {
-      final repository = MockAuthRepository();
+      when(() => repository.sendPasswordResetEmail(any())).thenAnswer((_) async {});
       
       // Act & Assert
       await expectLater(
@@ -14,11 +23,24 @@ void main() {
     });
 
     test('sendPasswordResetEmail should throw failure for invalid email', () async {
-       final repository = MockAuthRepository();
-       
-       // Note: MockAuthRepository implementation might not validate, 
-       // but typically we'd test failure cases here.
-       // This test just ensures the method exists and can be called.
+      when(() => repository.sendPasswordResetEmail('invalid-email'))
+          .thenThrow(Exception('Invalid email format'));
+
+      // Act & Assert
+      expect(
+        () => repository.sendPasswordResetEmail('invalid-email'),
+        throwsException,
+      );
+    });
+
+    test('sendPasswordResetEmail should throw failure for empty email', () async {
+      when(() => repository.sendPasswordResetEmail(''))
+          .thenThrow(Exception('Email cannot be empty'));
+      // Act & Assert
+      expect(
+        () => repository.sendPasswordResetEmail(''),
+        throwsException, 
+      );
     });
   });
 }
