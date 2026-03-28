@@ -5,6 +5,7 @@ import 'package:flutter_quill/flutter_quill.dart' as quill;
 import '../../domain/entities/health_article.dart';
 import '../blocs/health_tips/health_tips_bloc.dart';
 import '../blocs/health_tips/health_tips_event.dart';
+import 'package:farumasi_patient_app/presentation/screens/user_consultation_screen.dart';
 import '../blocs/health_tips/health_tips_state.dart';
 
 // --- Main Screen ---
@@ -191,6 +192,19 @@ class _HealthTipsViewState extends State<_HealthTipsView>
               );
             },
           ),
+        ),
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const UserConsultationScreen(),
+              ),
+            );
+          },
+          icon: const Icon(Icons.question_answer, color: Colors.white),
+          label: const Text('Ask a Question', style: TextStyle(color: Colors.white)),
+          backgroundColor: Colors.green,
         ),
       ),
     );

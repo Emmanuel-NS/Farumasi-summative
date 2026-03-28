@@ -8,6 +8,7 @@ import 'package:farumasi_patient_app/data/models/prescription_order.dart';
 import 'package:farumasi_patient_app/data/models/order_status.dart';
 import 'package:farumasi_patient_app/presentation/blocs/auth/auth_bloc.dart';
 import 'package:farumasi_patient_app/presentation/screens/order_tracking_screen.dart';
+import 'package:farumasi_patient_app/presentation/screens/home_screen.dart';
 
 class OrdersScreen extends StatefulWidget {
   const OrdersScreen({super.key});
@@ -81,6 +82,17 @@ class _OrdersScreenState extends State<OrdersScreen> {
                 
                 return const Center(child: Text('Initialize orders...'));
               },
+            ),
+            floatingActionButton: FloatingActionButton(
+              onPressed: () {
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => const HomeScreen()),
+                  (Route<dynamic> route) => false,
+                );
+              },
+              backgroundColor: Colors.green,
+              child: const Icon(Icons.add, color: Colors.white),
             ),
           ),
         );
@@ -192,7 +204,6 @@ class _OrdersScreenState extends State<OrdersScreen> {
       case OrderStatus.outForDelivery: return 'Out for Delivery';
       case OrderStatus.delivered: return 'Delivered';
       case OrderStatus.cancelled: return 'Cancelled';
-      default: return status.toString().split('.').last;
     }
   }
 }
