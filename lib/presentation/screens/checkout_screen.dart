@@ -11,6 +11,7 @@ import 'package:farumasi_patient_app/presentation/blocs/order/order_state.dart';
 import 'package:farumasi_patient_app/data/models/prescription_order.dart';
 import 'package:farumasi_patient_app/data/models/order_status.dart';
 import 'package:farumasi_patient_app/data/models/cart_item.dart';
+import 'package:farumasi_patient_app/data/datasources/notification_service.dart';
 import 'auth_screen.dart';
 
 enum PaymentMethod { cash, mobileMoney }
@@ -355,8 +356,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           // Close loading dialog if open (not ideal way, but works for simple flows)
           Navigator.of(context, rootNavigator: true).pop();
 
-          context.read<CartBloc>().add(ClearCart());
-
+          context.read<CartBloc>().add(ClearCart());            
+            NotificationService().showNotification(
+              id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+              title: 'Order Placed!',
+              body: 'Your order has been sent to nearby pharmacies for review.',
+            );
           showDialog(
             context: context,
             barrierDismissible: false,

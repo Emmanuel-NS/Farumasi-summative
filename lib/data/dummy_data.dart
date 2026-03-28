@@ -675,6 +675,71 @@ final List<Pharmacy> dummyPharmacies = [
     sector: "Remera",
     cell: "Rukiri I",
   ),
+  Pharmacy(
+    id: "ph5",
+    name: "Kicukiro Central Pharmacy",
+    locationName: "Kicukiro Centre, Sonatubes",
+    coordinates: [-1.9704, 30.1009],
+    supportedInsurances: ["RSSB", "RADIANT", "BK"],
+    imageUrl:
+        "https://images.unsplash.com/photo-1542736667-069246bda5d4?w=600&q=80",
+    province: "Kigali City",
+    district: "Kicukiro",
+    sector: "Kicukiro",
+    cell: "Ngoma",
+  ),
+  Pharmacy(
+    id: "ph6",
+    name: "Nyarutarama Care Pharmacy",
+    locationName: "MTN Centre, Nyarutarama",
+    coordinates: [-1.9427, 30.1017],
+    supportedInsurances: ["RSSB", "UAP", "Sanlam"],
+    imageUrl:
+        "https://images.unsplash.com/photo-1631553556445-568eb2a1d2e5?w=600&q=80",
+    province: "Kigali City",
+    district: "Gasabo",
+    sector: "Remera",
+    cell: "Nyarutarama",
+  ),
+  Pharmacy(
+    id: "ph7",
+    name: "Kimironko Life Pharmacy",
+    locationName: "Kimironko Market Area",
+    coordinates: [-1.9443, 30.1256],
+    supportedInsurances: ["RSSB", "MMI"],
+    imageUrl:
+        "https://images.unsplash.com/photo-1576602976214-722de1cb1f39?w=600&q=80",
+    province: "Kigali City",
+    district: "Gasabo",
+    sector: "Kimironko",
+    cell: "Nyagatovu",
+  ),
+  Pharmacy(
+    id: "ph8",
+    name: "Gisozi Wellness Pharmacy",
+    locationName: "Gisozi Sector Office",
+    coordinates: [-1.9288, 30.0711],
+    supportedInsurances: ["RSSB", "RADIANT"],
+    imageUrl:
+        "https://images.unsplash.com/photo-1631549916768-4119b2e5f926?w=600&q=80",
+    province: "Kigali City",
+    district: "Gasabo",
+    sector: "Gisozi",
+    cell: "Musezero",
+  ),
+  Pharmacy(
+    id: "ph9",
+    name: "Kanombe Community Pharmacy",
+    locationName: "Near Kanombe Military Hospital",
+    coordinates: [-1.9680, 30.1458],
+    supportedInsurances: ["RSSB", "MMI", "UAP", "BK"],
+    imageUrl:
+        "https://images.unsplash.com/photo-1542736705-53f0131d1e98?w=600&q=80",
+    province: "Kigali City",
+    district: "Kicukiro",
+    sector: "Kanombe",
+    cell: "Rubirizi",
+  ),
 ];
 
 final dummyPharmacists = [

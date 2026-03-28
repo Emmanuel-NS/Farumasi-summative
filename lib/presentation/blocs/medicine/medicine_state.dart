@@ -13,22 +13,26 @@ class MedicineInitial extends MedicineState {}
 class MedicineLoading extends MedicineState {}
 
 class MedicineLoaded extends MedicineState {
+  final List<Medicine> allMedicines;
   final List<Medicine> medicines;
   final String activeCategory;
   final String searchQuery;
 
   const MedicineLoaded({
+    required this.allMedicines,
     required this.medicines,
     this.activeCategory = 'All',
     this.searchQuery = '',
   });
 
   MedicineLoaded copyWith({
+    List<Medicine>? allMedicines,
     List<Medicine>? medicines,
     String? activeCategory,
     String? searchQuery,
   }) {
     return MedicineLoaded(
+      allMedicines: allMedicines ?? this.allMedicines,
       medicines: medicines ?? this.medicines,
       activeCategory: activeCategory ?? this.activeCategory,
       searchQuery: searchQuery ?? this.searchQuery,
@@ -36,7 +40,7 @@ class MedicineLoaded extends MedicineState {
   }
 
   @override
-  List<Object> get props => [medicines, activeCategory, searchQuery];
+  List<Object> get props => [allMedicines, medicines, activeCategory, searchQuery];
 }
 
 class MedicineError extends MedicineState {

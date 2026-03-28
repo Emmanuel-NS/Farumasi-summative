@@ -21,8 +21,15 @@ class HealthRepositoryImpl implements HealthRepository {
     }
   }
 
-  @override
-  Future<void> addArticle(HealthArticle article) async {
+  @override  Stream<List<HealthArticle>> getArticlesStream() {
+    return _firestore.collection('health_tips').snapshots().map((snapshot) {
+      return snapshot.docs
+          .map((doc) => HealthArticleModel.fromSnapshot(doc))
+          .toList();
+    });
+  }
+
+  @override  Future<void> addArticle(HealthArticle article) async {
     try {
       // Cast to model to access toJson
       final model = HealthArticleModel(
@@ -38,15 +45,12 @@ class HealthRepositoryImpl implements HealthRepository {
         readTimeMin: article.readTimeMin,
       );
 
-      // If ID is empty or placeholder, let Firestore generate one,
-      // but usually we might want to set the ID after creation.
-      // However, we can use a randomly generated ID if not provided.
-      // Or use .doc().set().
-
-      final docRef = _firestore
-          .collection('health_tips')
-          .doc(article.id.isEmpty ? null : article.id);
-      await docRef.set(model.toJson());
+        // Use .add() for empty ID, else .doc().set()
+        if (article.id.isEmpty) {
+          await _firestore.collection('health_tips').add(model.toJson());
+        } else {
+          await _firestore.collection('health_tips').doc(article.id).set(model.toJson());
+        }
     } catch (e) {
       throw Exception('Failed to add article: $e');
     }

@@ -35,6 +35,8 @@ import 'package:farumasi_patient_app/presentation/blocs/pharmacy/pharmacy_bloc.d
 import 'package:farumasi_patient_app/presentation/blocs/order/order_bloc.dart';
 import 'package:farumasi_patient_app/domain/repositories/chat_repository.dart';
 import 'package:farumasi_patient_app/data/repositories/chat_repository_impl.dart';
+import 'package:farumasi_patient_app/presentation/widgets/global_notification_wrapper.dart';
+import 'package:farumasi_patient_app/data/datasources/state_service.dart'; // Added for state service sync
 import 'firebase_options.dart'; // Import the generated file
 import 'package:farumasi_patient_app/data/datasources/data_seeder.dart'; // Added for seeding
 
@@ -86,6 +88,11 @@ Future<void> main() async {
 
   final cartRepository = MockCartRepository();
   final chatRepository = ChatRepositoryImpl();
+
+  // --- Real-time sync for User UI (StateService) ---
+  medicineRepository.getMedicinesStream().listen((medicines) => StateService().setMedicines(medicines));
+  pharmacyRepository.getPharmaciesStream().listen((pharmacies) => StateService().setPharmacies(pharmacies));
+  healthRepository.getArticlesStream().listen((articles) => StateService().setHealthArticles(articles));
 
   runApp(
     FarumasiApp(
@@ -161,7 +168,7 @@ class FarumasiApp extends StatelessWidget {
           ),
           BlocProvider(create: (context) => ThemeCubit()),
         ],
-        child: const AppView(),
+        child: const GlobalNotificationWrapper(child: AppView()),
       ),
     );
   }

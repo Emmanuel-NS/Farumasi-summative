@@ -3,6 +3,7 @@ import '../models/pharmacy.dart';
 
 abstract class PharmacyRepository {
   Future<List<Pharmacy>> getPharmacies();
+  Stream<List<Pharmacy>> getPharmaciesStream();
   Future<void> addPharmacy(Pharmacy pharmacy);
   Future<void> updatePharmacy(Pharmacy pharmacy);
   Future<void> deletePharmacy(String id);
@@ -27,11 +28,21 @@ class PharmacyRepositoryImpl implements PharmacyRepository {
   }
 
   @override
+  Stream<List<Pharmacy>> getPharmaciesStream() {
+    return _firestore.collection('pharmacies').snapshots().map((snapshot) {
+      return snapshot.docs
+          .map((doc) => Pharmacy.fromJson(doc.data(), doc.id))
+          .toList();
+    });
+  }
+
+  @override
   Future<void> addPharmacy(Pharmacy pharmacy) async {
-    await _firestore
-        .collection('pharmacies')
-        .doc(pharmacy.id.isEmpty ? null : pharmacy.id)
-        .set(pharmacy.toJson());
+    if (pharmacy.id.isEmpty) {
+      await _firestore.collection('pharmacies').add(pharmacy.toJson());
+    } else {
+      await _firestore.collection('pharmacies').doc(pharmacy.id).set(pharmacy.toJson());
+    }
   }
 
   @override

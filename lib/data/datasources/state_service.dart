@@ -80,6 +80,25 @@ class StateService extends ChangeNotifier {
     notifyListeners();
   }
 
+  // --- Real-time Sync Setters ---
+  void setMedicines(List<Medicine> medicines) {
+    _medicines.clear();
+    _medicines.addAll(medicines);
+    notifyListeners();
+  }
+
+  void setPharmacies(List<Pharmacy> pharmacies) {
+    _pharmacies.clear();
+    _pharmacies.addAll(pharmacies);
+    notifyListeners();
+  }
+
+  void setHealthArticles(List<HealthArticle> articles) {
+    _healthArticles.clear();
+    _healthArticles.addAll(articles);
+    notifyListeners();
+  }
+
   // Users State
   final List<User> _users = [
     User(

@@ -25,6 +25,13 @@ class MedicineRepositoryImpl implements MedicineRepository {
   }
 
   @override
+  Stream<List<Medicine>> getMedicinesStream() {
+    return _firestore.collection('medicines').snapshots().map((snapshot) {
+      return snapshot.docs.map(_fromFirestore).toList();
+    });
+  }
+
+  @override
   Future<Medicine?> getMedicineById(String id) async {
     try {
       final doc = await _firestore.collection('medicines').doc(id).get();
@@ -118,10 +125,11 @@ class MedicineRepositoryImpl implements MedicineRepository {
 
   @override
   Future<void> addMedicine(Medicine medicine) async {
-    await _firestore
-        .collection('medicines')
-        .doc(medicine.id.isEmpty ? null : medicine.id)
-        .set(medicine.toJson());
+    if (medicine.id.isEmpty) {
+      await _firestore.collection('medicines').add(medicine.toJson());
+    } else {
+      await _firestore.collection('medicines').doc(medicine.id).set(medicine.toJson());
+    }
   }
 
   @override

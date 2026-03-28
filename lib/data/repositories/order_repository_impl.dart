@@ -86,11 +86,14 @@ class OrderRepositoryImpl implements OrderRepository {
       final snapshot = await _firestore
           .collection('orders')
           .where('userId', isEqualTo: userId)
-          .orderBy('date', descending: true)
+//          .orderBy('date', descending: true) // Requires composite index, so removing it temporarily to see if it fixes the issue and we do sorting locally
           .get();
 
-      return snapshot.docs.map((doc) => _mapSnapshotToOrder(doc.data(), doc.id)).toList();
+      final orders = snapshot.docs.map((doc) => _mapSnapshotToOrder(doc.data(), doc.id)).toList();
+      orders.sort((a, b) => b.date.compareTo(a.date)); // local sorting
+      return orders;
     } catch (e) {
+      print('Error getting orders: $e');
       return [];
     }
   }
@@ -128,9 +131,12 @@ class OrderRepositoryImpl implements OrderRepository {
     return _firestore
         .collection('orders')
         .where('userId', isEqualTo: userId)
-        .orderBy('date', descending: true)
         .snapshots()
-        .map((snapshot) => snapshot.docs.map((doc) => _mapSnapshotToOrder(doc.data(), doc.id)).toList());
+        .map((snapshot) {
+            final orders = snapshot.docs.map((doc) => _mapSnapshotToOrder(doc.data(), doc.id)).toList();
+            orders.sort((a, b) => b.date.compareTo(a.date));
+            return orders;
+        });
   }
 
   @override

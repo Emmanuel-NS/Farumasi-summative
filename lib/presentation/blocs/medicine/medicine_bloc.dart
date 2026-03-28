@@ -1,4 +1,6 @@
+﻿import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:farumasi_patient_app/data/models/medicine.dart';
 import 'package:farumasi_patient_app/domain/repositories/medicine_repository.dart';
 import 'medicine_event.dart';
 import 'medicine_state.dart';
@@ -8,6 +10,7 @@ export 'medicine_state.dart';
 
 class MedicineBloc extends Bloc<MedicineEvent, MedicineState> {
   final MedicineRepository repository;
+  StreamSubscription<List<Medicine>>? _subscription;
 
   MedicineBloc(this.repository) : super(MedicineInitial()) {
     on<LoadMedicines>(_onLoadMedicines);
@@ -16,93 +19,127 @@ class MedicineBloc extends Bloc<MedicineEvent, MedicineState> {
     on<AddMedicine>(_onAddMedicine);
     on<UpdateMedicine>(_onUpdateMedicine);
     on<DeleteMedicine>(_onDeleteMedicine);
+    on<_MedicinesUpdated>(_onMedicinesUpdated);
   }
 
-  Future<void> _onLoadMedicines(
-    LoadMedicines event,
-    Emitter<MedicineState> emit,
-  ) async {
+  @override
+  Future<void> close() {
+    _subscription?.cancel();
+    return super.close();
+  }
+
+  void _onLoadMedicines(LoadMedicines event, Emitter<MedicineState> emit) {
     emit(MedicineLoading());
-    try {
-      final medicines = await repository.getMedicinesByCategory(event.category);
-      // Also potentially handle initial search query if needed, but for now just load
-      emit(
-        MedicineLoaded(medicines: medicines, activeCategory: event.category),
+    _subscription?.cancel();
+    _subscription = repository.getMedicinesStream().listen(
+      (medicines) {
+        add(_MedicinesUpdated(medicines));
+      },
+      onError: (e) {
+        add(_MedicineErrorEvent(e.toString()));
+      },
+    );
+  }
+
+  void _onMedicinesUpdated(_MedicinesUpdated event, Emitter<MedicineState> emit) {
+    if (state is MedicineLoaded) {
+      final currentState = state as MedicineLoaded;
+      final filtered = _applyFilters(
+        event.medicines,
+        currentState.activeCategory,
+        currentState.searchQuery,
       );
-    } catch (e) {
-      emit(MedicineError('Failed to load medicines: ${e.toString()}'));
+      emit(currentState.copyWith(
+        allMedicines: event.medicines,
+        medicines: filtered,
+      ));
+    } else {
+      emit(MedicineLoaded(
+        allMedicines: event.medicines,
+        medicines: event.medicines,
+      ));
     }
   }
 
-  Future<void> _onSearchMedicines(
-    SearchMedicines event,
-    Emitter<MedicineState> emit,
-  ) async {
-    // If we're already loaded, we want to stay loaded but filter.
-    // However, repository search is async.
-    emit(MedicineLoading());
-    try {
-      final medicines = await repository.searchMedicines(event.query);
-      emit(
-        MedicineLoaded(
-          medicines: medicines,
-          searchQuery: event.query,
-          activeCategory: 'All', // Reset category on search usually
-        ),
+  void _onSearchMedicines(SearchMedicines event, Emitter<MedicineState> emit) {
+    if (state is MedicineLoaded) {
+      final currentState = state as MedicineLoaded;
+      final filtered = _applyFilters(
+        currentState.allMedicines,
+        'All', // Usually resets category on search
+        event.query,
       );
-    } catch (e) {
-      emit(MedicineError('Search failed: $e'));
+      emit(currentState.copyWith(
+        medicines: filtered,
+        searchQuery: event.query,
+        activeCategory: 'All',
+      ));
     }
   }
 
-  Future<void> _onFilterByCategory(
-    FilterMedicinesByCategory event,
-    Emitter<MedicineState> emit,
-  ) async {
-    emit(MedicineLoading());
-    try {
-      final medicines = await repository.getMedicinesByCategory(event.category);
-      emit(
-        MedicineLoaded(medicines: medicines, activeCategory: event.category),
+  void _onFilterByCategory(FilterMedicinesByCategory event, Emitter<MedicineState> emit) {
+    if (state is MedicineLoaded) {
+      final currentState = state as MedicineLoaded;
+      final filtered = _applyFilters(
+        currentState.allMedicines,
+        event.category,
+        '', // Reset search on category change
       );
-    } catch (e) {
-      emit(MedicineError('Failed to filter medicines: $e'));
+      emit(currentState.copyWith(
+        medicines: filtered,
+        activeCategory: event.category,
+        searchQuery: '',
+      ));
     }
   }
 
-  Future<void> _onAddMedicine(
-    AddMedicine event,
-    Emitter<MedicineState> emit,
-  ) async {
+  List<Medicine> _applyFilters(List<Medicine> all, String category, String query) {
+    var filtered = all;
+    if (category != 'All') {
+      filtered = filtered.where((m) => m.category == category).toList();
+    }
+    if (query.isNotEmpty) {
+      final lowerQuery = query.toLowerCase();
+      filtered = filtered.where((m) => m.name.toLowerCase().contains(lowerQuery)).toList();
+    }
+    return filtered;
+  }
+
+  Future<void> _onAddMedicine(AddMedicine event, Emitter<MedicineState> emit) async {
     try {
       await repository.addMedicine(event.medicine);
-      add(const LoadMedicines());
     } catch (e) {
       emit(MedicineError('Failed to add medicine: $e'));
     }
   }
 
-  Future<void> _onUpdateMedicine(
-    UpdateMedicine event,
-    Emitter<MedicineState> emit,
-  ) async {
+  Future<void> _onUpdateMedicine(UpdateMedicine event, Emitter<MedicineState> emit) async {
     try {
       await repository.updateMedicine(event.medicine);
-      add(const LoadMedicines());
     } catch (e) {
       emit(MedicineError('Failed to update medicine: $e'));
     }
   }
 
-  Future<void> _onDeleteMedicine(
-    DeleteMedicine event,
-    Emitter<MedicineState> emit,
-  ) async {
+  Future<void> _onDeleteMedicine(DeleteMedicine event, Emitter<MedicineState> emit) async {
     try {
       await repository.deleteMedicine(event.id);
-      add(const LoadMedicines());
     } catch (e) {
       emit(MedicineError('Failed to delete medicine: $e'));
     }
   }
+}
+
+class _MedicinesUpdated extends MedicineEvent {
+  final List<Medicine> medicines;
+  const _MedicinesUpdated(this.medicines);
+  @override
+  List<Object> get props => [medicines];
+}
+
+class _MedicineErrorEvent extends MedicineEvent {
+  final String message;
+  const _MedicineErrorEvent(this.message);
+  @override
+  List<Object> get props => [message];
 }

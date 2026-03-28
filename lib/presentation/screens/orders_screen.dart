@@ -39,7 +39,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
           length: 2,
           child: Scaffold(
             appBar: AppBar(
-              backgroundColor: Colors.blueAccent,
+              backgroundColor: Colors.green,
               title: const Text('My Orders', style: TextStyle(fontWeight: FontWeight.bold)),
               bottom: const TabBar(
                 labelColor: Colors.white,
@@ -125,9 +125,12 @@ class _OrdersScreenState extends State<OrdersScreen> {
           margin: const EdgeInsets.only(bottom: 16),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           elevation: 3,
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
+          child: InkWell(
+            onTap: () => _showOrderDetails(context, order),
+            borderRadius: BorderRadius.circular(12),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
@@ -177,7 +180,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                       icon: const Icon(Icons.location_on),
                       label: const Text('Track Order'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blueAccent,
+                        backgroundColor: Colors.green,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -187,6 +190,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                 ],
               ],
             ),
+          ),
           ),
         );
       },
@@ -205,5 +209,138 @@ class _OrdersScreenState extends State<OrdersScreen> {
       case OrderStatus.delivered: return 'Delivered';
       case OrderStatus.cancelled: return 'Cancelled';
     }
+  }
+
+  void _showOrderDetails(BuildContext context, PrescriptionOrder order) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.65,
+          minChildSize: 0.4,
+          maxChildSize: 0.9,
+          expand: false,
+          builder: (context, scrollController) {
+            return Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Order #${order.id.substring(0, 8)}',
+                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 16),
+                  Expanded(
+                    child: ListView(
+                      controller: scrollController,
+                      children: [
+                        _buildDetailRow('Date', DateFormat('MMM dd, yyyy - hh:mm a').format(order.date)),
+                        _buildDetailRow('Status', _formatStatus(order.status)),
+                        _buildDetailRow('Patient', order.patientName),
+                        _buildDetailRow('Phone', order.patientPhone ?? 'N/A'),
+                        _buildDetailRow('Delivery To', order.patientLocationName),
+                        const Divider(height: 32),
+                        const Text(
+                          'Ordered Medicines',
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green),
+                        ),
+                        const SizedBox(height: 8),
+                        if (order.items.isEmpty)
+                          const Text('No medicines listed.', style: TextStyle(color: Colors.grey)),
+                        ...order.items.map((item) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        item.medicine.name,
+                                        style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
+                                      ),
+                                      Text('Qty: ${item.quantity}', style: const TextStyle(color: Colors.grey)),
+                                    ],
+                                  ),
+                                ),
+                                Text(
+                                  'KSH ${(item.medicine.price * item.quantity).toStringAsFixed(2)}',
+                                  style: const TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                          );
+                        }),
+                        const Divider(height: 32),
+                        _buildDetailRow('Pharmacy Price', 'KSH ${order.pharmacyPrice.toStringAsFixed(2)}'),
+                        _buildDetailRow('Delivery Fee', 'KSH ${order.deliveryFee.toStringAsFixed(2)}'),
+                        const Divider(height: 16),
+                        _buildDetailRow(
+                          'Total Price',
+                          'KSH ${order.totalPrice.toStringAsFixed(2)}',
+                          isBold: true,
+                        ),
+                        const SizedBox(height: 32),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value, {bool isBold = false}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            flex: 2,
+            child: Text(
+              label,
+              style: TextStyle(
+                color: Colors.grey[600],
+                fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+                fontSize: isBold ? 16 : 14,
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 3,
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              style: TextStyle(
+                fontWeight: isBold ? FontWeight.bold : FontWeight.w500,
+                fontSize: isBold ? 16 : 14,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

@@ -63,9 +63,25 @@ class DataSeeder {
     } catch (e) {
       debugPrint("Error seeding pharmacies: $e");
     }
+
+    // --- TEMPORARY: Seed 5 Additional Pharmacies ---
+    try {
+      final pharmaciesRef = firestore.collection('pharmacies');
+      // We explicitly push the 5 new pharmacies you requested
+      final newPharmaciesIds = ['ph5', 'ph6', 'ph7', 'ph8', 'ph9'];
+      for (var pharmacy in dummyPharmacies.where((p) => newPharmaciesIds.contains(p.id))) {
+        final doc = await pharmaciesRef.doc(pharmacy.id).get();
+        if (!doc.exists) {
+          debugPrint('Scaling DB: Adding new pharmacy ${pharmacy.name}...');
+          await pharmaciesRef.doc(pharmacy.id).set(pharmacy.toJson());
+        }
+      }
+    } catch (e) {
+      debugPrint("Error seeding ADDITIONAL pharmacies: $e");
+    }
   }
 
-  static Map<String, dynamic> _healthArticleToMap(HealthArticle article) {
+  static Map<String, dynamic> _healthArticleToMap(HealthArticle article) {      
     return {
       'id': article.id,
       'title': article.title,
@@ -76,7 +92,6 @@ class DataSeeder {
       'readTimeMin': article.readTimeMin,
       'imageUrl': article.imageUrl,
       'source': article.source,
-      // Store enum as string (e.g., 'tip', 'news') or handle specifically
       'type': article.type.toString().split('.').last,
     };
   }

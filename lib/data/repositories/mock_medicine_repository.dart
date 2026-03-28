@@ -1,14 +1,33 @@
+﻿import 'dart:async';
 import 'package:farumasi_patient_app/data/models/models.dart';
 import 'package:farumasi_patient_app/domain/repositories/medicine_repository.dart';
 import '../dummy_data.dart';
 
 class MockMedicineRepository implements MedicineRepository {
   final Duration _delay = const Duration(milliseconds: 800);
+  final StreamController<List<Medicine>> _controller = StreamController<List<Medicine>>.broadcast();
+
+  MockMedicineRepository() {
+    _controller.add(dummyMedicines);
+  }
+
+  void _notify() {
+    _controller.add(List.from(dummyMedicines));
+  }
 
   @override
   Future<List<Medicine>> getMedicines() async {
     await Future.delayed(_delay);
     return dummyMedicines;
+  }
+
+  @override
+  Stream<List<Medicine>> getMedicinesStream() {
+    // Return current state immediately, then follow with updates
+    final controller = StreamController<List<Medicine>>();
+    controller.add(List.from(dummyMedicines));
+    controller.addStream(_controller.stream);
+    return controller.stream;
   }
 
   @override
@@ -24,17 +43,13 @@ class MockMedicineRepository implements MedicineRepository {
   @override
   Future<List<Medicine>> searchMedicines(String query) async {
     await Future.delayed(_delay);
-    if (query.isEmpty) return dummyMedicines;
+    if (query.isEmpty) return List.from(dummyMedicines);
 
     final lowerQuery = query.toLowerCase();
     return dummyMedicines.where((medicine) {
       final nameMatches = medicine.name.toLowerCase().contains(lowerQuery);
-      final categoryMatches = medicine.category.toLowerCase().contains(
-        lowerQuery,
-      );
-      final keywordMatches = medicine.keywords.any(
-        (k) => k.toLowerCase().contains(lowerQuery),
-      );
+      final categoryMatches = medicine.category.toLowerCase().contains(lowerQuery);
+      final keywordMatches = medicine.keywords.any((k) => k.toLowerCase().contains(lowerQuery));
       return nameMatches || categoryMatches || keywordMatches;
     }).toList();
   }
@@ -42,7 +57,7 @@ class MockMedicineRepository implements MedicineRepository {
   @override
   Future<List<Medicine>> getMedicinesByCategory(String category) async {
     await Future.delayed(_delay);
-    if (category == 'All' || category.isEmpty) return dummyMedicines;
+    if (category == 'All' || category.isEmpty) return List.from(dummyMedicines);
     return dummyMedicines.where((m) => m.category == category).toList();
   }
 
@@ -65,6 +80,7 @@ class MockMedicineRepository implements MedicineRepository {
   @override
   Future<void> addMedicine(Medicine medicine) async {
     dummyMedicines.add(medicine);
+    _notify();
   }
 
   @override
@@ -72,11 +88,13 @@ class MockMedicineRepository implements MedicineRepository {
     final index = dummyMedicines.indexWhere((m) => m.id == medicine.id);
     if (index != -1) {
       dummyMedicines[index] = medicine;
+      _notify();
     }
   }
 
   @override
   Future<void> deleteMedicine(String id) async {
     dummyMedicines.removeWhere((m) => m.id == id);
+    _notify();
   }
 }

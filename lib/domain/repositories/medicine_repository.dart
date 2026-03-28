@@ -2,6 +2,7 @@ import 'package:farumasi_patient_app/data/models/models.dart';
 
 abstract class MedicineRepository {
   Future<List<Medicine>> getMedicines();
+  Stream<List<Medicine>> getMedicinesStream();
   Future<Medicine?> getMedicineById(String id);
   Future<List<Medicine>> searchMedicines(String query);
   Future<List<Medicine>> getMedicinesByCategory(String category);

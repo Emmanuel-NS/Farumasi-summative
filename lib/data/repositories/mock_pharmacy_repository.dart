@@ -12,6 +12,11 @@ class MockPharmacyRepository implements PharmacyRepository {
   }
 
   @override
+  Stream<List<Pharmacy>> getPharmaciesStream() {
+    return Stream.value(_pharmacies);
+  }
+
+  @override
   Future<void> addPharmacy(Pharmacy pharmacy) async {
     _pharmacies.add(pharmacy);
   }

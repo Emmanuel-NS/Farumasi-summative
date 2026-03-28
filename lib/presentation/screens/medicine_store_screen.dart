@@ -19,6 +19,8 @@ import 'package:farumasi_patient_app/presentation/blocs/auth/auth_bloc.dart';
 import 'package:farumasi_patient_app/presentation/screens/admin/admin_dashboard_screen.dart';
 import 'package:farumasi_patient_app/presentation/blocs/cart/cart_bloc.dart';
 import 'package:farumasi_patient_app/presentation/blocs/cart/cart_state.dart';
+import 'package:farumasi_patient_app/presentation/blocs/medicine/medicine_bloc.dart';
+import 'package:farumasi_patient_app/presentation/blocs/pharmacy/pharmacy_bloc.dart';
 import 'pharmacy_detail_screen.dart'; // Import Pharmacy Detail Screen
 import 'cart_screen.dart';
 import 'prescription_upload_screen.dart'; // Add this import
@@ -38,6 +40,18 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
   // Track scroll position to determine direction
   double _lastScrollOffset = 0.0;
   bool _showFloatingActions = true; // Default to visible
+
+  List<Medicine> get _currentMedicines {
+    final state = context.read<MedicineBloc>().state;
+    if (state is MedicineLoaded) return state.allMedicines;
+    return StateService().medicines; // fallback 
+  }
+
+  List<Pharmacy> get _currentPharmacies {
+    final state = context.read<PharmacyBloc>().state;
+    if (state is PharmacyLoaded) return state.pharmacies;
+    return StateService().pharmacies; // fallback 
+  }
 
   @override
   void initState() {
@@ -85,7 +99,7 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
   // String? _suggestedQuery; // REMOVED
   Set<String> _selectedCategories = {}; // Revert to set for multi-selection
   String? _selectedSubCategory;
-  RangeValues _priceRange = const RangeValues(0, 50000);
+  RangeValues _priceRange = const RangeValues(0, 10000000);
   // Set<String> _availableSubCategories = {}; // REMOVED
 
   double _minRating = 0.0;
@@ -125,7 +139,7 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
 
   // 1b. Helper to get results for a specific string query
   List<Medicine> _getMedicinesForQuery(String queryText) {
-    return StateService().medicines.where((m) {
+    return _currentMedicines.where((m) {
       // Clean the query
       final cleanQuery = queryText.toLowerCase().trim();
       List<String> queryWords = cleanQuery
@@ -174,14 +188,16 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
       // If Sort By is Max Price, filter by Max Price
       // If Sort By is Name (or anything else), filter by Min Price (default behavior)
       bool matchesPrice = false;
+      const double MAX_SLIDER_VAL = 10000000;
+      bool isAtMaxSlider = _priceRange.end >= MAX_SLIDER_VAL;
 
       if (_sortBy == 'MaxPrice') {
         final maxP = m.maxPrice ?? m.price;
-        matchesPrice = maxP >= _priceRange.start && maxP <= _priceRange.end;
+        matchesPrice = maxP >= _priceRange.start && (isAtMaxSlider || maxP <= _priceRange.end);
       } else {
         // Default to filtering on base/min price
         matchesPrice =
-            m.price >= _priceRange.start && m.price <= _priceRange.end;
+            m.price >= _priceRange.start && (isAtMaxSlider || m.price <= _priceRange.end);
       }
 
       final matchesRating = m.rating >= _minRating;
@@ -201,7 +217,7 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
 
     // 1. Collect candidate terms from known medicines
     final Set<String> candidates = {};
-    for (var m in StateService().medicines) {
+    for (var m in _currentMedicines) {
       candidates.add(m.name.toLowerCase());
       // Add category as candidate
       candidates.add(m.category.toLowerCase());
@@ -324,11 +340,11 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
   }
 
   List<String> get _categories =>
-      StateService().medicines.map((e) => e.category).toSet().toList();
+      _currentMedicines.map((e) => e.category).toSet().toList();
 
   List<String> get _currentSubCategories {
     if (_selectedCategories.isEmpty) return [];
-    return StateService().medicines
+    return _currentMedicines
         .where(
           (m) =>
               _selectedCategories.contains(m.category) && m.subCategory != null,
@@ -408,7 +424,7 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
                         setModalState(() {
                           _selectedCategories.clear();
                           _selectedSubCategory = null;
-                          _priceRange = const RangeValues(0, 50000);
+                          _priceRange = const RangeValues(0, 10000000);
                           _minRating = 0.0;
                           _sortBy = 'Name';
                           _sortAscending = true;
@@ -590,7 +606,7 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
                               // Clear subcat if not valid anymore (optional but safer)
                               if (_selectedSubCategory != null) {
                                 // Check if the selected sub belongs to ANY of the new categories
-                                bool isValid = StateService().medicines.any(
+                                bool isValid = _currentMedicines.any(
                                   (m) =>
                                       _selectedCategories.contains(
                                         m.category,
@@ -756,7 +772,7 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
                       RangeSlider(
                         values: _priceRange,
                         min: 0,
-                        max: 50000,
+                        max: 10000000,
                         divisions: 50,
                         activeColor: Colors.green,
                         inactiveColor: Colors.green.shade100,
@@ -865,10 +881,16 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
-      child: AnimatedBuilder(
-        animation: StateService(),
-        builder: (context, child) {
-          return Scaffold(
+      child: BlocBuilder<MedicineBloc, MedicineState>(
+        builder: (context, medState) {
+          debugPrint("MedicineStoreScreen Rebuild. medState is $medState, length: ${medState is MedicineLoaded ? medState.allMedicines.length : 'N/A'}");
+          debugPrint("_currentMedicines length: ${_currentMedicines.length}, _filteredMedicines length: ${_filteredMedicines.length}");
+          return BlocBuilder<PharmacyBloc, PharmacyState>(
+            builder: (context, pharmState) {
+              return AnimatedBuilder(
+                animation: StateService(),
+                builder: (context, child) {
+                  return Scaffold(
             floatingActionButton: _showFloatingActions
                 ? Column(
                     mainAxisSize: MainAxisSize.min,
@@ -1693,9 +1715,9 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
                       child: ListView.builder(
                         scrollDirection: Axis.horizontal,
                         padding: EdgeInsets.symmetric(horizontal: 12),
-                        itemCount: StateService().pharmacies.length,
+                        itemCount: _currentPharmacies.length,
                         itemBuilder: (context, index) {
-                          final pharmacy = StateService().pharmacies[index];
+                          final pharmacy = _currentPharmacies[index];
                           return GestureDetector(
                             onTap: () {
                               // Navigate to pharmacy detail
@@ -1876,7 +1898,7 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
                                 _searchController.clear();
                                 _selectedCategories.clear();
                                 _selectedSubCategory = null;
-                                _priceRange = const RangeValues(0, 50000);
+                                _priceRange = const RangeValues(0, 10000000);
                                 _minRating = 0.0;
                                 _sortBy = 'Name';
                                 _sortAscending = true;
@@ -1932,8 +1954,12 @@ class _MedicineStoreScreenState extends State<MedicineStoreScreen>
               ],
             ),
           );
-        }, // end builder
-      ), // end AnimatedBuilder
+                }, // end builder
+              ); // end AnimatedBuilder
+            }, // end PharmacyBloc builder
+          ); // end PharmacyBloc
+        }, // end MedicineBloc builder
+      ), // end MedicineBloc child
     ); // end GestureDetector
   }
 }
