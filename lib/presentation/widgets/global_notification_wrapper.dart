@@ -106,8 +106,7 @@ class _GlobalNotificationWrapperState extends State<GlobalNotificationWrapper> {
     NotificationService().showNotification(
       id: (DateTime.now().millisecondsSinceEpoch ~/ 1000) + a.id.hashCode,
       title: notificationTitle,
-      body: '\
-\n\',
+      body: '${a.title}\n\n${a.summary}',
       category: 'health_tip',
       payload: a.id,
     );
