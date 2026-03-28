@@ -92,20 +92,23 @@ class _PrescriptionUploadScreenState extends State<PrescriptionUploadScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // If it can pop, show close button. Otherwise no back button (e.g. when used as a tab).
+    final bool canPop = Navigator.canPop(context);
+    
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text(
           'Upload Prescription',
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),   
         ),
         centerTitle: true,
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
+        leading: canPop ? IconButton(
           icon: Icon(Icons.close, color: Colors.black),
           onPressed: () => Navigator.pop(context),
-        ),
+        ) : null,
       ),
       body: SafeArea(
         child: SingleChildScrollView(

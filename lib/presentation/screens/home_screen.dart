@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:farumasi_patient_app/presentation/blocs/auth/auth_bloc.dart';
@@ -28,6 +29,7 @@ class _HomeScreenState extends State<HomeScreen>
   final List<Widget> _pages = [
     const MedicineStoreScreen(),
     const HealthTipsScreen(),
+    const PrescriptionUploadScreen(), // Upload Rx tab
     const UserConsultationScreen(),
     const OrdersScreen(),
   ];
@@ -93,175 +95,61 @@ class _HomeScreenState extends State<HomeScreen>
           },
           child: _pages[_currentIndex],
         ),
-        floatingActionButton: ScaleTransition(
-          scale: _hideBottomBarController,
-          child: SizedBox(
-            height: 70,
-            width: 70,
-            child: FloatingActionButton(
-              backgroundColor: isLoggedIn ? Colors.white : Colors.grey[300],
-              elevation: 4,
-              shape: const CircleBorder(),
-              onPressed: () {
-                if (!isLoggedIn) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: const Text(
-                        "Please log in to upload a prescription.",
-                      ),
-                      action: SnackBarAction(
-                        label: "Login",
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const AuthScreen(),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  );
-                  return;
-                }
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const PrescriptionUploadScreen(),
-                  ),
-                );
-              },
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.document_scanner_outlined,
-                    color: isLoggedIn ? Colors.green : Colors.grey,
-                    size: 28,
-                  ),
-                  Text(
-                    "Upload Rx",
-                    style: TextStyle(
-                      color: isLoggedIn ? Colors.green : Colors.grey,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 8,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-        bottomNavigationBar: SizeTransition(
+                bottomNavigationBar: SizeTransition(
           sizeFactor: _hideBottomBarController,
           axisAlignment: -1.0,
           child: ListenableBuilder(
             listenable: StateService(),
             builder: (context, _) {
-              return BottomAppBar(
+              final isLoggedIn = StateService().isLoggedIn;
+              return CurvedNavigationBar(
+                index: _currentIndex,
+                height: 60.0,
                 color: Colors.green,
-                shape: const CircularNotchedRectangle(),
-                notchMargin: 8.0,
-                child: SizedBox(
-                  height: 60,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _buildNavItem(Icons.store, 'Home', 0),
-                      _buildNavItem(Icons.health_and_safety, 'Health', 1),
-                      const SizedBox(width: 48), // Gap for FAB
-                      _buildNavItem(Icons.chat_bubble_outline, 'Consult', 2),
-                      _buildNavItem(Icons.history, 'Orders', 3),
-                    ],
-                  ),
-                ),
+                buttonBackgroundColor: Colors.white,
+                backgroundColor: Colors.transparent, // Figma styling: curved bar over content
+                animationCurve: Curves.easeInOut,
+                animationDuration: const Duration(milliseconds: 300),
+                items: <Widget>[
+                  Icon(Icons.store, size: 30, color: _currentIndex == 0 ? Colors.green : Colors.white),
+                  Icon(Icons.health_and_safety, size: 30, color: _currentIndex == 1 ? Colors.green : Colors.white),
+                  Icon(Icons.document_scanner_outlined, size: 30, color: _currentIndex == 2 ? Colors.green : Colors.white), // Upload Rx
+                  Icon(Icons.chat_bubble_outline, size: 30, color: _currentIndex == 3 ? Colors.green : Colors.white),
+                  Icon(Icons.history, size: 30, color: _currentIndex == 4 ? Colors.green : Colors.white),
+                ],
+                onTap: (index) {
+                  // Index 2 is Upload Rx, 3 is Consult/Chat, 4 is Orders
+                  bool restricted = (index == 2 || index == 3 || index == 4) && !isLoggedIn;
+                  if (restricted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: const Text("Please log in to access this feature."),
+                        action: SnackBarAction(
+                          label: "Login",
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const AuthScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    );
+                    setState(() {
+                      _currentIndex = 0;
+                    });
+                    return;
+                  }
+                  setState(() {
+                    _currentIndex = index;
+                  });
+                },
               );
             },
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildNavItem(
-    IconData icon,
-    String label,
-    int index, {
-    bool isCart = false,
-  }) {
-    final isLoggedIn = StateService().isLoggedIn;
-    // Index 2 is Consult/Chat, Index 3 is Orders
-    final isRestricted = (index == 2 || index == 3) && !isLoggedIn;
-
-    final isSelected = _currentIndex == index;
-    // If restricted, show as semi-transparent/greyed out
-    final color = isRestricted
-        ? Colors.green.shade800
-        : (isSelected ? Colors.white : Colors.green.shade100);
-
-    Widget iconWidget = Icon(icon, color: color, size: 28);
-
-    if (isCart) {
-      iconWidget = BlocBuilder<CartBloc, CartState>(
-        builder: (context, state) {
-          int itemCount = 0;
-          if (state is CartLoaded) {
-            itemCount = state.cartItems.length;
-          }
-          if (itemCount > 0) {
-            return Badge(
-              label: Text(itemCount.toString()),
-              backgroundColor: Colors.redAccent,
-              textColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 6),
-              child: Icon(icon, color: color, size: 28),
-            );
-          }
-          return Icon(icon, color: color, size: 28);
-        },
-      );
-    }
-
-    return GestureDetector(
-      onTap: () {
-        if (isRestricted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Please log in to access \.'),
-              action: SnackBarAction(
-                label: 'Login',
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const AuthScreen()),
-                  );
-                },
-              ),
-            ),
-          );
-          return;
-        }
-        setState(() {
-          _currentIndex = index;
-        });
-      },
-      behavior: HitTestBehavior.opaque,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          iconWidget,
-          const SizedBox(height: 2),
-          Text(
-            label,
-            style: TextStyle(
-              color: color,
-              fontSize: 10,
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-            ),
-          ),
-        ],
       ),
     );
   }
